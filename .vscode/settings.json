@@ -1,0 +1,13 @@
+{
+    "python.pythonPath": "/usr/bin/python",
+    "files.associations": {
+        "*.tcc": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "fstream": "cpp",
+        "limits": "cpp",
+        "sstream": "cpp",
+        "utility": "cpp",
+        "algorithm": "cpp"
+    }
+}
