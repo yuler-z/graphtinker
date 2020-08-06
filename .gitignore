@@ -1,0 +1,10 @@
+test_edge
+gt.exe
+
+build/
+cmake-build-debug/
+
+Makefile
+
+.vscode/
+.idea/
