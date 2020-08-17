@@ -8,12 +8,13 @@ using namespace std;
 #define CPU 0
 #define EN_LLGDS 0
 
+
 #define cpuem_bugs_b1 0
 #define EN_BUGCHECK 0
 #define EN_PROCESSLOWERGENCLUSTERS 0 //don't turn off!!!
 #define EN_INITVPROPERTYARRAY 0
 
-#define WORK_BLOCK_HEIGHT 4
+#define WORK_BLOCK_HEIGHT 4 
 #define BATCH_SIZE 1048576
 
 #define DIRECTEDGRAPH 0
@@ -21,7 +22,7 @@ using namespace std;
 #define REVERSE_DIRECTED_GRAPH 2
 
 #define ZERO 0
-#define NA 999999999  //not applicable
+#define NA 999999999 //not applicable
 #define NAv 555555555 //not available
 #define NULLL 888
 #define NONE 666
@@ -35,7 +36,6 @@ using namespace std;
 #define SOMESMALLNO 10
 #define SOMELARGENO 100000000
 
-// flag
 #define VALID 5
 #define INVALID 6
 #define METAVALID 7
@@ -50,7 +50,7 @@ using namespace std;
 #define OFF 0
 #define ON 1
 
-#define READ 5
+#define READ 5 
 #define WRITE 6
 #define NEITHER_READ_NOR_WRITE 7
 
@@ -106,14 +106,14 @@ using namespace std;
 #define INITTYPE_ALLZEROS 0
 #define INITTYPE_ALLINFINITY 1
 
-#define RUN_SUMMARY_ARRAY_SIZE
+#define RUN_SUMMARY_ARRAY_SIZE 
 
 #define LLEDGEBLOCKSIZE 512
 #define LVACOARSENESSWIDTH 2048 //should be a power of 2
 
 // ll commands
 #define NOCMD 0
-#define INSERTCMD 5
+#define INSERTCMD 5 
 #define UPDATECMD 6
 #define DELETECMD 7
 #define DELETEANDCRUMPLEINCMD 8
@@ -122,12 +122,12 @@ using namespace std;
 // dci (deleteandcrumplein commands)
 #define DCI_NOCMD 5
 #define DCI_JUSTQUITCMD 6
-#define DCI_CRUMPLEINCMD 7
+#define DCI_CRUMPLEINCMD 7 
 
-#define NO_OF_VERTEX_PARTITIONS //8
-#define MAX_INDEX_FINDABLE_IN_A_PARTITION
-#define SIZE_OF_EACH_VERTEX_PARTITION
-#define SIZE_OF_EACH_VERTEX_SUBPARTITION
+#define NO_OF_VERTEX_PARTITIONS  //8
+#define MAX_INDEX_FINDABLE_IN_A_PARTITION 
+#define SIZE_OF_EACH_VERTEX_PARTITION 
+#define SIZE_OF_EACH_VERTEX_SUBPARTITION 
 
 #define SRC_DST 5
 #define DST_SRC 6
@@ -145,256 +145,222 @@ using namespace std;
 #define SELF 1
 #define OTHER 2
 
-namespace gt
-{
-	typedef unsigned int vertexid_t;
-	typedef unsigned int edgeid_t;
-	typedef unsigned int bucket_t;
-	typedef unsigned int edgeweight_t;
-	typedef unsigned int flag_t;
-	typedef double vertexdata_t;
-	typedef unsigned int clusterptr_t;
-	typedef unsigned int id_t;
+typedef unsigned int vertexid_t;
+typedef unsigned int edgeid_t;
+typedef unsigned int bucket_t;
+typedef unsigned int edgeweight_t;
+typedef unsigned int flag_t;
+typedef double vertexdata_t;
+typedef unsigned int clusterptr_t;
+typedef unsigned int id_t;
 
-	/// struct declarations
+/// struct declarations
 
-	typedef struct
-	{
-		vertexid_t xadjvtx_id;
-		bucket_t initialbucket;
-		edgeweight_t edge_weight;
-		flag_t flag;
-#ifdef EN_LLGDS
-		vertexid_t ll_localbaseaddrptr;
-		vertexid_t ll_localaddrptr;
-#endif
-	} edge_tt;
+typedef struct {
+	vertexid_t xadjvtx_id;
+	bucket_t initialbucket;
+	edgeweight_t edge_weight;
+    flag_t flag;
+	#ifdef EN_LLGDS
+	vertexid_t ll_localbaseaddrptr;
+	vertexid_t ll_localaddrptr;
+	#endif
+} edge_tt;
 
-	/** sv_ptr : pointer to a supervertex
+/** sv_ptr : pointer to a supervertex
 NB: many subblocks can (and should) have the same sv_ptr. means they all are 1st borns in a descendancy tree */
-	typedef struct
-	{
-		clusterptr_t data;
-		flag_t flag;
-		uint sv_ptr;
-	} clusterinfo_t;
+typedef struct {
+	clusterptr_t data;
+	flag_t flag;
+	uint sv_ptr;
+} clusterinfo_t;
 
-	typedef struct
-	{
-		flag_t flag;
-	} edgeinfo_t;
+typedef struct {
+	flag_t flag; 
+} edgeinfo_t;
 
-	typedef struct
-	{
-		edgeinfo_t edgeinfo;
-		clusterinfo_t clusterinfo;
-		edge_tt edges[WORK_BLOCK_HEIGHT];
-	} edge_nt;
+typedef struct {
+	edgeinfo_t edgeinfo;
+	clusterinfo_t clusterinfo;
+	edge_tt edges[WORK_BLOCK_HEIGHT];
+} edge_nt;
 
-	typedef struct
-	{
-		uint gen_of_parent;
-		vertexid_t xvtx_id; //***^
-		uint subblockid;
-		flag_t flag;
-	} edgeblock_parentinfo_t;
+typedef struct {
+	uint gen_of_parent;
+	vertexid_t xvtx_id; //***^
+	uint subblockid;
+	flag_t flag;
+} edgeblock_parentinfo_t;
 
-	typedef struct
-	{
-		vertexid_t xvtx_id;
-		vertexid_t xadjvtx_id;
-		edgeweight_t edgew;
-		flag_t flag;
-#ifdef EN_LLGDS
-		int heba_hvtx_id;
-		int heba_workblockid;
-		int heba_loffset;
-		int which_gen_is_the_main_copy_located;
-#endif
-	} edge_t;
+typedef struct {
+	vertexid_t xvtx_id;
+	vertexid_t xadjvtx_id;
+	edgeweight_t edgew;
+	flag_t flag;
+	#ifdef EN_LLGDS
+	int heba_hvtx_id;
+	int heba_workblockid;
+	int heba_loffset;
+	int which_gen_is_the_main_copy_located;
+	#endif
+} edge_t;
 
-	typedef struct
-	{
-		uint mode;
-	} module_unit_cmd_t;
+typedef struct {
+	uint mode;
+} module_unit_cmd_t;
 
-	typedef struct
-	{
-		uint rolledover; //Y/N // traversal info
-		uint clustered;	 //Y/N // cluster info
-		int cptr;
-		vertexid_t xadjvtx_id; // edge info
-		edgeweight_t edge_weight;
-#ifdef EN_LLGDS
-		vertexid_t ll_localbaseaddrptr_x;
-		vertexid_t ll_localaddrptr_x;
-#endif
-	} module_params_t;
+typedef struct {
+	uint rolledover;  //Y/N // traversal info
+	uint clustered; //Y/N // cluster info
+    int cptr;	
+	vertexid_t xadjvtx_id; // edge info
+	edgeweight_t edge_weight;
+	#ifdef EN_LLGDS
+	vertexid_t ll_localbaseaddrptr_x;
+	vertexid_t ll_localaddrptr_x;
+	#endif	
+} module_params_t;
 
-	typedef struct
-	{
-		uint load;
-	} load_unit_cmd_t;
+typedef struct {
+	uint load;
+} load_unit_cmd_t;
 
-	typedef struct
-	{
-		uint verdict;
-	} llgds_unit_cmd_t;
+typedef struct {
+	uint verdict;
+} llgds_unit_cmd_t;
 
-	typedef struct
-	{
-		uint verdict;
-	} delete_and_crumple_in_cmd_t;
+typedef struct {
+	uint verdict;
+} delete_and_crumple_in_cmd_t;
 
-	typedef struct
-	{
-		vertexid_t xadjvtx_id; // edge info
-		bucket_t initialbucket_x;
-		edgeweight_t edge_weight;
-		flag_t isstartblk; // additional info
-	} insert_params_t;
+typedef struct {
+	vertexid_t xadjvtx_id; // edge info
+	bucket_t initialbucket_x;
+	edgeweight_t edge_weight;
+	flag_t isstartblk; // additional info	
+} insert_params_t;
 
-	typedef struct
-	{
-		uint exittype;
-		bucket_t validbuckets_incr;
-		bucket_t overflowbkt;
-		bucket_t lastbktloadedinto;
-	} insert_report_t;
+typedef struct {
+	uint exittype;
+	bucket_t validbuckets_incr;
+	bucket_t overflowbkt;
+	bucket_t lastbktloadedinto;
+} insert_report_t;
 
-	typedef struct
-	{
-		vertexid_t xadjvtx_id; // edge info
-		bucket_t initialbucket_x;
-		edgeweight_t edge_weight;
-		flag_t isstartblk; // additional info
-	} find_params_t;
+typedef struct {	
+	vertexid_t xadjvtx_id; // edge info
+	bucket_t initialbucket_x;
+	edgeweight_t edge_weight;	
+	flag_t isstartblk; // additional info
+} find_params_t;
 
-	typedef struct
-	{
-		bucket_t localoffset;
-		flag_t entryfound;
-		flag_t entrydeleted;
-		flag_t maxprobelengthreached;
-		flag_t foundemptybkt;
-	} find_report_t;
+typedef struct {
+	bucket_t localoffset;
+	flag_t entryfound;
+	flag_t entrydeleted;
+	flag_t maxprobelengthreached;
+    flag_t foundemptybkt;
+} find_report_t;
 
-	typedef struct
-	{
-		uint writeback;
-		uint addr;
-		uint markasclustered;
-		uint subblockid;
-		uint workblockid;
-	} writeback_unit_cmd_t;
+typedef struct {
+	uint writeback;
+	uint addr;
+	uint markasclustered;
+	uint subblockid;
+	uint workblockid;
+} writeback_unit_cmd_t;
 
-	typedef struct
-	{
-		uint verdict;
-	} interval_unit_cmd_t;
+typedef struct {
+	uint verdict;
+} interval_unit_cmd_t;
 
-	typedef struct
-	{
-		bucket_t top;
-		bucket_t bottom;
-	} margin_t;
+typedef struct {
+	bucket_t top;
+	bucket_t bottom;
+} margin_t;
 
-	typedef struct
-	{
-		uint searchstop;
-		uint searchsuccessful;
-	} searchreport_t;
+typedef struct {
+	uint searchstop;
+	uint searchsuccessful;
+} searchreport_t;
 
-	typedef struct
-	{
-		uint search;
-		uint insert;
-	} encontrol_t;
+typedef struct {
+	uint search;
+	uint insert;
+} encontrol_t;
 
-	/// trackers
-	typedef struct
-	{
-		uint mark;
-	} tracker_t;
+/// trackers
+typedef struct {
+	uint mark;
+} tracker_t;
 
-	typedef struct
-	{
-		uint marker;
-	} markertracker_t;
+typedef struct {
+	uint marker;
+} markertracker_t;
 
-	/// profiling
+/// profiling
 
-	typedef struct
-	{
-		vertexid_t A;
-		vertexid_t B;
-	} tuple_vid_t;
+typedef struct {
+	vertexid_t A;
+	vertexid_t B;
+} tuple_vid_t;
 
-	typedef struct
-	{
-		uint A;
-		uint B;
-	} tuple_t;
+typedef struct {
+	uint A;
+	uint B;
+} tuple_t;
 
-	typedef struct
-	{
-		int A;
-		int B;
-	} tuple_int_t;
+typedef struct {
+	int A;
+	int B;
+} tuple_int_t;
 
-	typedef struct
-	{
-		vertexid_t A;
-		vertexid_t B;
-		vertexid_t C;
-	} triple_vid_t;
+typedef struct {
+	vertexid_t A;
+	vertexid_t B;
+	vertexid_t C;
+} triple_vid_t; 
 
-	typedef struct
-	{
-		vertexid_t globalvid;
-		vertexid_t localvid;
-		flag_t flag;
-		flag_t lflag;
-	} vertex_translator_t;
+typedef struct {
+	vertexid_t globalvid;
+	vertexid_t localvid;
+	flag_t flag;
+	flag_t lflag;
+} vertex_translator_t;
 
-	/// LL data structures
-	typedef struct
-	{
-		uint edgecount;
-		uint nextcptr;
-		uint currcptr;
-		uint prevcptr;
-	} ll_edgeblockmetadata_t;
+/// LL data structures
+typedef struct {
+	uint edgecount;
+	uint nextcptr;
+	uint currcptr;
+	uint prevcptr;
+} ll_edgeblockmetadata_t;
 
-	typedef struct
-	{
-		edge_t ll_edgeblock[LLEDGEBLOCKSIZE];
-		ll_edgeblockmetadata_t metadata;
-	} ll_edgeblock_t;
+typedef struct {
+	edge_t ll_edgeblock[LLEDGEBLOCKSIZE];
+	ll_edgeblockmetadata_t metadata;
+} ll_edgeblock_t;
 
-	typedef struct
-	{
-		uint ptraddr;
-	} ll_eba_tracker_t;
+typedef struct {
+	uint ptraddr;
+} ll_eba_tracker_t;
 
-	typedef struct
-	{
-		uint baseaddr;
-		uint lastlocalbaseaddr;
-		uint lastlocaladdr;
-		uint totaledgecount;
-		uint flag;
-	} ll_logicalvertexentity_t;
+typedef struct {
+	uint baseaddr;
+	uint lastlocalbaseaddr;
+	uint lastlocaladdr;
+	uint totaledgecount;
+	uint flag;
+} ll_logicalvertexentity_t;
 
-	typedef struct
-	{
-		uint indegree;
-		uint outdegree;
-		vertexdata_t data;
-		flag_t flag;
-	} vertexproperty_t;
+typedef struct {	
+	uint indegree;
+	uint outdegree;
+	vertexdata_t data;
+	flag_t flag;
+} vertexproperty_t;
 
-	/** 
+/** 
 - except stated otherwise, when used, the array of this struct is indexed by the *** raw local vertex ids ***  
 - hvtx_id is a hashed vertex id value (calculated from the raw local vertex id) AND (w.r.t the given cluster!) ...
 - ... this is done like this because each cluster exist as its own independent EdgeblockArray ...
@@ -402,34 +368,38 @@ NB: many subblocks can (and should) have the same sv_ptr. means they all are 1st
 - ... therefore, multiple entries in the *vertexlink_t can have the same hvtx_id, but these entry's cluster id (cid) must be all different
 - status (VALID/INVALID) indicates whether or not this struct entry is valid and points to an edge cluster
 - vprop is the property of the vertexlink */
-	typedef struct
-	{
-		vertexid_t hvtx_id;
-		uint cid;
-		flag_t status;
-		vertexproperty_t vprop;
-	} vertexlink_t;
+typedef struct {
+	vertexid_t hvtx_id; 
+	uint cid;
+	flag_t status;
+	vertexproperty_t vprop;
+} vertexlink_t;
 
-	/** 
+/** 
 - vertexid iteratior type : used by powergraph in GTC
 - a cluster of edges is retiieved
 - says what vertices own these edges, and the offsets of their ownerships
 uint offset; // offset from beginning of list
 uint size; // length of vertex's edges
 uint lvid; // vertex value */
-	typedef struct
-	{
-		uint offset;
-		uint size;
-		uint lvid;
-	} vid_it_t;
+typedef struct {
+	uint offset; 
+	uint size; 
+	uint lvid; 
+} vid_it_t; 
 
-	/** used in the crumpling-in deletion functionality
+/** used in the crumpling-in deletion functionality
 hvtx_id specifies an index to an edgeblock in the EdgeblockArray */
-	typedef struct
-	{
-		vector<uint> hvtx_ids;
-		uint geni_ofparentsubblock;
-	} supervertex_t;
-} // namespace gt
+typedef struct {
+	vector<uint> hvtx_ids;
+	uint geni_ofparentsubblock;
+} supervertex_t;
 #endif
+
+
+
+
+
+
+
+

@@ -21,14 +21,14 @@ print ('CRUMPLEINONDELETE: ' + str(context['CRUMPLEINONDELETE']))
 print ('WORK_BLOCK_HEIGHT: ' + str(context['WORK_BLOCK_HEIGHT']))
 	
 #================================
-o_path0="../test/updates_test.cpp"
-o_path1="../common/common.h"
+o_path0="../test/graphtinker/updates_test.cpp"
+o_path1="../include/graphtinker/common.h"
 
 out_path0=os.path.abspath(o_path0)
 out_path1=os.path.abspath(o_path1)
 
-templ_path0="../test/"
-templ_path1="../common/"
+templ_path0="../test/graphtinker"
+templ_path1="../include/graphtinker"
 
 #####################
 ### System parameters (gds main)

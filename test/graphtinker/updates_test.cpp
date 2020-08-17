@@ -226,10 +226,10 @@ void deletions(Graphtinker &tinker)
 
 int main()
 {
-	cout << "started  (updates_test)" << endl;
-	cout << "NUM_CORES: 1" << endl;
-	cout << "LLFULLDB: ON" << endl;
-	cout << "WORK_BLOCK_HEIGHT: 4" << endl;
+	cout<<"started  (updates_test)"<<endl;	
+	cout<<"NUM_CORES: 1"<<endl;
+	cout<<"LLFULLDB: ON"<<endl;
+	cout<<"WORK_BLOCK_HEIGHT: 4"<<endl;;
 
 	// Graphtinker tinkerA(SELF, SELF, SELF, 0, 524288, 524288, 8380000, DIRECTEDGRAPH, 8, 64, 100000, 100000, 1000, 100, 10000);
 	std::string file_path = "config.ini";

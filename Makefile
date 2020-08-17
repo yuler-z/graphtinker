@@ -56,7 +56,7 @@ all: clean generate_src gt
 test: clean generate_src gt run
 	
 generate_src:
-	cd gen; python3 gen.py $(PYARG)
+	cd scripts; python3 gen.py $(PYARG)
 
 gt:
 	g++ -O3 -std=c++11 $(TESTARG) $(GDSARG) -fopenmp -o gt.exe
