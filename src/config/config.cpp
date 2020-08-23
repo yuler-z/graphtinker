@@ -14,17 +14,18 @@ namespace gt {
     };
 
     Config::Config(std::string file_path) {
+
         _file_path = file_path;
 
         Load();
     }
 
     bool Config::Load() {
-        std::cout << "config::Load : start load configuration file" << std::endl;
+        LOG(INFO) <<  "config::Load : start load configuration file";
         INIReader reader(_file_path);
 
         if (reader.ParseError() != 0) {
-            std::cout << "can't load config file" << endl;
+            LOG(ERROR) << "can't load config file"  ;
             return false;
         }
 
@@ -57,52 +58,51 @@ namespace gt {
     bool Config::PrintAll() {
 
         if (_config_map.empty()) {
-            std::cout << "No configuration file or file is not loaded!" << endl;
+            LOG(ERROR) << "No configuration file or file is not loaded!"  ;
             return false;
         }
 
         map<string, string>::iterator it;
-        std::cout << "Print configuration file loaded" << endl;
+        LOG(INFO) << "Print configuration file loaded"  ;
 
         for (it = _config_map.begin(); it != _config_map.end(); it++) {
-            std::cout << it->first << " = " << it->second << endl;
+            LOG(INFO) << it->first << " = " << it->second  ;
         }
 
         return true;
     }
 
     bool Config::ConfigGraph(Graphtinker *gt) {
-        std::cout << "config::ConfigGraph : start config" << std::endl;
-        gt->_sgh_for_xvtxid = _config_map["sgh_for_xvtxid"].compare("SELF") == 0 ? SELF : OTHER;
-        std::cout << "1" << std::endl;
-        gt->_sgh_for_xadjvtxid = _config_map["sgh_for_xadjvtxid"].compare("SELF") == 0 ? SELF : OTHER;
-        gt->_updatev = _config_map["updatev"].compare("SELF") == 0 ? SELF : OTHER;
+        LOG(INFO) << "config::ConfigGraph : start config" << std::endl;
+        gt->sgh_for_xvtxid_ = _config_map["sgh_for_xvtxid"].compare("SELF") == 0 ? SELF : OTHER;
+        gt->sgh_for_xadjvtxid_ = _config_map["sgh_for_xadjvtxid"].compare("SELF") == 0 ? SELF : OTHER;
+        gt->updatev_ = _config_map["updatev"].compare("SELF") == 0 ? SELF : OTHER;
 
         uint min_vertex, max_vertex;
         util::StringToNum(_config_map["min_vertex"], min_vertex);
         util::StringToNum(_config_map["max_vertex"], max_vertex);
-        gt->_vertex_range = max_vertex - min_vertex;
+        gt->vertex_range_ = max_vertex - min_vertex;
 
-        util::StringToNum(_config_map["num_vertices"], gt->_num_vertices);
-        util::StringToNum(_config_map["num_edges"], gt->_num_edges);
+        util::StringToNum(_config_map["num_vertices"], gt->num_vertices_);
+        util::StringToNum(_config_map["num_edges"], gt->num_edges_);
 
-        gt->_graphdirectiontype = _config_map.at("graphdirectiontype").compare("DIRECTEDGRAPH") == 0?DIRECTEDGRAPH:UNDIRECTEDGRAPH;
+        gt->graphdirectiontype_ = _config_map.at("graphdirectiontype").compare("DIRECTEDGRAPH") == 0?DIRECTEDGRAPH:UNDIRECTEDGRAPH;
 
-        util::StringToNum(_config_map["sub_block_height"], gt->_sub_block_height);
-        util::StringToNum(_config_map["page_block_height"], gt->_page_block_height);
-        util::StringToNum(_config_map["eba_m_expansion_addition_height"], gt->_eba_m_expansion_addition_height);
-        util::StringToNum(_config_map["eba_o_expansion_addition_height"], gt->_eba_o_expansion_addition_height);
-        util::StringToNum(_config_map["ll_eba_expansion_addition_height"], gt->_ll_eba_expansion_addition_height);
-        util::StringToNum(_config_map["ll_lva_expansion_addition_height"], gt->_ll_lva_expansion_addition_height);
-        util::StringToNum(_config_map["eba_expansion_padding"], gt->_eba_expansion_padding);
+        util::StringToNum(_config_map["sub_block_height"], gt->sub_block_height_);
+        util::StringToNum(_config_map["page_block_height"], gt->page_block_height_);
+        util::StringToNum(_config_map["eba_m_expansion_addition_height"], gt->eba_m_expansion_addition_height_);
+        util::StringToNum(_config_map["eba_o_expansion_addition_height"], gt->eba_o_expansion_addition_height_);
+        util::StringToNum(_config_map["ll_eba_expansion_addition_height"], gt->ll_eba_expansion_addition_height_);
+        util::StringToNum(_config_map["ll_lva_expansion_addition_height"], gt->ll_lva_expansion_addition_height_);
+        util::StringToNum(_config_map["eba_expansion_padding"], gt->eba_expansion_padding_);
 
-        std::cout << "end config" << std::endl;
+        LOG(INFO) << "end config" << std::endl;
 
         return true;
     }
 
 
-    std::string Config::file_path() {
+    std::string Config::get_file_path() {
         return _file_path;
     }
 

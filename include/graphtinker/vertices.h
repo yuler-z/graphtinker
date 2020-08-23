@@ -8,32 +8,31 @@ using namespace std;
 
 namespace gt
 {
-	class vertices
+	class Vertices
 	{
+    private:
+		uint num_vertices_;
+		vector<vertex_property_t> vertex_properties_;
 	public:
-		vertices();
-		~vertices();
+		Vertices();
+		Vertices(uint num_vertices, float init_value);
+		~Vertices();
 
-		uint num_vertices;
+		void InitVerticesPropertyArray(float init_value);
+		vertexdata_t ReadData(vertexid_t vertexid);
+		void WriteData(vertexid_t vertexid, vertexdata_t vertexdata);
+		vertex_property_t ReadProperty(vertexid_t vertexid);
+		void WriteProperty(vertexid_t vertexid, vertex_property_t vertexproperty);
+		void IncreaseOutdegree(vertexid_t vertexid);
+		void UpdateVertexProperty(vertexid_t xvtx_id, vertexid_t xadjvtx_id, uint edge_update_cmd, uint graphdirectiontype);
+		void PrintVerticesProperty(uint n);
+		void PrintNthVertexProperty(uint n);
 
-		void initialize(uint _num_vertices, float initvalue); // very important!
+		// getter and setter
+		const uint num_vertices() const;
+		const vector<vertex_property_t> &vertex_properties() const;
 
-		vector<vertexproperty_t> vertex_properties;
-
-		vertexdata_t readdata(vertexid_t vertexid);
-		void writedata(vertexid_t vertexid, vertexdata_t vertexdata);
-		vertexproperty_t readproperty(vertexid_t vertexid);
-		void writeproperty(vertexid_t vertexid, vertexproperty_t vertexproperty);
-		void increment_outdegree(vertexid_t vertexid);
-		void update_vertex_property(vertexid_t xvtx_id, vertexid_t xadjvtx_id, uint edgeupdatecmd, uint graphdirectiontype);
-		void initialize(float initvalue);
-		void print_first_n(uint n);
-		void print_nth_vertex(uint n);
-		vector<vertexproperty_t> &get_vertex_properties();
-		uint get_num_vertices();
-
-	private:
 	};
-}
+} // namespace gt
 
 #endif

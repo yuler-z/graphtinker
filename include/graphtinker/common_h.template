@@ -7,11 +7,11 @@ using namespace std;
 
 #define CPU 0
 {% if(context['LLFULLDB']=='ON') %}
-#define EN_LLGDS 0
+#define EN_CAL 0
 {%endif%}
 
 {% if(context['CRUMPLEINONDELETE']=='ON') %}
-#define EN_CRUMPLEINONDELETE
+#define EN_CRUMPLE_IN
 {%endif%}
 
 #define cpuem_bugs_b1 0
@@ -59,8 +59,8 @@ using namespace std;
 #define WRITE 6
 #define NEITHER_READ_NOR_WRITE 7
 
-#define FINDONLYMODE 0
-#define INSERTONLYMODE 1
+#define FIND_MODE 0
+#define INSERT_MODE 1
 
 #define GRAPHGEN_TOTAL_VERTEX_COUNT 10
 #define GRAPHGEN_NO_OF_DSTV_PER_SRCV 10
@@ -166,7 +166,7 @@ typedef struct {
 	bucket_t initialbucket;
 	edgeweight_t edge_weight;
     flag_t flag;
-	#ifdef EN_LLGDS
+	#ifdef EN_CAL
 	vertexid_t ll_localbaseaddrptr;
 	vertexid_t ll_localaddrptr;
 	#endif
@@ -188,7 +188,7 @@ typedef struct {
 	edgeinfo_t edgeinfo;
 	clusterinfo_t clusterinfo;
 	edge_tt edges[WORK_BLOCK_HEIGHT];
-} edge_nt;
+} work_block_t;
 
 typedef struct {
 	uint gen_of_parent;
@@ -202,7 +202,7 @@ typedef struct {
 	vertexid_t xadjvtx_id;
 	edgeweight_t edgew;
 	flag_t flag;
-	#ifdef EN_LLGDS
+	#ifdef EN_CAL
 	int heba_hvtx_id;
 	int heba_workblockid;
 	int heba_loffset;
@@ -220,7 +220,7 @@ typedef struct {
     int cptr;	
 	vertexid_t xadjvtx_id; // edge info
 	edgeweight_t edge_weight;
-	#ifdef EN_LLGDS
+	#ifdef EN_CAL
 	vertexid_t ll_localbaseaddrptr_x;
 	vertexid_t ll_localaddrptr_x;
 	#endif	
@@ -232,11 +232,11 @@ typedef struct {
 
 typedef struct {
 	uint verdict;
-} llgds_unit_cmd_t;
+} cal_unit_cmd_t;
 
 typedef struct {
 	uint verdict;
-} delete_and_crumple_in_cmd_t;
+} crumple_in_cmd_t;
 
 typedef struct {
 	vertexid_t xadjvtx_id; // edge info
@@ -260,11 +260,11 @@ typedef struct {
 } find_params_t;
 
 typedef struct {
-	bucket_t localoffset;
-	flag_t entryfound;
-	flag_t entrydeleted;
-	flag_t maxprobelengthreached;
-    flag_t foundemptybkt;
+	bucket_t local_offset;
+	flag_t is_found;
+	flag_t is_deleted;
+	flag_t is_reach_max_prob_length;
+    flag_t is_empty;
 } find_report_t;
 
 typedef struct {
@@ -285,9 +285,9 @@ typedef struct {
 } margin_t;
 
 typedef struct {
-	uint searchstop;
-	uint searchsuccessful;
-} searchreport_t;
+	uint search_stop;
+	uint search_success;
+} search_report_t;
 
 typedef struct {
 	uint search;
@@ -363,7 +363,7 @@ typedef struct {
 	uint outdegree;
 	vertexdata_t data;
 	flag_t flag;
-} vertexproperty_t;
+} vertex_property_t;
 
 /** 
 - except stated otherwise, when used, the array of this struct is indexed by the *** raw local vertex ids ***  
@@ -377,7 +377,7 @@ typedef struct {
 	vertexid_t hvtx_id; 
 	uint cid;
 	flag_t status;
-	vertexproperty_t vprop;
+	vertex_property_t vprop;
 } vertexlink_t;
 
 /** 

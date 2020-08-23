@@ -18,23 +18,23 @@ using namespace std;
 namespace gt
 {
 	/// this function is only used when when an edge is removed from a *clustered region*
-	void Graphtinker::deleteandcrumplein_unit(
+	void Graphtinker::CrumpleInUnit(
 		writeback_unit_cmd_t writebackunitcmd,
 		find_report_t findreport,
 		edge_t edge,
-		vector<edge_nt> &_edge_block_array_m,
-		vector<edge_nt> &_edge_block_array_o,
-#ifdef EN_LLGDS
-		vector<ll_edgeblock_t> &_ll_edge_block_array,
+		vector<work_block_t> &edge_block_array_m_,
+		vector<work_block_t> &edge_block_array_o_,
+#ifdef EN_CAL
+		vector<ll_edgeblock_t> &ll_edge_block_array_,
 #endif
 		vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
 		vertexid_t xvtx_id,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		uint geni, delete_and_crumple_in_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs, vector<vertexid_t> &freed_edgeblock_list)
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		uint geni, crumple_in_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs, vector<vertexid_t> &freed_edgeblock_list)
 	{
-		uint _work_blocks_per_subblock = _work_blocks_per_subblock;
-		uint _work_blocks_per_page = _work_blocks_per_page;
+		uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
+		uint work_blocks_per_page_ = work_blocks_per_page_;
 
 		/// only when an edge is removed from a *clustered region* do we have to pop-out and pop-back-in
 		if (deleteandcrumpleincmd.verdict == DCI_CRUMPLEINCMD)
@@ -52,51 +52,51 @@ namespace gt
 				svs,
 				freed_edgeblock_list,
 				&edgett,
-				wblkmargin,
+				work_block_margin,
 				writebackunitcmd,
 				&tailhvtx_id,
 				&svs_index,
 				&numclusteredworkblocks,
 				geni,
-				_edge_block_array_m,
-				_edge_block_array_o);
+				edge_block_array_m_,
+				edge_block_array_o_);
 
 			if (retstatus == 7)
 			{
 				// retrieved tail edgeblock, and found a valid edge in it
 				if (geni == 1)
 				{
-					if (writebackunitcmd.addr >= _edge_block_array_m.size())
+					if (writebackunitcmd.addr >= edge_block_array_m_.size())
 					{
-						cout << "bug! : addr out-of-range1 (update_edge) " << endl;
+						LOG(ERROR) << " addr out-of-range1 (update_edge) "  ;
 					}
-					if (findreport.localoffset >= WORK_BLOCK_HEIGHT)
+					if (findreport.local_offset >= WORK_BLOCK_HEIGHT)
 					{
-						cout << "bug! : addr out-of-range2 (update_edge) " << endl;
+						LOG(ERROR) << " addr out-of-range2 (update_edge) "  ;
 					}
-					_edge_block_array_m[writebackunitcmd.addr].edges[findreport.localoffset] = edgett;
+					edge_block_array_m_[writebackunitcmd.addr].edges[findreport.local_offset] = edgett;
 				}
 				else
 				{
-					if (writebackunitcmd.addr >= _edge_block_array_o.size())
+					if (writebackunitcmd.addr >= edge_block_array_o_.size())
 					{
-						cout << "bug! : addr out-of-range1 (update_edge) " << endl;
+						LOG(ERROR) << " addr out-of-range1 (update_edge) "  ;
 					}
-					if (findreport.localoffset >= WORK_BLOCK_HEIGHT)
+					if (findreport.local_offset >= WORK_BLOCK_HEIGHT)
 					{
-						cout << "bug! : addr out-of-range2 (update_edge) " << endl;
+						LOG(ERROR) << " addr out-of-range2 (update_edge) "  ;
 					}
-					_edge_block_array_o[writebackunitcmd.addr].edges[findreport.localoffset] = edgett;
+					edge_block_array_o_[writebackunitcmd.addr].edges[findreport.local_offset] = edgett;
 				}
 
 // redirect pointer (ll -> heba) (remember its a 2-way link)
 // remember that ll may need to update which edgeblockarray (m or c) it's now pointing to!
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 				uint work_block_height = WORK_BLOCK_HEIGHT;
-				_ll_edge_block_array[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_hvtx_id = xvtx_id;
-				_ll_edge_block_array[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_workblockid = wblkmargin.top / work_block_height;
-				_ll_edge_block_array[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_loffset = findreport.localoffset;
-				_ll_edge_block_array[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].which_gen_is_the_main_copy_located = geni;
+				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_hvtx_id = xvtx_id;
+				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_workblockid = work_block_margin.top / work_block_height;
+				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_loffset = findreport.local_offset;
+				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].which_gen_is_the_main_copy_located = geni;
 #endif
 			}
 			else if (retstatus == 6)
@@ -106,59 +106,59 @@ namespace gt
 				if (tailhvtx_id > 0 && numclusteredworkblocks == 0)
 				{
 
-					// edgeblock is empty. free it. _edge_block_array_o is always used because tailhvtx_id can never be in _edge_block_array_m
+					// edgeblock is empty. free it. edge_block_array_o_ is always used because tailhvtx_id can never be in edge_block_array_m_
 					uint offset = get_edgeblock_offset(tailhvtx_id);
-					for (uint addr = offset; addr < (offset + _work_blocks_per_page); addr++)
+					for (uint addr = offset; addr < (offset + work_blocks_per_page_); addr++)
 					{
-						if (addr >= _edge_block_array_o.size())
+						if (addr >= edge_block_array_o_.size())
 						{
-							cout << "bug! : addr out-of-range3 (update_edge) " << endl;
+							LOG(ERROR) << " addr out-of-range3 (update_edge) "  ;
 						}
-						_edge_block_array_o[addr].clusterinfo.flag = INVALID;
+						edge_block_array_o_[addr].clusterinfo.flag = INVALID;
 					}
 
 					// detatch it from its father subblock
 					uint index = tailhvtx_id;
 					if (index >= edgeblock_parentinfo.size())
 					{
-						cout << "bug! : addr out-of-range4 (update_edge) " << endl;
+						LOG(ERROR) << " addr out-of-range4 (update_edge) "  ;
 					}
 					if (edgeblock_parentinfo[index].flag != VALID)
 					{
-						cout << "bug! : incorrect (update_edge66)" << endl;
+						LOG(ERROR) << " incorrect (update_edge66)"  ;
 					}
 					edgeblock_parentinfo_t parentinfo = edgeblock_parentinfo[index];
-					uint subblockbaseaddr = get_edgeblock_offset(parentinfo.xvtx_id) + (parentinfo.subblockid * _work_blocks_per_subblock);
+					uint subblockbaseaddr = get_edgeblock_offset(parentinfo.xvtx_id) + (parentinfo.subblockid * work_blocks_per_subblock_);
 					if (parentinfo.gen_of_parent == 1)
 					{
-						for (uint id = 0; id < _work_blocks_per_subblock; id++)
+						for (uint id = 0; id < work_blocks_per_subblock_; id++)
 						{
-							_edge_block_array_m[(subblockbaseaddr + id)].clusterinfo.flag = INVALID;
+							edge_block_array_m_[(subblockbaseaddr + id)].clusterinfo.flag = INVALID;
 						}
 					}
 					else
 					{
-						for (uint id = 0; id < _work_blocks_per_subblock; id++)
+						for (uint id = 0; id < work_blocks_per_subblock_; id++)
 						{
-							_edge_block_array_o[(subblockbaseaddr + id)].clusterinfo.flag = INVALID;
+							edge_block_array_o_[(subblockbaseaddr + id)].clusterinfo.flag = INVALID;
 						}
 					}
 
 					// update edgeblock_parentinfo
 					if (index >= edgeblock_parentinfo.size())
 					{
-						cout << "bug! : addr out-of-range4 (update_edge) " << endl;
+						LOG(ERROR) << " addr out-of-range4 (update_edge) "  ;
 					}
 					edgeblock_parentinfo[index].flag = INVALID;
 
 					// pop it out of svs
 					if (svs_index >= svs.size())
 					{
-						cout << "bug! : addr out-of-range5 (update_edge) " << endl;
+						LOG(ERROR) << " addr out-of-range5 (update_edge) "  ;
 					}
 					if (svs[svs_index].hvtx_ids.back() != tailhvtx_id)
 					{
-						cout << "bug! : incorrect (update_edge67)" << endl;
+						LOG(ERROR) << " incorrect (update_edge67)"  ;
 					}
 					if (!svs[svs_index].hvtx_ids.empty())
 					{
@@ -175,7 +175,7 @@ namespace gt
 			}
 			else
 			{
-				cout << "bug! : should never get here2 (update_edge)" << endl;
+				LOG(ERROR) << " should never get here2 (update_edge)"  ;
 			}
 		}
 		else if (deleteandcrumpleincmd.verdict == DCI_JUSTQUITCMD)
@@ -186,7 +186,7 @@ namespace gt
 		}
 		else
 		{
-			cout << "bug! : should never get here3 (update_edge)" << endl;
+			LOG(ERROR) << " should never get here3 (update_edge)"  ;
 		}
 	}
 } // namespace gt

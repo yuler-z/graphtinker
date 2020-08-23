@@ -11,24 +11,24 @@ namespace gt
 		vector<supervertex_t> &svs,
 		vector<vertexid_t> &freed_edgeblock_list,
 		edge_tt *edgett,
-		margin_t wblkmargin,
+		margin_t work_block_margin,
 		writeback_unit_cmd_t writebackunitcmd,
 		int *tailhvtx_id,
 		uint *svs_index,
 		uint *numclusteredworkblocks,
 		uint geni,
-		vector<edge_nt> &_edge_block_array_m,
-		vector<edge_nt> &_edge_block_array_o)
+		vector<work_block_t> &edge_block_array_m_,
+		vector<work_block_t> &edge_block_array_o_)
 	{
 		// return 5;
 		/// we got here because the current subblock we're in is clustered, this cluster info has our svs index pointer (sv_ptr)
 		uint work_block_height = WORK_BLOCK_HEIGHT;
-		uint _work_blocks_per_subblock = _work_blocks_per_subblock;
-		uint currworkblockaddr = get_edgeblock_offset(xvtx_id) + wblkmargin.top / work_block_height;
+		uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
+		uint currworkblockaddr = get_edgeblock_offset(xvtx_id) + work_block_margin.top / work_block_height;
 
 		// get tail edgeblock
 		// uint svs_index=0;
-		*tailhvtx_id = sv_get_tail_edgeblock(svs, currworkblockaddr, svs_index, geni, _edge_block_array_m, _edge_block_array_o);
+		*tailhvtx_id = sv_get_tail_edgeblock(svs, currworkblockaddr, svs_index, geni, edge_block_array_m_, edge_block_array_o_);
 		if (*tailhvtx_id < 0)
 		{
 			return 5;
@@ -46,7 +46,7 @@ namespace gt
 				offset,
 				edgett,
 				numclusteredworkblocks,
-				_edge_block_array_o);
+				edge_block_array_o_);
 
 			if (edgefound < 0)
 			{
@@ -57,7 +57,7 @@ namespace gt
 				return 7;
 			}
 		}
-		cout << "bug! : should not get here (supervs)" << endl;
+		LOG(ERROR) << " should not get here (supervs)"  ;
 		return NULLL;
 	}
 
@@ -66,40 +66,40 @@ namespace gt
 		uint currworkblockaddr,
 		uint *svs_index,
 		uint geni,
-		vector<edge_nt> &_edge_block_array_m,
-		vector<edge_nt> &_edge_block_array_o)
+		vector<work_block_t> &edge_block_array_m_,
+		vector<work_block_t> &edge_block_array_o_)
 	{
 		// get where in svs the founding father is pointing to
 		if (geni == 1)
 		{
-			if (currworkblockaddr >= _edge_block_array_m.size())
+			if (currworkblockaddr >= edge_block_array_m_.size())
 			{
-				cout << "bug! : addr out-of-range4 (supervs) " << endl;
+				LOG(ERROR) << " addr out-of-range4 (supervs) "  ;
 			}
-			if (_edge_block_array_m[currworkblockaddr].clusterinfo.flag != VALID)
+			if (edge_block_array_m_[currworkblockaddr].clusterinfo.flag != VALID)
 			{
-				cout << "bug! : addr out-of-range8 (supervs) " << endl;
+				LOG(ERROR) << " addr out-of-range8 (supervs) "  ;
 			}
-			*svs_index = _edge_block_array_m[currworkblockaddr].clusterinfo.sv_ptr;
+			*svs_index = edge_block_array_m_[currworkblockaddr].clusterinfo.sv_ptr;
 		}
 		else
 		{
-			if (currworkblockaddr >= _edge_block_array_o.size())
+			if (currworkblockaddr >= edge_block_array_o_.size())
 			{
-				cout << "bug! : addr out-of-range5 (supervs) " << endl;
+				LOG(ERROR) << " addr out-of-range5 (supervs) "  ;
 			}
-			if (_edge_block_array_o[currworkblockaddr].clusterinfo.flag != VALID)
+			if (edge_block_array_o_[currworkblockaddr].clusterinfo.flag != VALID)
 			{
-				cout << "bug! : addr out-of-range6 (supervs) " << endl;
+				LOG(ERROR) << " addr out-of-range6 (supervs) "  ;
 			}
-			*svs_index = _edge_block_array_o[currworkblockaddr].clusterinfo.sv_ptr;
+			*svs_index = edge_block_array_o_[currworkblockaddr].clusterinfo.sv_ptr;
 		}
 
 		// return FAILED if empty
 		if (*svs_index >= svs.size())
 		{
 			return -1;
-			cout << "bug! : addr out-of-range5 (supervs). *svs_index : " << *svs_index << ", svs.size() : " << svs.size() << endl;
+			LOG(ERROR) << " addr out-of-range5 (supervs). *svs_index : " << *svs_index << ", svs.size() : " << svs.size()  ;
 			return -1;
 		}
 		if (svs[*svs_index].hvtx_ids.empty())
@@ -110,7 +110,7 @@ namespace gt
 		// return if deleted edge was not in a parent subblock
 		if (*svs_index >= svs.size())
 		{
-			cout << "bug! : addr out-of-range6 (supervs) " << endl;
+			LOG(ERROR) << " addr out-of-range6 (supervs) "  ;
 		}
 		if (geni >= (svs[*svs_index].geni_ofparentsubblock + svs[*svs_index].hvtx_ids.size()))
 		{
@@ -127,18 +127,18 @@ namespace gt
 		uint offset,
 		edge_tt *edgett,
 		uint *numclusteredworkblocks,
-		vector<edge_nt> &edge_block_array)
+		vector<work_block_t> &edge_block_array)
 	{
 		// edge_tt eedge;
 		uint work_block_height = WORK_BLOCK_HEIGHT;
-		uint _work_blocks_per_page = _work_blocks_per_page;
+		uint work_blocks_per_page_ = work_blocks_per_page_;
 		*numclusteredworkblocks = 0;
 
-		for (int addr = offset; addr < (offset + _work_blocks_per_page); addr++)
+		for (int addr = offset; addr < (offset + work_blocks_per_page_); addr++)
 		{
 			if (addr >= edge_block_array.size())
 			{
-				cout << "bug! : addr out-of-range6 (supervs) " << endl;
+				LOG(ERROR) << " addr out-of-range6 (supervs) "  ;
 			}
 			if (edge_block_array[addr].clusterinfo.flag == VALID)
 			{
@@ -148,7 +148,7 @@ namespace gt
 			{
 				if (f >= work_block_height)
 				{
-					cout << "bug! : addr out-of-range7 (supervs) " << endl;
+					LOG(ERROR) << " addr out-of-range7 (supervs) "  ;
 				}
 				if (edge_block_array[addr].edges[f].flag == VALID)
 				{

@@ -6,46 +6,46 @@ using namespace std;
 
 namespace gt
 {
-	void Graphtinker::compute_unit(
+	void Graphtinker::ComputeUnit(
 		module_unit_cmd_t moduleunitcmd,
 		module_params_t *moduleparams,
 		insert_params_t *insertparams,
 		insert_report_t *insertreport,
 		find_params_t findparams,
 		find_report_t *findreport,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
 		margin_t start_wblkmargin,
 		bucket_t hadjvtx_id,
-		edge_nt *edgeblock,
+		work_block_t *work_block,
 		edge_t *edge,
 		vertexid_t xvtx_id,
 		uint rolledover,
-		uint edgeupdatecmd,
+		uint edge_update_cmd,
 		uint geni)
 	{
-		if (moduleunitcmd.mode == FINDONLYMODE)
+		if (moduleunitcmd.mode == FIND_MODE)
 		{
 			find_unit(
 				moduleparams,
 				findparams,
 				findreport,
-				wblkmargin,
-				subblkmargin,
+				work_block_margin,
+				sub_block_margin,
 				hadjvtx_id,
-				edgeblock,
-				edgeupdatecmd);
+				work_block,
+				edge_update_cmd);
 		}
-		else if (moduleunitcmd.mode == INSERTONLYMODE)
+		else if (moduleunitcmd.mode == INSERT_MODE)
 		{
 			insert_unit(
 				moduleparams,
 				insertparams,
 				insertreport,
-				wblkmargin,
-				subblkmargin,
+				work_block_margin,
+				sub_block_margin,
 				hadjvtx_id,
-				edgeblock,
+				work_block,
 				edge,
 				xvtx_id,
 				rolledover,
@@ -53,7 +53,7 @@ namespace gt
 		}
 		else
 		{
-			cout << "bug! : should never get here (compute unit) : moduleunitcmd.mode = " << moduleunitcmd.mode << endl;
+			LOG(ERROR) << "bug! : should never get here (compute unit) : moduleunitcmd.mode = " << moduleunitcmd.mode  ;
 		}
 		return;
 	}

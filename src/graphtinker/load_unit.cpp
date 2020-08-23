@@ -15,68 +15,46 @@
 #include "graphtinker/graphtinker.h"
 using namespace std;
 
-#define OPTIMIZEUSINGPREVADDR 0
 
 namespace gt
 {
 
-	void Graphtinker::load_unit(
+	void Graphtinker::LoadUnit(
 		module_params_t *moduleparams,
 		load_unit_cmd_t loadunitcmd,
 		insert_params_t *insertparams,
 		find_params_t *findparams,
-		margin_t wblkmargin,
+		margin_t work_block_margin,
 		vertexid_t hvtx_id,
 		edge_t edge,
-		edge_nt *edgeblock,
-		vector<edge_nt> &edge_block_array,
+		work_block_t *work_block,
+		vector<work_block_t> &edge_block_array,
 		uint *prevLoadAddr,
 		uint geni)
 	{
 		uint trueoffset4rmbase = get_edgeblock_offset(hvtx_id);
-		uint addr = trueoffset4rmbase + wblkmargin.top / WORK_BLOCK_HEIGHT;
+		uint addr = trueoffset4rmbase + work_block_margin.top / WORK_BLOCK_HEIGHT;
 
-#ifdef OPTIMIZEUSINGPREVADDR
 		if (loadunitcmd.load == YES && addr != *prevLoadAddr)
 		{
-#ifdef cpuem_bugs_b1
 			if (addr >= edge_block_array.size())
 			{
-				cout << "bug! : addr out-of-range (load_unit) : hvtx_id : " << hvtx_id << ", wblkmargin.top/WORK_BLOCK_HEIGHT : " << wblkmargin.top / WORK_BLOCK_HEIGHT << " addr : " << addr << ", edge_block_array.size() : " << edge_block_array.size() << ", geni : " << geni << endl;
+				LOG(ERROR) << " addr out-of-range (LoadUnit) : hvtx_id : " << hvtx_id << ", work_block_margin.top/WORK_BLOCK_HEIGHT : " << work_block_margin.top / WORK_BLOCK_HEIGHT << " addr : " << addr << ", edge_block_array.size() : " << edge_block_array.size() << ", geni : " << geni  ;
 				return;
 			}
-#endif
 
-			*edgeblock = edge_block_array[addr];
+			*work_block = edge_block_array[addr];
 			*prevLoadAddr = NAv; //reset
 		}
-#endif
-#ifndef OPTIMIZEUSINGPREVADDR
-		if (loadunitcmd.load == YES)
-		{
-#ifdef cpuem_bugs_b1
-			if (addr >= edge_block_array.size())
-			{
-				cout << "bug! : addr out-of-range (load_unit) : hvtx_id = " << hvtx_id << ", wblkmargin.top/WORK_BLOCK_HEIGHT = " << wblkmargin.top / WORK_BLOCK_HEIGHT << " addr = " << (trueoffset4rmbase + wblkmargin.top / WORK_BLOCK_HEIGHT) << endl;
-				return;
-			}
-#endif
-
-			*edgeblock = edge_block_array[addr];
-			*prevLoadAddr = NAv; //reset
-		}
-#endif
 
 		*prevLoadAddr = addr; //assign
 
-#ifdef cpuem_bugs_b1
 		if (addr >= edge_block_array.size())
 		{
-			cout << "bug! : addr out-of-range (load_unit) (B) : addr = " << addr << endl;
+			LOG(ERROR) << " addr out-of-range (LoadUnit) (B) : addr = " << addr  ;
 		}
-#endif
 
-		clusterinfo_t clusterinfo = edgeblock->clusterinfo; //retreive cluster info
+		clusterinfo_t clusterinfo = work_block->clusterinfo; //retreive cluster info
 		if (clusterinfo.flag == VALID)
 		{
 			moduleparams->clustered = YES;

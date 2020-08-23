@@ -17,28 +17,28 @@ using namespace std;
 
 namespace gt
 {
-	void Graphtinker::writeback_unit(
+	void Graphtinker::WritebackUnit(
 		module_params_t *moduleparams,
 		writeback_unit_cmd_t writebackunitcmd,
 		edge_t edge,
-		edge_nt *edgeblock,
-		vector<edge_nt> &_edge_block_array_m,
-		vector<edge_nt> &_edge_block_array_o,
-#ifdef EN_CRUMPLEINONDELETE
+		work_block_t *work_block,
+		vector<work_block_t> &edge_block_array_m_,
+		vector<work_block_t> &edge_block_array_o_,
+#ifdef EN_CRUMPLE_IN
 		vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
 #endif
-		tracker_t *_lvatracker,
+		tracker_t *lvatracker_,
 		vertexid_t hvtx_id,
 		margin_t first_wblkmargin,
-		margin_t subblkmargin,
+		margin_t sub_block_margin,
 		uint geni,
-		uint edgeupdatecmd
-#ifdef EN_CRUMPLEINONDELETE
+		uint edge_update_cmd
+#ifdef EN_CRUMPLE_IN
 		,
 		uint lastgenworkblockaddr, vector<supervertex_t> &svs
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 		,
-		vector<ll_edgeblock_t> &_ll_edge_block_array
+		vector<ll_edgeblock_t> &ll_edge_block_array_
 #endif
 #endif
 	)
@@ -50,7 +50,7 @@ namespace gt
 		if (writebackunitcmd.markasclustered == YES)
 		{
 			//initialize LVAentity row
-			newpageindexpos = add_page(_lvatracker, _edge_block_array_o);
+			newpageindexpos = add_page(lvatracker_, edge_block_array_o_);
 
 			//update cluster pointer
 			moduleparams->clustered = YES;
@@ -59,22 +59,22 @@ namespace gt
 			clusterinfo.flag = VALID;
 			clusterinfo.data = newpageindexpos;
 
-			edgeblock->clusterinfo = clusterinfo;
+			work_block->clusterinfo = clusterinfo;
 		}
 
-#ifdef EN_CRUMPLEINONDELETE
+#ifdef EN_CRUMPLE_IN
 		/** once we are in REGULAR UPDATE OPERATION, and a subblock becomes clustered, the child of that subblock MUST point to an entry in the supervertex vector. Whether or not that entry is shared with another (formerly) clustered subblock depends on where the subblock is located 
 	CASE 1 : if the sublock is a first child, and the subblock lies in generation 1 => then a new supervertex should be created and should be updated.
 	CASE 2 : if the subblock is a first child, and the subblock DOES NOT lie in generation 1 => then a supervertex should have been created by it's founding father. thus it should simply be updated.
 	CASE 3 : if the sublock is NOT a first child, and the subblock lies in generation 1 => then a new supervertex should be created and should be updated.
 	CASE 4 : if the subblock is NOT a first child, and the subblock DOES NOT lie in generation 1 => then a new supervertex should be created and should be updated.
 	NB: this function should be before you write the cluster info to its subblock */
-		if (edgeupdatecmd != DELETEEDGE)
+		if (edge_update_cmd != DELETEEDGE)
 		{
 			if (writebackunitcmd.markasclustered == YES)
 			{
-				uint subblockid = subblkmargin.top / _sub_block_height;
-				uint subblocksperpage = _sub_blocks_per_page;
+				uint subblockid = sub_block_margin.top / sub_block_height_;
+				uint subblocksperpage = sub_blocks_per_page_;
 				if ((subblockid == (subblocksperpage - 1)) && (geni == 1))
 				{
 
@@ -88,8 +88,8 @@ namespace gt
 					clusterinfo.sv_ptr = (svs.size() - 1);
 
 #ifdef EN_OTHERS
-					cout << "case 1: founding father doesn't exist. create one : " << endl;
-					cout << "svs.size() : " << svs.size() << " (writeback_unit)" << endl;
+					LOG(ERROR) << "case 1: founding father doesn't exist. create one : "  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
 #endif
 				}
 				else if ((subblockid == (subblocksperpage - 1)) && (geni > 1))
@@ -100,35 +100,35 @@ namespace gt
 					///***^ this is under testing ^***//
 					uint svs_index = 0;
 					if ((geni - 1) == 1)
-					{ /// last edgeblock was in generation 1
-						if (lastgenworkblockaddr >= _edge_block_array_m.size())
+					{ /// last work_block was in generation 1
+						if (lastgenworkblockaddr >= edge_block_array_m_.size())
 						{
-							cout << "Graphtinker::writeback_unit : out-of-range34" << endl;
+							LOG(ERROR) << "Graphtinker::WritebackUnit : out-of-range34"  ;
 						}
-						if (_edge_block_array_m[lastgenworkblockaddr].clusterinfo.flag != VALID)
+						if (edge_block_array_m_[lastgenworkblockaddr].clusterinfo.flag != VALID)
 						{
-							cout << "Graphtinker::writeback_unit : addr out-of-range8" << endl;
+							LOG(ERROR) << "Graphtinker::WritebackUnit : addr out-of-range8"  ;
 						}
-						svs_index = _edge_block_array_m[lastgenworkblockaddr].clusterinfo.sv_ptr;
+						svs_index = edge_block_array_m_[lastgenworkblockaddr].clusterinfo.sv_ptr;
 					}
 					else
 					{
-						if (lastgenworkblockaddr >= _edge_block_array_o.size())
+						if (lastgenworkblockaddr >= edge_block_array_o_.size())
 						{
-							cout << "Graphtinker::writeback_unit : out-of-range35" << endl;
+							LOG(ERROR) << "Graphtinker::WritebackUnit : out-of-range35"  ;
 						}
-						if (_edge_block_array_o[lastgenworkblockaddr].clusterinfo.flag != VALID)
+						if (edge_block_array_o_[lastgenworkblockaddr].clusterinfo.flag != VALID)
 						{
-							cout << "Graphtinker::writeback_unit : addr out-of-range82" << endl;
+							LOG(ERROR) << "Graphtinker::WritebackUnit : addr out-of-range82"  ;
 						}
-						svs_index = _edge_block_array_o[lastgenworkblockaddr].clusterinfo.sv_ptr;
+						svs_index = edge_block_array_o_[lastgenworkblockaddr].clusterinfo.sv_ptr;
 					}
 					clusterinfo.sv_ptr = svs_index;
 
 					// #ifdef EN_OTHERS
 					if (svs[svs_index].hvtx_ids.empty())
 					{
-						cout << "bug should not be empty5  (writeback_unit)" << endl;
+						LOG(ERROR) << "bug should not be empty5  (WritebackUnit)"  ;
 					}
 					// #endif
 
@@ -136,9 +136,9 @@ namespace gt
 					svs[svs_index].hvtx_ids.push_back(clusterinfo.data);
 
 #ifdef EN_OTHERS
-					cout << "case 2: founding father already exist. lastgenworkblockaddr : " << lastgenworkblockaddr << endl;
-					cout << "svs[svs_index].hvtx_ids.size() : " << svs[svs_index].hvtx_ids.size() << " (writeback_unit)" << endl;
-					cout << "svs.size() : " << svs.size() << " (writeback_unit)" << endl;
+					LOG(ERROR) << "case 2: founding father already exist. lastgenworkblockaddr : " << lastgenworkblockaddr  ;
+					LOG(ERROR) << "svs[svs_index].hvtx_ids.size() : " << svs[svs_index].hvtx_ids.size() << " (WritebackUnit)"  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
 #endif
 				}
 				else if ((subblockid != (subblocksperpage - 1)) && (geni == 1))
@@ -154,8 +154,8 @@ namespace gt
 					clusterinfo.sv_ptr = (svs.size() - 1);
 
 #ifdef EN_OTHERS
-					cout << "case 3: founding father doesn't exist. create one : " << endl;
-					cout << "svs.size() : " << svs.size() << " (writeback_unit)" << endl;
+					LOG(ERROR) << "case 3: founding father doesn't exist. create one : "  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
 #endif
 				}
 				else if ((subblockid != (subblocksperpage - 1)) && (geni > 1))
@@ -171,13 +171,13 @@ namespace gt
 					clusterinfo.sv_ptr = (svs.size() - 1);
 
 #ifdef EN_OTHERS
-					cout << "case 4: founding father doesn't exist. create one " << endl;
-					cout << "svs.size() : " << svs.size() << " (writeback_unit)" << endl;
+					LOG(ERROR) << "case 4: founding father doesn't exist. create one "  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
 #endif
 				}
 				else
 				{
-					cout << "bug! should never be seen here (WritebackUnit7) " << endl;
+					LOG(ERROR) << " should never be seen here (WritebackUnit7) "  ;
 				}
 			}
 		}
@@ -189,33 +189,33 @@ namespace gt
 #ifdef EN_BUGCHECK
 			if (geni == 1)
 			{
-				if (writebackunitcmd.addr >= _edge_block_array_m.size())
+				if (writebackunitcmd.addr >= edge_block_array_m_.size())
 				{
-					cout << "bug! : writebackunitcmd.addr out-of-range2 (WritebackUnit)" << endl;
+					LOG(ERROR) << " writebackunitcmd.addr out-of-range2 (WritebackUnit)"  ;
 				}
 			}
 			else
 			{
-				if (writebackunitcmd.addr >= _edge_block_array_o.size())
+				if (writebackunitcmd.addr >= edge_block_array_o_.size())
 				{
-					cout << "bug! : writebackunitcmd.addr out-of-range3 (WritebackUnit)" << endl;
+					LOG(ERROR) << " writebackunitcmd.addr out-of-range3 (WritebackUnit)"  ;
 				}
 			}
 #endif
 
-			edgeblock->edgeinfo.flag = VALID;
+			work_block->edgeinfo.flag = VALID;
 			if (geni == 1)
 			{
-				_edge_block_array_m[writebackunitcmd.addr] = *edgeblock;
+				edge_block_array_m_[writebackunitcmd.addr] = *work_block;
 			}
 			else
 			{
-				_edge_block_array_o[writebackunitcmd.addr] = *edgeblock;
+				edge_block_array_o_[writebackunitcmd.addr] = *work_block;
 			}
 
-// update _ll_edge_block_array
-#ifdef EN_CRUMPLEINONDELETE
-			_ll_edge_block_array[moduleparams->ll_localbaseaddrptr_x].ll_edgeblock[moduleparams->ll_localaddrptr_x].which_gen_is_the_main_copy_located = geni; //***
+// update ll_edge_block_array_
+#ifdef EN_CRUMPLE_IN
+			ll_edge_block_array_[moduleparams->ll_localbaseaddrptr_x].ll_edgeblock[moduleparams->ll_localaddrptr_x].which_gen_is_the_main_copy_located = geni; //***
 #endif
 		}
 
@@ -224,29 +224,29 @@ namespace gt
 		{
 			if (geni == 1)
 			{
-				uint subblockbaseaddr = get_edgeblock_offset(hvtx_id) + (writebackunitcmd.subblockid * _work_blocks_per_subblock);
-				for (uint id = 0; id < _work_blocks_per_subblock; id++)
+				uint subblockbaseaddr = get_edgeblock_offset(hvtx_id) + (writebackunitcmd.subblockid * work_blocks_per_subblock_);
+				for (uint id = 0; id < work_blocks_per_subblock_; id++)
 				{
-					_edge_block_array_m[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
+					edge_block_array_m_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
 				}
 			}
 			else
 			{
-				uint subblockbaseaddr = get_edgeblock_offset(hvtx_id) + (writebackunitcmd.subblockid * _work_blocks_per_subblock);
-				for (uint id = 0; id < _work_blocks_per_subblock; id++)
+				uint subblockbaseaddr = get_edgeblock_offset(hvtx_id) + (writebackunitcmd.subblockid * work_blocks_per_subblock_);
+				for (uint id = 0; id < work_blocks_per_subblock_; id++)
 				{
-					_edge_block_array_o[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
+					edge_block_array_o_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
 				}
 			}
 		}
 
-#ifdef EN_CRUMPLEINONDELETE
+#ifdef EN_CRUMPLE_IN
 		if (writebackunitcmd.markasclustered == YES)
 		{
 			uint index = clusterinfo.data;
 			if (index > edgeblock_parentinfo.size())
 			{
-				cout << "bug! out of range. writeback_unit" << endl;
+				LOG(ERROR) << " out of range. WritebackUnit"  ;
 			}
 			if (edgeblock_parentinfo[index].flag != VALID)
 			{

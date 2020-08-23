@@ -5,7 +5,7 @@
 using namespace std;
 namespace gt
 {
-    void Graphtinker::findwblkmargin(margin_t *blkmargin, bucket_t hadjvtx_id)
+    void Graphtinker::FindWorkBlockMargin(margin_t *blkmargin, bucket_t hadjvtx_id)
     {
         bucket_t a;
         bucket_t ttop;
@@ -18,23 +18,23 @@ namespace gt
         return;
     }
 
-    void Graphtinker::findsubblkmargin(margin_t *subblkmargin, bucket_t hadjvtx_id)
+    void Graphtinker::FindSubBlockMargin(margin_t *sub_block_margin, bucket_t hadjvtx_id)
     {
         bucket_t a;
         bucket_t ttop;
 
-        a = hadjvtx_id / _sub_block_height;
-        ttop = a * _sub_block_height;
+        a = hadjvtx_id / sub_block_height_;
+        ttop = a * sub_block_height_;
 
-        subblkmargin->top = ttop;
-        subblkmargin->bottom = ttop + (_sub_block_height - 1);
+        sub_block_margin->top = ttop;
+        sub_block_margin->bottom = ttop + (sub_block_height_ - 1);
         return;
     }
 
     uint Graphtinker::findsubblkId(vertexid_t vid)
     {
-        uint a = vid % _page_block_height;
-        uint subblockid = a / _sub_block_height;
+        uint a = vid % page_block_height_;
+        uint subblockid = a / sub_block_height_;
         return subblockid;
     }
 } // namespace gt

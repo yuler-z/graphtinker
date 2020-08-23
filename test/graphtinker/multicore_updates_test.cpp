@@ -13,8 +13,8 @@
 #include <iomanip>
 #include <cmath>
 #include <omp.h>
-#include "../graphtinker/graphtinker.h"
-#include "../vertices/vertices.h"
+#include "graphtinker/graphtinker.h"
+#include "vertices/vertices.h"
 #define ___use_omp___
 using namespace std;
 
@@ -32,8 +32,8 @@ multicore_updates_test::~multicore_updates_test() {}
 
 void insertions(Graphtinker &tinkerA, Graphtinker &tinkerB, vector<tuple_t> &src_dst_pairs)
 {
-	cout << endl
-		 << "insertions started : src_dst_pairs size : " << src_dst_pairs.size() << endl;
+	cout  
+		 << "insertions started : src_dst_pairs size : " << src_dst_pairs.size()  ;
 #ifdef ___use_omp___
 #pragma omp parallel sections
 	{
@@ -41,32 +41,32 @@ void insertions(Graphtinker &tinkerA, Graphtinker &tinkerB, vector<tuple_t> &src
 		{
 			for (uint j = 0; j < src_dst_pairs.size(); j++)
 			{
-				tinkerA.insert_edge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
+				tinkerA.InsertEdge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
 			}
-			cout << "number of edges in tinkerA : " << tinkerA.printv_edgecount() << " edges" << endl;
+			cout << "number of edges in tinkerA : " << tinkerA.printv_edgecount() << " edges"  ;
 		}
 #pragma omp section
 		{
 			for (uint j = 0; j < src_dst_pairs.size(); j++)
 			{
-				tinkerB.insert_edge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
+				tinkerB.InsertEdge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
 			}
-			cout << "number of edges in tinkerB : " << tinkerB.printv_edgecount() << " edges" << endl;
+			cout << "number of edges in tinkerB : " << tinkerB.printv_edgecount() << " edges"  ;
 		}
 	}
 #else
 	tinkerA.create(SELF, SELF, SELF, 0, 524288, 524288, 8380000, DIRECTEDGRAPH, 8, 64);
 	for (uint j = 0; j < src_dst_pairs.size(); j++)
 	{
-		tinkerA.insert_edge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
+		tinkerA.InsertEdge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
 	}
-	cout << "number of edges in tinkerA : " << tinkerA.printv_edgecount() << " edges" << endl;
+	cout << "number of edges in tinkerA : " << tinkerA.printv_edgecount() << " edges"  ;
 	tinkerB.create(SELF, SELF, SELF, 0, 524288, 524288, 8380000, DIRECTEDGRAPH, 8, 64);
 	for (uint j = 0; j < src_dst_pairs.size(); j++)
 	{
-		tinkerB.insert_edge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
+		tinkerB.InsertEdge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
 	}
-	cout << "number of edges in tinkerB : " << tinkerB.printv_edgecount() << " edges" << endl;
+	cout << "number of edges in tinkerB : " << tinkerB.printv_edgecount() << " edges"  ;
 #endif
 	return;
 }
@@ -76,7 +76,7 @@ int main()
 #pragma omp parallel
 	{
 		int ID = omp_get_thread_num();
-		cout << " hello world from thread : " << ID << endl;
+		cout << " hello world from thread : " << ID  ;
 	}
 	// return 0;
 
@@ -95,7 +95,7 @@ int main()
 	FILE *file = fopen(path, "r");
 	if (file == NULL)
 	{
-		cout << "error : cannot find the location of input file rmat500k8m.edges (test_updatesingleedge)" << endl;
+		cout << "error : cannot find the location of input file rmat500k8m.edges (test_updatesingleedge)"  ;
 	}
 
 	// insert edges into tinkers
@@ -106,16 +106,16 @@ int main()
 	{
 		if (feof(file))
 		{
-			cout << "finished reading from file (multicore_updates_test)" << endl;
+			cout << "finished reading from file (multicore_updates_test)"  ;
 			break;
 		}
 		if (fscanf(file, "%i", &src) < 0)
 		{
-			cout << "fscan error (multicore_updates_test)" << endl;
+			cout << "fscan error (multicore_updates_test)"  ;
 		}
 		if (fscanf(file, "%i", &dst) < 0)
 		{
-			cout << "fscan error (multicore_updates_test)" << endl;
+			cout << "fscan error (multicore_updates_test)"  ;
 		}
 
 		tuple_t t;
@@ -133,12 +133,12 @@ int main()
 	gettimeofday(&end1_tod, NULL);
 	timelapse_tod = (float)((end1_tod.tv_sec * 1000000 + end1_tod.tv_usec) - (start1_tod.tv_sec * 1000000 + start1_tod.tv_usec)) / 1000;
 
-	cout << "number of edges A : " << tinkerA.printv_edgecount() << " edges" << endl;
-	cout << "number of edges B : " << tinkerB.printv_edgecount() << " edges" << endl;
+	cout << "number of edges A : " << tinkerA.printv_edgecount() << " edges"  ;
+	cout << "number of edges B : " << tinkerB.printv_edgecount() << " edges"  ;
 
-	cout << "jurassicpark::run_jpasyn : time lapse (clock) : " << timelapse_clock << " ms" << endl;
-	cout << "jurassicpark::run_jpasyn : time lapse (tod) : " << timelapse_tod << " ms" << endl;
-	cout << "jurassicpark::run_jpasyn : threads ran : " << omp_get_num_threads() << " threads" << endl;
-	cout << "finished." << endl;
+	cout << "jurassicpark::run_jpasyn : time lapse (clock) : " << timelapse_clock << " ms"  ;
+	cout << "jurassicpark::run_jpasyn : time lapse (tod) : " << timelapse_tod << " ms"  ;
+	cout << "jurassicpark::run_jpasyn : threads ran : " << omp_get_num_threads() << " threads"  ;
+	cout << "finished."  ;
 	return 0;
 }

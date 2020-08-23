@@ -12,17 +12,17 @@ using namespace std;
 
 namespace gt
 {
-	void Graphtinker::ll_unit(
-		llgds_unit_cmd_t llgdsunitcmd,
+	void Graphtinker::CALUnit(
+		cal_unit_cmd_t cal_unit_cmd,
 		module_params_t *moduleparams,
 		insert_params_t *insertparams,
 		edge_t edge,
-		vector<edge_nt> &_edge_block_array_m,
-		vector<edge_nt> &_edge_block_array_o,
+		vector<work_block_t> &edge_block_array_m_,
+		vector<work_block_t> &edge_block_array_o_,
 		uint geni
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 		,
-		vector<ll_edgeblock_t> &_ll_edge_block_array, vector<ll_logicalvertexentity_t> &_ll_lva, ll_eba_tracker_t *_ll_eba_tracker
+		vector<ll_edgeblock_t> &ll_edge_block_array_, vector<ll_logicalvertexentity_t> &ll_lva_, ll_eba_tracker_t *ll_eba_tracker_
 #endif
 	)
 	{
@@ -30,61 +30,61 @@ namespace gt
 // append to LL, add {lastlocalbaseaddr, lastlocaladdr} to edge
 // off we go to insert unit !
 // NB: this unit should be before interval unit***
-#ifdef EN_LLGDS
-		if (llgdsunitcmd.verdict == INSERTCMD)
+#ifdef EN_CAL
+		if (cal_unit_cmd.verdict == INSERTCMD)
 		{
 			ll_insert(
 				edge,
 				moduleparams,
 				insertparams,
-				_ll_edge_block_array,
-				_ll_lva,
-				_ll_eba_tracker,
+				ll_edge_block_array_,
+				ll_lva_,
+				ll_eba_tracker_,
 				geni);
 		}
-		else if (llgdsunitcmd.verdict == UPDATECMD)
+		else if (cal_unit_cmd.verdict == UPDATECMD)
 		{
 			ll_update(
 				edge,
 				moduleparams->ll_localbaseaddrptr_x,
 				moduleparams->ll_localaddrptr_x,
-				_ll_edge_block_array);
+				ll_edge_block_array_);
 		}
-		else if (llgdsunitcmd.verdict == DELETECMD)
+		else if (cal_unit_cmd.verdict == DELETECMD)
 		{
 			ll_delete(
 				edge,
 				moduleparams->ll_localbaseaddrptr_x,
 				moduleparams->ll_localaddrptr_x,
-				_ll_edge_block_array);
+				ll_edge_block_array_);
 		}
-		else if (llgdsunitcmd.verdict == DELETEANDCRUMPLEINCMD)
+		else if (cal_unit_cmd.verdict == DELETEANDCRUMPLEINCMD)
 		{
 			ll_deleteandcrumplein(
 				edge,
 				moduleparams->ll_localbaseaddrptr_x,
 				moduleparams->ll_localaddrptr_x,
-				_ll_edge_block_array,
-				_ll_lva,
-				_ll_eba_tracker,
-				_edge_block_array_m,
-				_edge_block_array_o,
+				ll_edge_block_array_,
+				ll_lva_,
+				ll_eba_tracker_,
+				edge_block_array_m_,
+				edge_block_array_o_,
 				geni);
 		}
-		else if (llgdsunitcmd.verdict == UPDATEEDGEPTRSCMD)
+		else if (cal_unit_cmd.verdict == UPDATEEDGEPTRSCMD)
 		{
 			ll_updateedgeptrs(
 				edge,
 				*moduleparams,
-				_ll_edge_block_array);
+				ll_edge_block_array_);
 		}
-		else if (llgdsunitcmd.verdict == NOCMD)
+		else if (cal_unit_cmd.verdict == NOCMD)
 		{
 			// do nothing
 		}
 		else
 		{
-			cout << "bug! : should never get here (update_edge45)" << endl;
+			LOG(ERROR) << " should never get here (update_edge45)"  ;
 		}
 #endif
 	}

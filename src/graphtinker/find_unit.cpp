@@ -5,25 +5,23 @@
 using namespace std;
 namespace gt
 {
-	uint debug_totaledgealreadyfound;
-
 	void Graphtinker::find_unit(
 		module_params_t *moduleparams,
 		find_params_t findparams,
 		find_report_t *findreport,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
 		bucket_t hadjvtx_id,
-		edge_nt *edgeblock,
-		uint edgeupdatecmd)
+		work_block_t *work_block,
+		uint edge_update_cmd)
 	{
-		bucket_t localoffset;
+		bucket_t local_offset;
 
 		vertexid_t entry_i;
 		bucket_t initialbucket_i;
 		edgeweight_t edgeweight_i;
 		flag_t flag_i;
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 		vertexid_t ll_localbaseaddrptr_i;
 		vertexid_t ll_localaddrptr_i;
 #endif
@@ -35,62 +33,60 @@ namespace gt
 		bucket_t DIB_x;
 
 		// if this isn't altered in the for-loop, then this would be the report
-		findreport->localoffset = NULLL; // local offset from first bucket in the current workblock
-		findreport->entryfound = NO;
-		findreport->entrydeleted = NO;
-		findreport->maxprobelengthreached = NO;
-		findreport->foundemptybkt = NO;
+		findreport->local_offset = NULLL; // local offset from first bucket in the current workblock
+		findreport->is_found = false;
+		findreport->is_deleted = false;
+		findreport->is_reach_max_prob_length = false;
+		findreport->is_empty = false;
 
 		// get begin bucket
-		beginbkt = findparams.isstartblk == 1 ? hadjvtx_id : wblkmargin.top;
+		beginbkt = findparams.isstartblk == 1 ? hadjvtx_id : work_block_margin.top;
 
-		for (currbkt = beginbkt; currbkt <= wblkmargin.bottom; currbkt++)
+		// robin hood hash 的查找过程
+		for (currbkt = beginbkt; currbkt <= work_block_margin.bottom; currbkt++)
 		{
 
 			// get entry's local offset
-			localoffset = currbkt - wblkmargin.top;
+			local_offset = currbkt - work_block_margin.top;
 
 			// retrieve current entry
-			entry_i = edgeblock->edges[localoffset].xadjvtx_id;
-			initialbucket_i = edgeblock->edges[localoffset].initialbucket;
-			edgeweight_i = edgeblock->edges[localoffset].edge_weight;
-			flag_i = edgeblock->edges[localoffset].flag;
-#ifdef EN_LLGDS
-			ll_localbaseaddrptr_i = edgeblock->edges[localoffset].ll_localbaseaddrptr;
-			ll_localaddrptr_i = edgeblock->edges[localoffset].ll_localaddrptr;
+			entry_i = work_block->edges[local_offset].xadjvtx_id;
+			initialbucket_i = work_block->edges[local_offset].initialbucket;
+			edgeweight_i = work_block->edges[local_offset].edge_weight;
+			flag_i = work_block->edges[local_offset].flag;
+#ifdef EN_CAL
+			ll_localbaseaddrptr_i = work_block->edges[local_offset].ll_localbaseaddrptr;
+			ll_localaddrptr_i = work_block->edges[local_offset].ll_localaddrptr;
 #endif
-
+			// 判断该位置是否就是要查找的边 
 			if (entry_i == findparams.xadjvtx_id)
 			{
 				if (flag_i == VALID)
 				{
-					// found edge!
-					debug_totaledgealreadyfound += 1;
+					findreport->local_offset = local_offset;
+					findreport->is_found = true;
 
-					findreport->localoffset = localoffset;
-					findreport->entryfound = YES;
-
-					if (edgeupdatecmd == INSERTEDGE)
+					if (edge_update_cmd == INSERTEDGE)
 					{
-						edgeblock->edges[localoffset].edge_weight += 1; // update it!
+						work_block->edges[local_offset].edge_weight += 1; // update it!
 					}
-#ifdef EN_CRUMPLEINONDELETE
-					else if (edgeupdatecmd == DELETEEDGE)
+#ifdef EN_CRUMPLE_IN
+					else if (edge_update_cmd == DELETEEDGE)
 					{
-						edgeblock->edges[localoffset].flag = DELETED; // remove it!
+						work_block->edges[local_offset].flag = DELETED; // remove it!
 					}
 #else
-					else if (edgeupdatecmd == DELETEEDGE)
+					else if (edge_update_cmd == DELETEEDGE)
 					{
-						edgeblock->edges[localoffset].flag = DELETED; // remove it!
+						work_block->edges[local_offset].flag = DELETED; // remove it!
 					}
 #endif
 					else
 					{
-						cout << "bug! : should never be seen here (find_unit56)" << endl;
+						LOG(ERROR) << " should never be seen here (find_unit56)"  ;
 					}
 
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 					moduleparams->ll_localbaseaddrptr_x = ll_localbaseaddrptr_i;
 					moduleparams->ll_localaddrptr_x = ll_localaddrptr_i;
 #endif
@@ -102,26 +98,21 @@ namespace gt
 				}
 				else
 				{
-					// cout<<"something fishy if this is seen too much (find_unit5)"<<endl;
+					// LOG(INFO) <<"something fishy if this is seen too much (find_unit5)" ;
 					// empty bucket found, stop search
-					findreport->foundemptybkt = YES;
+					findreport->is_empty = true;
 					return;
 				}
 			}
 			else
 			{
-				if (flag_i == VALID)
-				{
-					// continue searching...
-				}
-				else if (flag_i == DELETED)
+				if (flag_i == VALID || flag_i == DELETED)
 				{
 					// continue searching...
 				}
 				else
 				{
-
-					findreport->foundemptybkt = YES;
+					findreport->is_empty = true;
 					return;
 				}
 			}

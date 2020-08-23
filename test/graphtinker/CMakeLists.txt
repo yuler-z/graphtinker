@@ -6,7 +6,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include/graphtinker)
 
 add_executable(updates_test updates_test.cpp)
 
-target_link_libraries(updates_test graphtinker)
+target_link_libraries(updates_test graphtinker glog gflags)
 
 file(COPY ../../config.ini DESTINATION .)
 file(COPY ../../RMAT_500K_8M DESTINATION .)

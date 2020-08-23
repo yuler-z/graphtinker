@@ -7,6 +7,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include/config)
 
 add_executable(config_test config_test.cpp)
 
-target_link_libraries(config_test config)
+target_link_libraries(config_test config glog gflags)
 
 file(COPY ../../config.ini DESTINATION .) 

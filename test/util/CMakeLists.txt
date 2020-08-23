@@ -6,4 +6,4 @@ include_directories(${PROJECT_SOURCE_DIR}/include/util)
 
 add_executable(util_test util_test.cpp)
 
-target_link_libraries(util_test util)
+target_link_libraries(util_test util glog gflags)

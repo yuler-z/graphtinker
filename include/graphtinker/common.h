@@ -3,16 +3,12 @@
 
 #include <iostream>
 #include <vector>
+#include <glog/logging.h>
 using namespace std;
 
 #define CPU 0
-#define EN_LLGDS 0
-
-
-#define cpuem_bugs_b1 0
-#define EN_BUGCHECK 0
-#define EN_PROCESSLOWERGENCLUSTERS 0 //don't turn off!!!
-#define EN_INITVPROPERTYARRAY 0
+#define EN_CAL 0    // Coarse Adjacency List
+// #define EN_CRUMPLE_IN //crumple in on delete 
 
 #define WORK_BLOCK_HEIGHT 4 
 #define BATCH_SIZE 1048576
@@ -54,59 +50,18 @@ using namespace std;
 #define WRITE 6
 #define NEITHER_READ_NOR_WRITE 7
 
-#define FINDONLYMODE 0
-#define INSERTONLYMODE 1
+//
+#define FIND_MODE 0
+#define INSERT_MODE 1
 
 #define GRAPHGEN_TOTAL_VERTEX_COUNT 10
 #define GRAPHGEN_NO_OF_DSTV_PER_SRCV 10
 
-#define OCCUPIED 989898989
-#define UNOCCUPIED 898989898
-
-#define MAXUNSIGNEDINT 18446744073709551615
-#define INFINITI 184467443
-
-#define ENSearch_SearchValid_SearchStopped_SearchUnsuccessful_ENInsert_InsertValid_PassedThroughandSwappedatsomePoint_AllMode_X 0
-#define ENSearch_SearchValid_SearchStopped_SearchUnsuccessful_ENInsert_InsertValid_LoadedIntoEmptyBucket_AllMode_X 1
-#define ENSearch_SearchValid_SearchStopped_SearchUnsuccessful_ENInsert_InsertValid_FoundandUpdatedItself_AllMode_X 2
-#define ENSearch_SearchValid_SearchStopped_SearchUnsuccessful_ENInsert_InsertValid_PassedThrough_AllMode_X 3
-#define ENSearch_SearchValid_SearchNotStopped_SearchUnsuccessful_ENInsert_InsertValid_X_AllModes_X 4
-#define ENSearch_SearchValid_SearchStopped_SearchSuccessful_ENInsert_InsertValid_X_AllModes_X 5
-
-#define ENSearch_SearchValid_SearchNotstopped_SearchUnsuccessfull_X_X_X_SearchOnlyMode_NotLastWorkblock 6
-#define ENSearch_SearchValid_SearchNotstopped_SearchUnsuccessfull_ENInsert_X_X_SearchOnlyMode_LastWorkblock 7
-#define ENSearch_SearchValid_SearchNotstopped_SearchUnsuccessfull_UNENInsert_X_X_SearchOnlyMode_LastWorkblock 8
-#define ENSearch_SearchValid_Searchstopped_SearchUnsuccessfull_ENInsert_X_X_SearchOnlyMode_X 9
-#define ENSearch_SearchValid_Searchstopped_SearchUnsuccessfull_UNENInsert_X_X_SearchOnlyMode_X 10
-#define ENSearch_SearchValid_Searchstopped_SearchSuccessfull_X_X_X_SearchOnlyMode_X 11
-
-#define X_X_X_X_ENInsert_InsertValid_PassedThroughandSwappedatsomePoint_InsertOnlyMode_NotLastWorkblock 12
-#define X_X_X_X_ENInsert_InsertValid_PassedThroughandSwappedatsomePoint_InsertOnlyMode_LastWorkblock 13
-#define X_X_X_X_ENInsert_InsertValid_LoadedIntoEmptyBucket_InsertOnlyMode_X 14
-#define X_X_X_X_ENInsert_InsertValid_FoundandUpdatedItself_InsertOnlyMode_X 15
-#define X_X_X_X_ENInsert_InsertValid_PassedThrough_InsertOnlyMode_NotLastWorkblock 16
-#define X_X_X_X_ENInsert_InsertValid_PassedThrough_InsertOnlyMode_LastWorkblock 17
-
+// verdict after inference
 #define CONTINUE_FROM_FIRST_GENERATION 0
 #define CONTINUE_IN_LOWER_GENERATION 1
 #define CONTINUE_IN_CURRENT_GENERATION 2
 #define QUIT_TO_NEXT_EDGE 3
-
-#define EXIT 6
-
-#define PRINTTYPE_VALIDEDGESONLY 0
-#define PRINTTYPE_EDGECOUNT 1
-#define PRINTTYPE_CLUSTERINFOONLY 2
-#define PRINTTYPE_ALLINFOS 3
-#define PRINTTYPE_VALIDEDGESANDCLUSTERINFOONLY 4
-#define PRINTTYPE_VALIDEDGESONLY_PRESENTATIONVIEW 5
-#define PRINTTYPE_UNIQUEEDGECOUNT 6
-#define PRINTTYPE_VALIDHEBAANDLLEDGES 7
-
-#define INITTYPE_ALLZEROS 0
-#define INITTYPE_ALLINFINITY 1
-
-#define RUN_SUMMARY_ARRAY_SIZE 
 
 #define LLEDGEBLOCKSIZE 512
 #define LVACOARSENESSWIDTH 2048 //should be a power of 2
@@ -156,19 +111,10 @@ typedef unsigned int id_t;
 
 /// struct declarations
 
-typedef struct {
-	vertexid_t xadjvtx_id;
-	bucket_t initialbucket;
-	edgeweight_t edge_weight;
-    flag_t flag;
-	#ifdef EN_LLGDS
-	vertexid_t ll_localbaseaddrptr;
-	vertexid_t ll_localaddrptr;
-	#endif
-} edge_tt;
 
 /** sv_ptr : pointer to a supervertex
-NB: many subblocks can (and should) have the same sv_ptr. means they all are 1st borns in a descendancy tree */
+	NB: many subblocks can (and should) have the same sv_ptr. means they all are 1st borns in a descendancy tree
+*/
 typedef struct {
 	clusterptr_t data;
 	flag_t flag;
@@ -180,10 +126,21 @@ typedef struct {
 } edgeinfo_t;
 
 typedef struct {
+	vertexid_t xadjvtx_id;
+	bucket_t initialbucket;
+	edgeweight_t edge_weight;
+    flag_t flag; // VALID, DELETED
+	#ifdef EN_CAL
+	vertexid_t ll_localbaseaddrptr;
+	vertexid_t ll_localaddrptr;
+	#endif
+} edge_tt;
+
+typedef struct {
 	edgeinfo_t edgeinfo;
 	clusterinfo_t clusterinfo;
 	edge_tt edges[WORK_BLOCK_HEIGHT];
-} edge_nt;
+} work_block_t;
 
 typedef struct {
 	uint gen_of_parent;
@@ -197,7 +154,7 @@ typedef struct {
 	vertexid_t xadjvtx_id;
 	edgeweight_t edgew;
 	flag_t flag;
-	#ifdef EN_LLGDS
+	#ifdef EN_CAL
 	int heba_hvtx_id;
 	int heba_workblockid;
 	int heba_loffset;
@@ -215,7 +172,7 @@ typedef struct {
     int cptr;	
 	vertexid_t xadjvtx_id; // edge info
 	edgeweight_t edge_weight;
-	#ifdef EN_LLGDS
+	#ifdef EN_CAL
 	vertexid_t ll_localbaseaddrptr_x;
 	vertexid_t ll_localaddrptr_x;
 	#endif	
@@ -227,11 +184,11 @@ typedef struct {
 
 typedef struct {
 	uint verdict;
-} llgds_unit_cmd_t;
+} cal_unit_cmd_t;
 
 typedef struct {
 	uint verdict;
-} delete_and_crumple_in_cmd_t;
+} crumple_in_cmd_t;
 
 typedef struct {
 	vertexid_t xadjvtx_id; // edge info
@@ -255,11 +212,11 @@ typedef struct {
 } find_params_t;
 
 typedef struct {
-	bucket_t localoffset;
-	flag_t entryfound;
-	flag_t entrydeleted;
-	flag_t maxprobelengthreached;
-    flag_t foundemptybkt;
+	bucket_t local_offset;
+	bool is_found;
+	bool is_deleted;
+	bool is_reach_max_prob_length;
+	bool is_empty;
 } find_report_t;
 
 typedef struct {
@@ -280,9 +237,9 @@ typedef struct {
 } margin_t;
 
 typedef struct {
-	uint searchstop;
-	uint searchsuccessful;
-} searchreport_t;
+	bool search_stop;
+	bool search_success;
+} search_report_t;
 
 typedef struct {
 	uint search;
@@ -358,7 +315,7 @@ typedef struct {
 	uint outdegree;
 	vertexdata_t data;
 	flag_t flag;
-} vertexproperty_t;
+} vertex_property_t;
 
 /** 
 - except stated otherwise, when used, the array of this struct is indexed by the *** raw local vertex ids ***  
@@ -372,7 +329,7 @@ typedef struct {
 	vertexid_t hvtx_id; 
 	uint cid;
 	flag_t status;
-	vertexproperty_t vprop;
+	vertex_property_t vprop;
 } vertexlink_t;
 
 /** 
@@ -395,11 +352,4 @@ typedef struct {
 	uint geni_ofparentsubblock;
 } supervertex_t;
 #endif
-
-
-
-
-
-
-
 

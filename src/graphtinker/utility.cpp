@@ -83,6 +83,6 @@ namespace gt
 
 	uint Graphtinker::getpartitionid(uint vid)
 	{
-		return (vid % _page_block_height) / _sub_block_height;
+		return (vid % page_block_height_) / sub_block_height_;
 	}
 } // namespace gt

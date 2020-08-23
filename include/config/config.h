@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <glog/logging.h>
 
 
 
@@ -22,7 +23,7 @@ namespace gt{
             bool ConfigGraph(Graphtinker *gt);
             bool PrintAll();
 
-            std::string file_path();
+            std::string get_file_path();
             void set_file_path(std::string);
     };
 }

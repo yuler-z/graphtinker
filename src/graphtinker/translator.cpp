@@ -11,116 +11,100 @@
 #include <omp.h>
 #include "graphtinker/translator.h"
 using namespace std;
-namespace gt{
-translator::translator(vertexid_t _vertex_range)
+namespace gt
 {
-	initialize(vertex_range);
-}
-translator::translator() {}
-translator::~translator() {}
-
-void translator::initialize(vertexid_t _vertex_range)
-{
-	vertex_range = _vertex_range;
-	vertex_translator = new vertex_translator_t[vertex_range];
-	for (uint i = 0; i < vertex_range; i++)
+	Translator::Translator(vertexid_t vertex_range)
 	{
-		vertex_translator[i].globalvid = 0;
-		vertex_translator[i].localvid = 0;
-		vertex_translator[i].flag = INVALID;
-		vertex_translator[i].lflag = INVALID;
+		vertex_range_ = vertex_range;
+		vertex_translator_ = new vertex_translator_t[vertex_range];
+		for (uint i = 0; i < vertex_range; i++)
+		{
+			vertex_translator_[i].globalvid = 0;
+			vertex_translator_[i].localvid = 0;
+			vertex_translator_[i].flag = INVALID;
+			vertex_translator_[i].lflag = INVALID;
+		}
+		translator_tracker_.mark = 0;
 	}
-	translator_tracker.mark = 0;
-	return;
-}
 
-vertexid_t translator::get_localvid2(vertexid_t globalvid)
-{
-	if ((globalvid > vertex_range) || (vertex_translator[globalvid].flag != VALID))
+	Translator::Translator() {}
+
+	Translator::~Translator() {
+		delete[] vertex_translator_;
+		translator_tracker_.mark = 0;
+	}
+
+	vertexid_t Translator::GetLocalVid(vertexid_t globalvid)
 	{
-		cout << "translator::get_localvid : bug. out of range6^^^^. globalvid : " << globalvid << ", vertex_range : " << vertex_range << endl;
+		if (globalvid > vertex_range_)
+		{
+			LOG(ERROR) << "translator::GetLocalVid : bug, out of range5. globalvid : " << globalvid << ", vertex_range : " << vertex_range_  ;
+		}
+		if (translator_tracker_.mark > vertex_range_)
+		{
+			LOG(ERROR) << "translator::GetLocalVid : bug, out of range6. globalvid : " << globalvid << ", vertex_range : " << vertex_range_  ;
+		}
+		if (vertex_translator_[globalvid].flag != VALID)
+		{
+			vertex_translator_[translator_tracker_.mark].globalvid = globalvid;
+			vertex_translator_[translator_tracker_.mark].lflag = VALID;
+			vertex_translator_[globalvid].localvid = translator_tracker_.mark;
+			vertex_translator_[globalvid].flag = VALID;
+			translator_tracker_.mark += 1;
+		}
+		return vertex_translator_[globalvid].localvid;
 	}
-	return vertex_translator[globalvid].localvid;
-}
 
-vertexid_t translator::get_localvid(vertexid_t globalvid)
-{
-	if (globalvid > vertex_range)
+	vertexid_t Translator::GetGlobalVid(vertexid_t localvid)
 	{
-		cout << "translator::get_localvid : bug, out of range5. globalvid : " << globalvid << ", vertex_range : " << vertex_range << endl;
+		if (localvid > vertex_range_)
+		{
+			LOG(ERROR) << "translator::GetGlobalVid : bug. out of range7 (localvid > vertex_range). localvid : " << localvid << ", vertex_range : " << vertex_range_  ;
+		}
+		/// if(vertex_translator[localvid].lflag != VALID){ LOG(ERROR)<<"translator::GetGlobalVid : bug. out of range8 (lflag != VALID). localvid : "<<localvid<<", vertex_range : "<<vertex_range<<", vertex_translator["<<localvid<<"].globalvid : "<<vertex_translator[localvid].globalvid ; }
+		return vertex_translator_[localvid].globalvid;
 	}
-	if (translator_tracker.mark > vertex_range)
+
+	void Translator::PrintItems(){
+		PrintItems(vertex_range_);
+	}
+
+	void Translator::PrintItems(uint n)
 	{
-		cout << "translator::get_localvid : bug, out of range6. globalvid : " << globalvid << ", vertex_range : " << vertex_range << endl;
+		LOG(INFO) << "translator::print_first_n_items_of_vertex_translator : n : " << n  ;
+		if (n > vertex_range_)
+		{
+			LOG(INFO) << "bug : n > vertex_range."  ;
+			return;
+		}
+
+		for (uint i = 0; i < n; i++)
+		{
+			LOG(INFO) << i << ": [";
+			LOG(INFO) << vertex_translator_[i].globalvid;
+			LOG(INFO) << ", " << vertex_translator_[i].localvid;
+			LOG(INFO) << ", " << vertex_translator_[i].flag;
+			LOG(INFO) << ", " << vertex_translator_[i].lflag;
+			LOG(INFO) << "]"  ;
+		}
+		return;
 	}
-	if (vertex_translator[globalvid].flag != VALID)
-	{
-		vertex_translator[translator_tracker.mark].globalvid = globalvid;
-		vertex_translator[translator_tracker.mark].lflag = VALID;
-		vertex_translator[globalvid].localvid = translator_tracker.mark;
-		vertex_translator[globalvid].flag = VALID;
-		translator_tracker.mark += 1;
+
+	// getter and setter
+	const vertexid_t& Translator::vertex_range() const{
+		return vertex_range_;
 	}
-	return vertex_translator[globalvid].localvid;
-}
+	const vertex_translator_t* Translator::vertex_translator() const{
+		return vertex_translator_;
 
-vertexid_t translator::get_globalvid(vertexid_t localvid)
-{
-	if (localvid > vertex_range)
-	{
-		cout << "translator::get_globalvid : bug. out of range7 (localvid > vertex_range). localvid : " << localvid << ", vertex_range : " << vertex_range << endl;
 	}
-	/// if(vertex_translator[localvid].lflag != VALID){ cout<<"translator::get_globalvid : bug. out of range8 (lflag != VALID). localvid : "<<localvid<<", vertex_range : "<<vertex_range<<", vertex_translator["<<localvid<<"].globalvid : "<<vertex_translator[localvid].globalvid<<endl; }
-	return vertex_translator[localvid].globalvid;
-}
-
-vertexid_t translator::read_globalvid(vertexid_t localvid)
-{
-	if (localvid > vertex_range)
-	{
-		cout << "translator::read_globalvid : bug, out of range. localvid : " << localvid << ", vertex_range : " << vertex_range << endl;
+	const tracker_t& Translator::translator_tracker() const{
+		return translator_tracker_;
 	}
-	return vertex_translator[localvid].globalvid;
-}
-
-void translator::print_first_n_items_of_vertex_translator(uint n)
-{
-	cout << "translator::print_first_n_items_of_vertex_translator : n : " << n << endl;
-	for (uint i = 0; i < n; i++)
-	{
-		cout << i << ": [";
-		cout << vertex_translator[i].globalvid;
-		cout << ", " << vertex_translator[i].localvid;
-		cout << ", " << vertex_translator[i].flag;
-		cout << ", " << vertex_translator[i].lflag;
-		cout << "]" << endl;
+	const uint& Translator::translator_tracker_mark() const{
+		return translator_tracker_.mark;
 	}
-	return;
-}
-
-uint translator::get_translator_tracker_mark()
-{
-	return translator_tracker.mark;
-}
-
-vertex_translator_t *translator::gettranslator()
-{
-	return vertex_translator;
-}
-
-tracker_t translator::gettranslatortracker()
-{
-	return translator_tracker;
-}
-
-void translator::settranslatortracker(tracker_t tracker)
-{
-	translator_tracker = tracker;
-}
-
-void translator::deleteme()
-{
-	delete[] vertex_translator;
-	translator_tracker.mark = 0;
-}
-}
+	void Translator::translator_tracker(const tracker_t& tracker){
+		translator_tracker_ = tracker;
+	}
+} // namespace gt

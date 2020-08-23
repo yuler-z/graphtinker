@@ -11,22 +11,22 @@ namespace gt
 		module_params_t *moduleparams,
 		insert_params_t *insertparams,
 		insert_report_t *insertreport,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
 		bucket_t hadjvtx_id,
-		edge_nt *edgeblock,
+		work_block_t *work_block,
 		edge_t *edge,
 		vertexid_t xvtx_id,
 		uint rolledover,
 		uint geni)
 	{
-		bucket_t localoffset;
+		bucket_t local_offset;
 
 		vertexid_t entry_i;
 		bucket_t initialbucket_i;
 		edgeweight_t edgeweight_i;
 		flag_t flag_i;
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 		vertexid_t ll_localbaseaddrptr_i;
 		vertexid_t ll_localaddrptr_i;
 #endif
@@ -44,24 +44,24 @@ namespace gt
 		insertreport->lastbktloadedinto = NONE;
 
 		// get begin bucket
-		beginbkt = insertparams->isstartblk == 1 ? hadjvtx_id : wblkmargin.top;
+		beginbkt = insertparams->isstartblk == 1 ? hadjvtx_id : work_block_margin.top;
 
 		// traverse entries in block
-		for (currbkt = beginbkt; currbkt <= wblkmargin.bottom; currbkt++)
+		for (currbkt = beginbkt; currbkt <= work_block_margin.bottom; currbkt++)
 		{
 
 			// get entry's local offset
-			localoffset = currbkt - wblkmargin.top;
+			local_offset = currbkt - work_block_margin.top;
 
 			// retrieve current entry
-			entry_i = edgeblock->edges[localoffset].xadjvtx_id;
-			initialbucket_i = edgeblock->edges[localoffset].initialbucket;
-			edgeweight_i = edgeblock->edges[localoffset].edge_weight;
-			flag_i = edgeblock->edges[localoffset].flag;
+			entry_i = work_block->edges[local_offset].xadjvtx_id;
+			initialbucket_i = work_block->edges[local_offset].initialbucket;
+			edgeweight_i = work_block->edges[local_offset].edge_weight;
+			flag_i = work_block->edges[local_offset].flag;
 
-#ifdef EN_LLGDS
-			ll_localbaseaddrptr_i = edgeblock->edges[localoffset].ll_localbaseaddrptr;
-			ll_localaddrptr_i = edgeblock->edges[localoffset].ll_localaddrptr;
+#ifdef EN_CAL
+			ll_localbaseaddrptr_i = work_block->edges[local_offset].ll_localbaseaddrptr;
+			ll_localaddrptr_i = work_block->edges[local_offset].ll_localaddrptr;
 #endif
 
 			if (entry_i == insertparams->xadjvtx_id)
@@ -69,7 +69,7 @@ namespace gt
 				if (flag_i == VALID)
 				{
 					// should not be
-					cout << "bug! should not be (insert_unit45)" << endl;
+					LOG(ERROR) << " should not be (insert_unit45)"  ;
 				} /* else if (flag_i == DELETED){
 				// do nothing. moving on ...			
 			} */
@@ -77,22 +77,22 @@ namespace gt
 				{
 					// empty bucket found, insert and exit <//*** NB: this is repeated below>
 
-					edgeblock->edges[localoffset].xadjvtx_id = insertparams->xadjvtx_id;
-					edgeblock->edges[localoffset].initialbucket = insertparams->initialbucket_x;
-					edgeblock->edges[localoffset].edge_weight = insertparams->edge_weight;
-					edgeblock->edges[localoffset].flag = VALID;
-#ifdef EN_LLGDS
-					edgeblock->edges[localoffset].ll_localbaseaddrptr = moduleparams->ll_localbaseaddrptr_x;
-					edgeblock->edges[localoffset].ll_localaddrptr = moduleparams->ll_localaddrptr_x;
+					work_block->edges[local_offset].xadjvtx_id = insertparams->xadjvtx_id;
+					work_block->edges[local_offset].initialbucket = insertparams->initialbucket_x;
+					work_block->edges[local_offset].edge_weight = insertparams->edge_weight;
+					work_block->edges[local_offset].flag = VALID;
+#ifdef EN_CAL
+					work_block->edges[local_offset].ll_localbaseaddrptr = moduleparams->ll_localbaseaddrptr_x;
+					work_block->edges[local_offset].ll_localaddrptr = moduleparams->ll_localaddrptr_x;
 #endif
 
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 					// one-time-assignments : if initial edge, track its location
 					if (insertparams->xadjvtx_id == edge->xadjvtx_id)
 					{
 						edge->heba_hvtx_id = xvtx_id;
-						edge->heba_workblockid = wblkmargin.top / WORK_BLOCK_HEIGHT;
-						edge->heba_loffset = localoffset;
+						edge->heba_workblockid = work_block_margin.top / WORK_BLOCK_HEIGHT;
+						edge->heba_loffset = local_offset;
 						// edge->which_gen_is_the_main_copy_located = geni;
 					}
 #endif
@@ -119,22 +119,22 @@ namespace gt
 				{
 					// empty bucket found, insert and exit
 
-					edgeblock->edges[localoffset].xadjvtx_id = insertparams->xadjvtx_id;
-					edgeblock->edges[localoffset].initialbucket = insertparams->initialbucket_x;
-					edgeblock->edges[localoffset].edge_weight = insertparams->edge_weight;
-					edgeblock->edges[localoffset].flag = VALID;
-#ifdef EN_LLGDS
-					edgeblock->edges[localoffset].ll_localbaseaddrptr = moduleparams->ll_localbaseaddrptr_x;
-					edgeblock->edges[localoffset].ll_localaddrptr = moduleparams->ll_localaddrptr_x;
+					work_block->edges[local_offset].xadjvtx_id = insertparams->xadjvtx_id;
+					work_block->edges[local_offset].initialbucket = insertparams->initialbucket_x;
+					work_block->edges[local_offset].edge_weight = insertparams->edge_weight;
+					work_block->edges[local_offset].flag = VALID;
+#ifdef EN_CAL
+					work_block->edges[local_offset].ll_localbaseaddrptr = moduleparams->ll_localbaseaddrptr_x;
+					work_block->edges[local_offset].ll_localaddrptr = moduleparams->ll_localaddrptr_x;
 #endif
 
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 					// one-time-assignments : if initial edge, track its location
 					if (insertparams->xadjvtx_id == edge->xadjvtx_id)
 					{
 						edge->heba_hvtx_id = xvtx_id;
-						edge->heba_workblockid = wblkmargin.top / WORK_BLOCK_HEIGHT;
-						edge->heba_loffset = localoffset;
+						edge->heba_workblockid = work_block_margin.top / WORK_BLOCK_HEIGHT;
+						edge->heba_loffset = local_offset;
 						// edge->which_gen_is_the_main_copy_located = geni;
 					}
 #endif
@@ -153,12 +153,12 @@ namespace gt
 		return;
 	}
 
-	bucket_t Graphtinker::getdib(bucket_t currbkt, bucket_t initialbucket, margin_t subblkmargin, uint rolledover)
+	bucket_t Graphtinker::getdib(bucket_t currbkt, bucket_t initialbucket, margin_t sub_block_margin, uint rolledover)
 	{
 		bucket_t DIB = 0;
 		bucket_t rightpad = 0;
 		bucket_t leftpad = 0;
-		uint _work_blocks_per_subblock = _work_blocks_per_subblock;
+		uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
 		uint work_block_height = WORK_BLOCK_HEIGHT;
 
 		bucket_t diff = currbkt - initialbucket;
@@ -167,7 +167,7 @@ namespace gt
 			// DIB = currbkt - initialbucket;
 			if (rolledover == YES)
 			{
-				DIB = (_work_blocks_per_subblock * work_block_height) + (currbkt - initialbucket);
+				DIB = (work_blocks_per_subblock_ * work_block_height) + (currbkt - initialbucket);
 			}
 			else
 			{
@@ -176,8 +176,8 @@ namespace gt
 		}
 		else
 		{
-			rightpad = subblkmargin.bottom - initialbucket;
-			leftpad = currbkt - subblkmargin.top;
+			rightpad = sub_block_margin.bottom - initialbucket;
+			leftpad = currbkt - sub_block_margin.top;
 			DIB = rightpad + leftpad;
 		}
 		return DIB;

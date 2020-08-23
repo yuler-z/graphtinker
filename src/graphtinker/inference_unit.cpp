@@ -4,6 +4,19 @@
 #include "graphtinker/graphtinker.h"
 using namespace std;
 
+#ifdef EN_CAL
+	#define	EN_CAL_SET_CAL_CMD(cal_unit_cmd, CMD) \
+		set_cal_unit_cmd(cal_unit_cmd, CMD)
+#else
+	#define	EN_CAL_SET_CAL_CMD(cal_unit_cmd, CMD)
+#endif
+
+#ifdef EN_CRUMPLE_IN
+	#define EN_CRUMPLE_IN_SET_VERDICT(cmd)	\
+		heba_popoutpopin_cmd->verdict = cmd;
+#else
+	#define EN_CRUMPLE_IN_SET_VERDICT(cmd)
+#endif
 /**
 1. all cmds are set:
 	- moduleparams for this current lcs iteration is made up-to-date
@@ -16,8 +29,15 @@ using namespace std;
 */
 namespace gt
 {
-	void Graphtinker::inference_unit(
-		uint edgeupdatecmd,
+
+
+	/**
+	 * 给出接下来的决断
+	 * 选择退出循环
+	 * 还是其他行为
+	 */
+	void Graphtinker::InferenceUnit(
+		uint edge_update_cmd,
 		module_unit_cmd_t *moduleunitcmd,
 		module_params_t *moduleparams,
 		load_unit_cmd_t *loadunitcmd,
@@ -27,51 +47,43 @@ namespace gt
 		insert_report_t insertreport,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t *wblkmargin,
-		margin_t subblkmargin,
+		margin_t *work_block_margin,
+		margin_t sub_block_margin,
 		margin_t start_wblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
 		//infer from search report
-		searchreport_t searchreport;
-		searchreport.searchstop = 0;
-		searchreport.searchsuccessful = 0;
-		if (moduleunitcmd->mode == FINDONLYMODE)
+		search_report_t searchreport;
+		searchreport.search_stop = false;
+		searchreport.search_success = false;
+		if (moduleunitcmd->mode == FIND_MODE)
 		{
-			searchreport.searchstop = (findreport.entryfound == YES || findreport.foundemptybkt == YES || findreport.maxprobelengthreached == YES) ? 1 : 0;
+			searchreport.search_stop = findreport.is_found || findreport.is_empty || findreport.is_reach_max_prob_length;
 		}
-		if (moduleunitcmd->mode == FINDONLYMODE)
+		if (moduleunitcmd->mode == FIND_MODE)
 		{
-			searchreport.searchsuccessful = (findreport.entryfound == YES) ? 1 : 0;
+			searchreport.search_success = findreport.is_found;
 		}
 
-		uint ONE = 1;
-		uint islastworkblock = isthelastworkblock(*wblkmargin, start_wblkmargin, subblkmargin, *moduleparams);
+		bool is_last_work_block = IsLastWorkBlockInSubBlock(*work_block_margin, start_wblkmargin, sub_block_margin, *moduleparams);
 
 #ifdef EN_OTHERS
-		//cout<<"inference params of tinker = "<< tinkerid <<", batch = "<<batchid<<", chunk = "<<chunkid<<endl;
-		cout << "searchreport.searchstop = " << searchreport.searchstop << endl;
-		cout << "searchreport.searchsuccessful = " << searchreport.searchsuccessful << endl;
-		cout << "insertreport.exittype = " << insertreport.exittype << endl;
-		cout << "moduleunitcmd->mode = " << moduleunitcmd->mode << endl;
-		cout << "islastworkblock = " << islastworkblock << endl
-			 << endl;
+		//LOG(INFO) <<"inference params of tinker = "<< tinkerid <<", batch = "<<batchid<<", chunk = "<<chunkid ;
+		LOG(INFO) << "searchreport.search_stop = " << searchreport.search_stop;
+		LOG(INFO) << "searchreport.search_success = " << searchreport.search_success ;
+		LOG(INFO) << "insertreport.exittype = " << insertreport.exittype ;
+		LOG(INFO) << "moduleunitcmd->mode = " << moduleunitcmd->mode ;
+		LOG(INFO) << "is_last_work_block = " << is_last_work_block ;
 #endif
 
-		//|Mode|_|Searchstopped|_|searchsuccessfull_|InsertReport.exittype|_|islastworkblock?|
+		//|Mode|_|Searchstopped|_|searchsuccessfull_|InsertReport.exittype|_|is_last_work_block?|
 		//find-only mode
-		if (moduleunitcmd->mode == FINDONLYMODE && searchreport.searchstop == YES && searchreport.searchsuccessful == NO && ONE == 1 && ONE == 1)
+		if (moduleunitcmd->mode == FIND_MODE && searchreport.search_stop && !searchreport.search_success)
 		{
-			if (edgeupdatecmd == INSERTEDGE)
+			if (edge_update_cmd == INSERTEDGE)
 			{
 				findonlymode_searchstopped_searchunsuccessful_x_x(
 					moduleunitcmd,
@@ -80,21 +92,15 @@ namespace gt
 					findparams,
 					writebackunitcmd,
 					intervalunitcmd,
-					*wblkmargin,
-					subblkmargin,
-					xvtx_id
-#ifdef EN_LLGDS
-					,
-					llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-					,
+					*work_block_margin,
+					sub_block_margin,
+					xvtx_id,
+					cal_unit_cmd ,
 					heba_popoutpopin_cmd
-#endif
 				);
 			}
-#ifndef EN_CRUMPLEINONDELETE
-			else if (edgeupdatecmd == DELETEEDGE)
+#ifndef EN_CRUMPLE_IN
+			else if (edge_update_cmd == DELETEEDGE)
 			{
 				findanddeletemode_searchstopped_searchunsuccessful_x_x(
 					moduleunitcmd,
@@ -103,22 +109,16 @@ namespace gt
 					findparams,
 					writebackunitcmd,
 					intervalunitcmd,
-					*wblkmargin,
-					subblkmargin,
-					xvtx_id
-#ifdef EN_LLGDS
-					,
-					llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-					,
+					*work_block_margin,
+					sub_block_margin,
+					xvtx_id ,
+					cal_unit_cmd,
 					heba_popoutpopin_cmd
-#endif
 				);
 			}
 #endif
-#ifdef EN_CRUMPLEINONDELETE
-			else if (edgeupdatecmd == DELETEEDGE)
+#ifdef EN_CRUMPLE_IN
+			else if (edge_update_cmd == DELETEEDGE)
 			{
 				findanddeleteandcrumpleinmode_searchstopped_searchunsuccessful_x_x(
 					moduleunitcmd,
@@ -127,28 +127,22 @@ namespace gt
 					findparams,
 					writebackunitcmd,
 					intervalunitcmd,
-					*wblkmargin,
-					subblkmargin,
-					xvtx_id
-#ifdef EN_LLGDS
-					,
-					llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-					,
+					*work_block_margin,
+					sub_block_margin,
+					xvtx_id,
+					cal_unit_cmd,
 					heba_popoutpopin_cmd
-#endif
 				);
 			}
 #endif
 			else
 			{
-				cout << "bug! : should never be seen here (inference_unit34)" << endl;
+				LOG(ERROR) << " should never be seen here (inference_unit34)"  ;
 			}
 		}
-		else if (moduleunitcmd->mode == FINDONLYMODE && searchreport.searchstop == YES && searchreport.searchsuccessful == YES && ONE == 1 && ONE == 1)
+		else if (moduleunitcmd->mode == FIND_MODE && searchreport.search_stop && searchreport.search_success)
 		{
-			if (edgeupdatecmd == INSERTEDGE)
+			if (edge_update_cmd == INSERTEDGE)
 			{
 				findonlymode_searchstopped_searchsuccessful_x_x(
 					moduleunitcmd,
@@ -157,21 +151,15 @@ namespace gt
 					findparams,
 					writebackunitcmd,
 					intervalunitcmd,
-					*wblkmargin,
-					subblkmargin,
-					xvtx_id
-#ifdef EN_LLGDS
-					,
-					llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-					,
+					*work_block_margin,
+					sub_block_margin,
+					xvtx_id,
+					cal_unit_cmd,
 					heba_popoutpopin_cmd
-#endif
 				);
 			}
-#ifndef EN_CRUMPLEINONDELETE
-			else if (edgeupdatecmd == DELETEEDGE)
+#ifndef EN_CRUMPLE_IN
+			else if (edge_update_cmd == DELETEEDGE)
 			{
 				findanddeletemode_searchstopped_searchsuccessful_x_x(
 					moduleunitcmd,
@@ -181,22 +169,16 @@ namespace gt
 					findreport,
 					writebackunitcmd,
 					intervalunitcmd,
-					*wblkmargin,
-					subblkmargin,
-					xvtx_id
-#ifdef EN_LLGDS
-					,
-					llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-					,
+					*work_block_margin,
+					sub_block_margin,
+					xvtx_id,
+					cal_unit_cmd,
 					heba_popoutpopin_cmd
-#endif
 				);
 			}
 #endif
-#ifdef EN_CRUMPLEINONDELETE
-			else if (edgeupdatecmd == DELETEEDGE)
+#ifdef EN_CRUMPLE_IN
+			else if (edge_update_cmd == DELETEEDGE)
 			{
 				findanddeleteandcrumpleinmode_searchstopped_searchsuccessful_x_x(
 					moduleunitcmd,
@@ -206,26 +188,20 @@ namespace gt
 					findreport,
 					writebackunitcmd,
 					intervalunitcmd,
-					*wblkmargin,
-					subblkmargin,
-					xvtx_id
-#ifdef EN_LLGDS
-					,
-					llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-					,
+					*work_block_margin,
+					sub_block_margin,
+					xvtx_id,
+					cal_unit_cmd,
 					heba_popoutpopin_cmd
-#endif
 				);
 			}
 #endif
 			else
 			{
-				cout << "bug! : should never be seen here (inference_unit35)" << endl;
+				LOG(ERROR) << " should never be seen here (inference_unit35)"  ;
 			}
 		}
-		else if (moduleunitcmd->mode == FINDONLYMODE && searchreport.searchstop == NO && searchreport.searchsuccessful == NO && ONE == 1 && islastworkblock == NO)
+		else if (moduleunitcmd->mode == FIND_MODE && !searchreport.search_stop && searchreport.search_success == false && !is_last_work_block)
 		{
 			findonlymode_searchnotstopped_searchnotsuccessful_x_notlastworkblock(
 				moduleunitcmd,
@@ -234,20 +210,14 @@ namespace gt
 				findparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 		}
-		else if (moduleunitcmd->mode == FINDONLYMODE && searchreport.searchstop == NO && searchreport.searchsuccessful == NO && ONE == 1 && islastworkblock == YES)
+		else if (moduleunitcmd->mode == FIND_MODE && !searchreport.search_stop && !searchreport.search_success && is_last_work_block)
 		{
 			findonlymode_searchnotstopped_searchnotsuccessful_x_lastworkblock(
 				moduleunitcmd,
@@ -256,21 +226,15 @@ namespace gt
 				findparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				*wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				*work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 			//insert-only mode
 		}
-		else if (moduleunitcmd->mode == INSERTONLYMODE && ONE == 1 && ONE == 1 && insertreport.exittype == PASSEDTHROUGHANDSWAPPEDATSOMEPOINT && islastworkblock == NO)
+		else if (moduleunitcmd->mode == INSERT_MODE && insertreport.exittype == PASSEDTHROUGHANDSWAPPEDATSOMEPOINT && !is_last_work_block)
 		{
 			insertonlymode_x_x_passedthroughandswappedatsomepoint_notlastworkblock(
 				moduleunitcmd,
@@ -279,20 +243,14 @@ namespace gt
 				insertparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 		}
-		else if (moduleunitcmd->mode == INSERTONLYMODE && ONE == 1 && ONE == 1 && insertreport.exittype == PASSEDTHROUGHANDSWAPPEDATSOMEPOINT && islastworkblock == YES)
+		else if (moduleunitcmd->mode == INSERT_MODE && insertreport.exittype == PASSEDTHROUGHANDSWAPPEDATSOMEPOINT && is_last_work_block)
 		{
 			insertonlymode_x_x_passedthroughandswappedatsomepoint_lastworkblock(
 				moduleunitcmd,
@@ -301,20 +259,14 @@ namespace gt
 				insertparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				*wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				*work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 		}
-		else if (moduleunitcmd->mode == INSERTONLYMODE && ONE == 1 && ONE == 1 && insertreport.exittype == LOADEDINTOEMPTYBUCKET && ONE == 1)
+		else if (moduleunitcmd->mode == INSERT_MODE && insertreport.exittype == LOADEDINTOEMPTYBUCKET)
 		{
 			insertonlymode_x_x_loadedintoemptybucket_x(
 				moduleunitcmd,
@@ -323,20 +275,14 @@ namespace gt
 				insertparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				*wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				*work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 		}
-		else if (moduleunitcmd->mode == INSERTONLYMODE && ONE == 1 && ONE == 1 && insertreport.exittype == FOUNDANDUPDATEDITSELF && ONE == 1)
+		else if (moduleunitcmd->mode == INSERT_MODE && insertreport.exittype == FOUNDANDUPDATEDITSELF)
 		{
 			insertonlymode_x_x_foundandupdateditself_x(
 				moduleunitcmd,
@@ -345,20 +291,14 @@ namespace gt
 				insertparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				*wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				*work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 		}
-		else if (moduleunitcmd->mode == INSERTONLYMODE && ONE == 1 && ONE == 1 && insertreport.exittype == PASSEDTHROUGH && islastworkblock == NO)
+		else if (moduleunitcmd->mode == INSERT_MODE && insertreport.exittype == PASSEDTHROUGH && !is_last_work_block)
 		{
 			insertonlymode_x_x_passedthrough_notlastworkblock(
 				moduleunitcmd,
@@ -367,20 +307,14 @@ namespace gt
 				insertparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 		}
-		else if (moduleunitcmd->mode == INSERTONLYMODE && ONE == 1 && ONE == 1 && insertreport.exittype == PASSEDTHROUGH && islastworkblock == YES)
+		else if (moduleunitcmd->mode == INSERT_MODE && insertreport.exittype == PASSEDTHROUGH && is_last_work_block)
 		{
 			insertonlymode_x_x_passedthrough_lastworkblock(
 				moduleunitcmd,
@@ -389,27 +323,21 @@ namespace gt
 				insertparams,
 				writebackunitcmd,
 				intervalunitcmd,
-				*wblkmargin,
-				subblkmargin,
-				xvtx_id
-#ifdef EN_LLGDS
-				,
-				llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-				,
+				*work_block_margin,
+				sub_block_margin,
+				xvtx_id,
+				cal_unit_cmd,
 				heba_popoutpopin_cmd
-#endif
 			);
 		}
 		else
 		{
-			cout << "bug! : should never get here! (inference unit)" << endl;
+			LOG(ERROR) << " should never get here! (inference unit)"  ;
 		}
 		return;
 	}
 
-	//|Mode|_|Searchstopped|_|searchsuccessfull_|InsertReport.exittype|_|islastworkblock?|
+	//|Mode|_|Searchstopped|_|searchsuccessfull_|InsertReport.exittype|_|is_last_work_block?|
 	//Find-Only Mode
 	void Graphtinker::findonlymode_searchstopped_searchunsuccessful_x_x(
 		module_unit_cmd_t *moduleunitcmd,
@@ -418,30 +346,20 @@ namespace gt
 		find_params_t findparams,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, INSERTONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, INSERT_MODE);
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight); //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_from_first_generation(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, INSERTCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, INSERTCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -452,30 +370,20 @@ namespace gt
 		find_params_t findparams,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);																										  //default mode
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);																										  //default mode
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight);														  //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, UPDATECMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, UPDATECMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -486,34 +394,24 @@ namespace gt
 		find_params_t findparams,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t *wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t *work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight);														//***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										//load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + wblkmargin->top / WORK_BLOCK_HEIGHT), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(
 			intervalunitcmd,
-			wblkmargin,
-			subblkmargin,
+			work_block_margin,
+			sub_block_margin,
 			moduleparams);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -524,34 +422,24 @@ namespace gt
 		find_params_t findparams,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id ,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight);														 //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										 //load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		if (moduleparams->clustered != YES)
 		{
-			setwritebackunitcmd_markasclustered(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)));
+			setwritebackunitcmd_markasclustered(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		} //***???
 		set_intervalunitcmd_continue_in_lower_generation(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -563,34 +451,24 @@ namespace gt
 		insert_params_t insertparams,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t *wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t *work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, INSERTONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, INSERT_MODE);
 		set_moduleunitparamsedgefields(moduleparams, insertparams.xadjvtx_id, insertparams.edge_weight);													 //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										 //load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + wblkmargin->top / WORK_BLOCK_HEIGHT), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(
 			intervalunitcmd,
-			wblkmargin,
-			subblkmargin,
+			work_block_margin,
+			sub_block_margin,
 			moduleparams);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -601,34 +479,24 @@ namespace gt
 		insert_params_t insertparams, //***
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, INSERTONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, INSERT_MODE);
 		set_moduleunitparamsedgefields(moduleparams, insertparams.xadjvtx_id, insertparams.edge_weight);													  //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		if (moduleparams->clustered != YES)
 		{
-			setwritebackunitcmd_markasclustered(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)));
+			setwritebackunitcmd_markasclustered(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		}
 		set_intervalunitcmd_continue_in_lower_generation(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -639,30 +507,20 @@ namespace gt
 		insert_params_t insertparams, //***
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, insertparams.xadjvtx_id, insertparams.edge_weight);													  //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, UPDATEEDGEPTRSCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, UPDATEEDGEPTRSCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -673,30 +531,20 @@ namespace gt
 		insert_params_t insertparams, //***
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, insertparams.xadjvtx_id, insertparams.edge_weight);													  //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -707,34 +555,24 @@ namespace gt
 		insert_params_t insertparams, //***
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t *wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t *work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, INSERTONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, INSERT_MODE);
 		set_moduleunitparamsedgefields(moduleparams, insertparams.xadjvtx_id, insertparams.edge_weight);													//***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										//load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + wblkmargin->top / WORK_BLOCK_HEIGHT), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(
 			intervalunitcmd,
-			wblkmargin,
-			subblkmargin,
+			work_block_margin,
+			sub_block_margin,
 			moduleparams);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -745,34 +583,24 @@ namespace gt
 		insert_params_t insertparams, //***
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, INSERTONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, INSERT_MODE);
 		set_moduleunitparamsedgefields(moduleparams, insertparams.xadjvtx_id, insertparams.edge_weight);													 //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										 //load next EB
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		if (moduleparams->clustered != YES)
 		{
-			setwritebackunitcmd_markasclustered(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)));
+			setwritebackunitcmd_markasclustered(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		}
 		set_intervalunitcmd_continue_in_lower_generation(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
 
@@ -784,33 +612,22 @@ namespace gt
 		find_params_t findparams,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight);														 //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										 //*** NO YES
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
-
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 #ifdef EN_OTHERS
-		cout << "bug! find not successfull (inference_unit22)" << endl; //***
+		LOG(ERROR) << " find not successfull (inference_unit22)"  ; //***
 #endif
 		return;
 	}
@@ -823,43 +640,33 @@ namespace gt
 		find_report_t findreport,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight);														  //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										  //*** NO YES
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, DELETECMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_NOCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, DELETECMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 
 #ifdef EN_OTHERS
-		if (findreport.entrydeleted == YES)
+		if (findreport.is_deleted == YES)
 		{
-			cout << "entry founf but deleted (inference unit)" << endl;
+			LOG(INFO) << "entry founf but deleted (inference unit)"  ;
 		}
-		else if (findreport.entrydeleted == NO)
+		else if (findreport.is_deleted == NO)
 		{
-			cout << "bug! entry actually not found at all (inference unit)" << endl;
+			LOG(ERROR) << " entry actually not found at all (inference unit)"  ;
 		}
 		else
 		{
-			cout << "bug! should not get here (inference_unit55)" << endl;
+			LOG(ERROR) << " should not get here (inference_unit55)"  ;
 		}
 #endif
 		return;
@@ -873,33 +680,23 @@ namespace gt
 		find_params_t findparams,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight);														 //***
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);																										 //*** NO YES
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, NO, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, NOCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		heba_popoutpopin_cmd->verdict = DCI_JUSTQUITCMD;
-#endif
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CRUMPLE_IN_SET_VERDICT(DCI_JUSTQUITCMD);
 
 #ifdef EN_OTHERS
-		cout << "bug! find not successfull (inference_unit11)" << endl; //***
+		LOG(ERROR) << " find not successfull (inference_unit11)"  ; //***
 #endif
 		return;
 	}
@@ -912,50 +709,40 @@ namespace gt
 		find_report_t findreport,
 		writeback_unit_cmd_t *writebackunitcmd,
 		interval_unit_cmd_t *intervalunitcmd,
-		margin_t wblkmargin,
-		margin_t subblkmargin,
-		vertexid_t xvtx_id
-#ifdef EN_LLGDS
-		,
-		llgds_unit_cmd_t *llgdsunitcmd
-#endif
-#ifdef EN_CRUMPLEINONDELETE
-		,
-		delete_and_crumple_in_cmd_t *heba_popoutpopin_cmd
-#endif
+		margin_t work_block_margin,
+		margin_t sub_block_margin,
+		vertexid_t xvtx_id,
+		cal_unit_cmd_t *cal_unit_cmd,
+		crumple_in_cmd_t *heba_popoutpopin_cmd
 	)
 	{
-		set_moduleunitcmd(moduleunitcmd, FINDONLYMODE);
+		set_moduleunitcmd(moduleunitcmd, FIND_MODE);
 		set_moduleunitparamsedgefields(moduleparams, findparams.xadjvtx_id, findparams.edge_weight);
 		set_loadunitcmd_loadnextEB(loadunitcmd, YES);
-		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (wblkmargin.top / WORK_BLOCK_HEIGHT)), subblkmargin);
+		set_writebackunitcmd_writebackcurrentEB(writebackunitcmd, YES, (get_edgeblock_offset(xvtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin);
 		set_intervalunitcmd_quit_to_next_edge(intervalunitcmd);
-#ifdef EN_LLGDS
-		set_llgdsunitcmd(llgdsunitcmd, DELETEANDCRUMPLEINCMD);
-#endif
-#ifdef EN_CRUMPLEINONDELETE
+		EN_CAL_SET_CAL_CMD(cal_unit_cmd, DELETEANDCRUMPLEINCMD);
 		if (moduleparams->clustered == YES)
 		{
-			heba_popoutpopin_cmd->verdict = DCI_CRUMPLEINCMD;
+			EN_CRUMPLE_IN_SET_VERDICT(DCI_CRUMPLEINCMD);
 		}
 		else
 		{
-			heba_popoutpopin_cmd->verdict = DCI_JUSTQUITCMD;
+			EN_CRUMPLE_IN_SET_VERDICT(DCI_JUSTQUITCMD);
 		}
-#endif
 
 #ifdef EN_OTHERS
-		if (findreport.entrydeleted == YES)
+		if (findreport.is_deleted == YES)
 		{
-			cout << "entry founf but deleted (inference unit)" << endl;
+			LOG(INFO) << "entry founf but deleted (inference unit)"  ;
 		}
-		else if (findreport.entrydeleted == NO)
+		else if (findreport.is_deleted == NO)
 		{
-			cout << "bug! entry actually not found at all (inference unit)" << endl;
+			LOG(ERROR) << " entry actually not found at all (inference unit)"  ;
 		}
 		else
 		{
-			cout << "bug! should not get here (inference_unit66)" << endl;
+			LOG(ERROR) << " should not get here (inference_unit66)"  ;
 		}
 #endif
 		return;
@@ -974,10 +761,10 @@ namespace gt
 		return;
 	}
 
-	void Graphtinker::set_intervalunitcmd_continue_in_current_generation(interval_unit_cmd_t *intervalunitcmd, margin_t *wblkmargin, margin_t subblkmargin, module_params_t *moduleparams)
+	void Graphtinker::set_intervalunitcmd_continue_in_current_generation(interval_unit_cmd_t *intervalunitcmd, margin_t *work_block_margin, margin_t sub_block_margin, module_params_t *moduleparams)
 	{
 		intervalunitcmd->verdict = CONTINUE_IN_CURRENT_GENERATION;
-		updatemarginandrolloverstatus(wblkmargin, subblkmargin, moduleparams);
+		updatemarginandrolloverstatus(work_block_margin, sub_block_margin, moduleparams);
 		return;
 	}
 
@@ -1006,11 +793,11 @@ namespace gt
 		return;
 	}
 
-	void Graphtinker::set_writebackunitcmd_writebackcurrentEB(writeback_unit_cmd_t *writebackunitcmd, uint cmd, uint addr, margin_t subblkmargin)
+	void Graphtinker::set_writebackunitcmd_writebackcurrentEB(writeback_unit_cmd_t *writebackunitcmd, uint cmd, uint addr, margin_t sub_block_margin)
 	{
 		writebackunitcmd->writeback = cmd; //writeback EB
 		writebackunitcmd->addr = addr;
-		writebackunitcmd->subblockid = subblkmargin.top / _sub_block_height;
+		writebackunitcmd->subblockid = sub_block_margin.top / sub_block_height_;
 		return;
 	}
 
@@ -1021,58 +808,58 @@ namespace gt
 		return;
 	}
 
-	void Graphtinker::set_llgdsunitcmd(llgds_unit_cmd_t *llgdsunitcmd, uint cmd)
+	void Graphtinker::set_cal_unit_cmd(cal_unit_cmd_t *cal_unit_cmd, uint cmd)
 	{
-		llgdsunitcmd->verdict = cmd;
+		cal_unit_cmd->verdict = cmd;
 		return;
 	}
 
 	//utility functions
-	void Graphtinker::updatemarginandrolloverstatus(margin_t *wblkmargin, margin_t subblkmargin, module_params_t *moduleparams)
+	void Graphtinker::updatemarginandrolloverstatus(margin_t *work_block_margin, margin_t sub_block_margin, module_params_t *moduleparams)
 	{
-		if (wblkmargin->bottom == subblkmargin.bottom)
+		if (work_block_margin->bottom == sub_block_margin.bottom)
 		{ //roll over
-#ifdef cpuem_l1
-			cout << "**** reached end of sub-block, rolling over... ****" << endl;
-#endif
-			wblkmargin->top = subblkmargin.top;
-			wblkmargin->bottom = subblkmargin.top + (WORK_BLOCK_HEIGHT - 1);
+			DLOG(INFO) << "**** reached end of sub-block, rolling over... ****"  ;
+			work_block_margin->top = sub_block_margin.top;
+			work_block_margin->bottom = sub_block_margin.top + (WORK_BLOCK_HEIGHT - 1);
 			moduleparams->rolledover = YES;
 		}
 		else
 		{ //move forward
-			wblkmargin->top += WORK_BLOCK_HEIGHT;
-			wblkmargin->bottom += WORK_BLOCK_HEIGHT;
+			work_block_margin->top += WORK_BLOCK_HEIGHT;
+			work_block_margin->bottom += WORK_BLOCK_HEIGHT;
 		}
 		return;
 	}
 
-	uint Graphtinker::isthelastworkblock(margin_t wblkmargin, margin_t start_wblkmargin, margin_t subblkmargin, module_params_t moduleparams)
+	bool Graphtinker::IsLastWorkBlockInSubBlock(margin_t work_block_margin, margin_t start_wblkmargin, margin_t sub_block_margin, module_params_t moduleparams)
 	{
+		/* 
 		bucket_t nexttopmargin = 0;
 		bucket_t nextbottommargin = 0;
 		uint nextrolloverstatus = 0;
 
-		if (wblkmargin.bottom == subblkmargin.bottom)
+		if (work_block_margin.bottom == sub_block_margin.bottom)
 		{ //roll over
-			nexttopmargin = subblkmargin.top;
-			nextbottommargin = subblkmargin.top + (WORK_BLOCK_HEIGHT - 1); //this is correct!
+			nexttopmargin = sub_block_margin.top;
+			nextbottommargin = sub_block_margin.top + (WORK_BLOCK_HEIGHT - 1); //this is correct!
 			nextrolloverstatus = YES;
 		}
 		else
 		{ //move forward
-			nexttopmargin = wblkmargin.top + WORK_BLOCK_HEIGHT;
-			nextbottommargin = wblkmargin.bottom + WORK_BLOCK_HEIGHT;
+			nexttopmargin = work_block_margin.top + WORK_BLOCK_HEIGHT;
+			nextbottommargin = work_block_margin.bottom + WORK_BLOCK_HEIGHT;
 			nextrolloverstatus = moduleparams.rolledover;
 		}
+		*/
 
-		if (moduleparams.rolledover == YES && wblkmargin.top == start_wblkmargin.top)
+		if (moduleparams.rolledover == YES && work_block_margin.top == start_wblkmargin.top)
 		{
-			return 1;
+			return true;
 		}
 		else
 		{
-			return 0;
+			return false;
 		}
 	}
 } // namespace gt

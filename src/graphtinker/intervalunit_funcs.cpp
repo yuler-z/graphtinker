@@ -7,7 +7,7 @@ namespace gt
 {
 	void Graphtinker::initallmoduleunit(module_unit_cmd_t *moduleunitcmd, module_params_t *moduleparams, vertexid_t xadjvtx_id, edgeweight_t edge_weight)
 	{
-		moduleunitcmd->mode = FINDONLYMODE;
+		moduleunitcmd->mode = FIND_MODE;
 
 		moduleparams->rolledover = NO;
 		moduleparams->clustered = NO;
@@ -17,7 +17,7 @@ namespace gt
 		return;
 	}
 
-	void Graphtinker::initialize_moduleunit_params(module_params_t *moduleparams, vertexid_t xadjvtx_id, edgeweight_t edge_weight)
+	void Graphtinker::InitModuleUnitParams(module_params_t *moduleparams, vertexid_t xadjvtx_id, edgeweight_t edge_weight)
 	{
 		moduleparams->rolledover = NO;
 		moduleparams->clustered = NO;
@@ -42,13 +42,13 @@ initializes module unit's:
 		return;
 	}
 
-	void Graphtinker::initialize_loadunit(load_unit_cmd_t *loadunitcmd)
+	void Graphtinker::InitLoadUnit(load_unit_cmd_t *loadunitcmd)
 	{
 		loadunitcmd->load = YES;
 		return;
 	}
 
-	void Graphtinker::initialize_insertunit(insert_params_t *insertparams, insert_report_t *insertreport, vertexid_t xadjvtx_id, bucket_t hadjvtx_id, edgeweight_t edge_weight)
+	void Graphtinker::InitInsertUnit(insert_params_t *insertparams, insert_report_t *insertreport, vertexid_t xadjvtx_id, bucket_t hadjvtx_id, edgeweight_t edge_weight)
 	{
 		insertparams->xadjvtx_id = xadjvtx_id;
 		insertparams->initialbucket_x = hadjvtx_id;
@@ -77,18 +77,18 @@ initializes insert unit's:
 		return;
 	}
 
-	void Graphtinker::initialize_findunit(find_params_t *findparams, find_report_t *findreport, vertexid_t xadjvtx_id, bucket_t hadjvtx_id, edgeweight_t edge_weight)
+	void Graphtinker::InitFindUnit(find_params_t *findparams, find_report_t *findreport, vertexid_t xadjvtx_id, bucket_t hadjvtx_id, edgeweight_t edge_weight)
 	{
 		findparams->xadjvtx_id = xadjvtx_id; // edge info
 		findparams->initialbucket_x = hadjvtx_id;
 		findparams->edge_weight = edge_weight;
 		findparams->isstartblk = 0;
 
-		findreport->localoffset = NULLL;
-		findreport->entryfound = NO;
-		findreport->entrydeleted = NO;
-		findreport->maxprobelengthreached = NO;
-		findreport->foundemptybkt = NO;
+		findreport->local_offset = NULLL;
+		findreport->is_found = NO;
+		findreport->is_deleted = NO;
+		findreport->is_reach_max_prob_length = NO;
+		findreport->is_empty = NO;
 		return;
 	}
 
@@ -101,15 +101,15 @@ initializes find unit's:
 	{
 		findparams->isstartblk = 0;
 
-		findreport->localoffset = NULLL;
-		findreport->entryfound = NO;
-		findreport->entrydeleted = NO;
-		findreport->maxprobelengthreached = NO;
-		findreport->foundemptybkt = NO;
+		findreport->local_offset = NULLL;
+		findreport->is_found = NO;
+		findreport->is_deleted = NO;
+		findreport->is_reach_max_prob_length = NO;
+		findreport->is_empty = NO;
 		return;
 	}
 
-	void Graphtinker::initialize_writebackunit(writeback_unit_cmd_t *writebackunitcmd)
+	void Graphtinker::InitWritebackUnit(writeback_unit_cmd_t *writebackunitcmd)
 	{
 		writebackunitcmd->writeback = NO;
 		writebackunitcmd->addr = 0;
@@ -117,13 +117,13 @@ initializes find unit's:
 		return;
 	}
 
-	void Graphtinker::initialize_llebaverdictcmd(llgds_unit_cmd_t *llgdsunitcmd)
+	void Graphtinker::initialize_llebaverdictcmd(cal_unit_cmd_t *cal_unit_cmd)
 	{
-		llgdsunitcmd->verdict = NOCMD;
+		cal_unit_cmd->verdict = NOCMD;
 		return;
 	}
 
-#ifdef EN_LLGDS
+#ifdef EN_CAL
 	void Graphtinker::clear_lleba_addresses_in_moduleparams(module_params_t *moduleparams)
 	{
 		moduleparams->ll_localbaseaddrptr_x = 0; // we don't know the value yet  --edge.LLlocalbaseaddrptr;
@@ -132,7 +132,7 @@ initializes find unit's:
 	}
 #endif
 
-	void Graphtinker::init_deleteandcrumplein_verdictcmd(delete_and_crumple_in_cmd_t *heba_deleteandcrumplein_cmd)
+	void Graphtinker::init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd)
 	{
 		heba_deleteandcrumplein_cmd->verdict = DCI_NOCMD;
 		return;

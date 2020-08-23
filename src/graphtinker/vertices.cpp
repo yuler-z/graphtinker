@@ -17,213 +17,203 @@ using namespace std;
 
 namespace gt
 {
-	vertices::vertices()
-	{
-		cout << "vertices::vertices : vertices constructor called" << endl;
+	Vertices::Vertices(){}
+	Vertices::Vertices(uint num_vertices, float init_value){
+	
+		LOG(INFO) << "Vertices::Vertices : Vertices constructor called"  ;
+		num_vertices_ = num_vertices;
+		vertex_properties_.resize(num_vertices_);
+		InitVerticesPropertyArray(init_value);
 	}
-	vertices::~vertices() {}
+	Vertices::~Vertices() {}
 
-	void vertices::initialize(uint _num_vertices, float initvalue)
+	void Vertices::InitVerticesPropertyArray(float init_value)
 	{
-		num_vertices = _num_vertices;
-		vertex_properties.resize(_num_vertices);
-		initialize(initvalue);
-	}
-
-	vertexdata_t vertices::readdata(vertexid_t vertexid)
-	{
-		if (vertexid >= num_vertices)
+		LOG(INFO) << "initializing Vertices (Vertices) "  ;
+		for (uint i = 0; i < num_vertices_; i++)
 		{
-			cout << "vertices::readdata : out of range4. vertexid : " << vertexid << ", num_vertices : " << num_vertices << endl;
+			vertex_properties_[i].data = init_value;
+			vertex_properties_[i].indegree = 0;
+			vertex_properties_[i].outdegree = 0;
+			vertex_properties_[i].flag = INVALID;
 		}
-		return vertex_properties[vertexid].data;
+		return;
+	}
+	vertexdata_t Vertices::ReadData(vertexid_t vertexid)
+	{
+		if (vertexid >= num_vertices_)
+		{
+			LOG(ERROR) << "Vertices::ReadData : out of range4. vertexid : " << vertexid << ", num_vertices_ : " << num_vertices_  ;
+		}
+		return vertex_properties_[vertexid].data;
 	}
 
-	void vertices::writedata(vertexid_t vertexid, vertexdata_t vertexdata)
+	void Vertices::WriteData(vertexid_t vertexid, vertexdata_t vertexdata)
 	{
-		if (vertexid >= num_vertices)
+		if (vertexid >= num_vertices_)
 		{
-			cout << "vertices::writedata : out of range5. vertexid : " << vertexid << ", num_vertices : " << num_vertices << endl;
+			LOG(ERROR) << "Vertices::WriteData : out of range5. vertexid : " << vertexid << ", num_vertices_ : " << num_vertices_  ;
 		}
-		vertex_properties[vertexid].data = vertexdata;
+		vertex_properties_[vertexid].data = vertexdata;
 		return;
 	}
 
-	vertexproperty_t vertices::readproperty(vertexid_t vertexid)
+	vertex_property_t Vertices::ReadProperty(vertexid_t vertexid)
 	{
-		if (vertexid >= num_vertices)
+		if (vertexid >= num_vertices_)
 		{
-			cout << "vertices::readproperty : out of range6. vertexid : " << vertexid << ", num_vertices : " << num_vertices << endl;
+			LOG(ERROR) << "Vertices::ReadProperty : out of range6. vertexid : " << vertexid << ", num_vertices_ : " << num_vertices_  ;
 		}
-		return vertex_properties[vertexid];
+		return vertex_properties_[vertexid];
 	}
 
-	void vertices::writeproperty(vertexid_t vertexid, vertexproperty_t vertexproperty)
+	void Vertices::WriteProperty(vertexid_t vertexid, vertex_property_t vertexproperty)
 	{
-		if (vertexid >= num_vertices)
+		if (vertexid >= num_vertices_)
 		{
-			cout << "vertices::writeproperty : out of range7. vertexid : " << vertexid << ", num_vertices : " << num_vertices << endl;
+			LOG(ERROR) << "Vertices::WriteProperty : out of range7. vertexid : " << vertexid << ", num_vertices_ : " << num_vertices_  ;
 		}
-		vertex_properties[vertexid] = vertexproperty;
+		vertex_properties_[vertexid] = vertexproperty;
 		return;
 	}
 
-	void vertices::increment_outdegree(vertexid_t vertexid)
+	void Vertices::IncreaseOutdegree(vertexid_t vertexid)
 	{
-		if (vertexid >= num_vertices)
+		if (vertexid >= num_vertices_)
 		{
-			cout << "vertices::increment_outdegree : out of range5. vertexid : " << vertexid << ", num_vertices : " << num_vertices << endl;
+			LOG(ERROR) << "Vertices::IncreaseOutdegree : out of range5. vertexid : " << vertexid << ", num_vertices_ : " << num_vertices_  ;
 		}
-		vertex_properties[vertexid].outdegree += 1;
+		vertex_properties_[vertexid].outdegree += 1;
 		return;
 	}
 
-	void vertices::update_vertex_property(vertexid_t xvtx_id, vertexid_t xadjvtx_id, uint edgeupdatecmd, uint graphdirectiontype)
+	void Vertices::UpdateVertexProperty(vertexid_t xvtx_id, vertexid_t xadjvtx_id, uint edge_update_cmd, uint graphdirectiontype)
 	{
-		if (edgeupdatecmd == INSERTEDGE)
+		if (edge_update_cmd == INSERTEDGE)
 		{
 			if (graphdirectiontype == DIRECTEDGRAPH)
 			{
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].outdegree += 1;
+					vertex_properties_[xvtx_id].outdegree += 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].indegree += 1;
+					vertex_properties_[xadjvtx_id].indegree += 1;
 				}
 			}
 			else if (graphdirectiontype == UNDIRECTEDGRAPH)
 			{
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].outdegree += 1;
+					vertex_properties_[xvtx_id].outdegree += 1;
 				}
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].indegree += 1;
+					vertex_properties_[xvtx_id].indegree += 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].outdegree += 1;
+					vertex_properties_[xadjvtx_id].outdegree += 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].indegree += 1;
+					vertex_properties_[xadjvtx_id].indegree += 1;
 				}
 			}
 			else if (graphdirectiontype == REVERSE_DIRECTED_GRAPH)
 			{
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].indegree += 1;
+					vertex_properties_[xvtx_id].indegree += 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].outdegree += 1;
+					vertex_properties_[xadjvtx_id].outdegree += 1;
 				}
 			}
 			else
 			{
-				cout << "vertices::update_vertex_property : error1" << endl;
+				LOG(ERROR) << "Vertices::UpdateVertexProperty : error1"  ;
 			}
 		}
-		else if (edgeupdatecmd == DELETEEDGE)
+		else if (edge_update_cmd == DELETEEDGE)
 		{
 			if (graphdirectiontype == DIRECTEDGRAPH)
 			{
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].outdegree -= 1;
+					vertex_properties_[xvtx_id].outdegree -= 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].indegree -= 1;
+					vertex_properties_[xadjvtx_id].indegree -= 1;
 				}
 			}
 			else if (graphdirectiontype == UNDIRECTEDGRAPH)
 			{
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].outdegree -= 1;
+					vertex_properties_[xvtx_id].outdegree -= 1;
 				}
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].indegree -= 1;
+					vertex_properties_[xvtx_id].indegree -= 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].outdegree -= 1;
+					vertex_properties_[xadjvtx_id].outdegree -= 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].indegree -= 1;
+					vertex_properties_[xadjvtx_id].indegree -= 1;
 				}
 			}
 			else if (graphdirectiontype == REVERSE_DIRECTED_GRAPH)
 			{
-				if (xvtx_id < num_vertices)
+				if (xvtx_id < num_vertices_)
 				{
-					vertex_properties[xvtx_id].indegree -= 1;
+					vertex_properties_[xvtx_id].indegree -= 1;
 				}
-				if (xadjvtx_id < num_vertices)
+				if (xadjvtx_id < num_vertices_)
 				{
-					vertex_properties[xadjvtx_id].outdegree -= 1;
+					vertex_properties_[xadjvtx_id].outdegree -= 1;
 				}
 			}
 			else
 			{
-				cout << "vertices::update_vertex_property : error2" << endl;
+				LOG(ERROR) << "Vertices::UpdateVertexProperty : error2"  ;
 			}
 		}
 		return;
 	}
 
-	void vertices::initialize(float initvalue)
-	{
-		cout << "initializing vertices (vertices) " << endl;
-		for (uint i = 0; i < num_vertices; i++)
-		{
-			vertex_properties[i].data = initvalue;
-			vertex_properties[i].indegree = 0;
-			vertex_properties[i].outdegree = 0;
-			vertex_properties[i].flag = INVALID;
-		}
-		return;
-	}
-
-	void vertices::print_first_n(uint n)
+	void Vertices::PrintVerticesProperty(uint n)
 	{
 		for (uint i = 0; i < n; i++)
 		{
-			cout << "vertexid : " << i << " ";
-			cout << "data : " << vertex_properties[i].data << " ";
-			cout << "indegree : " << vertex_properties[i].indegree << " ";
-			cout << "outdegree : " << vertex_properties[i].outdegree << " ";
-			cout << "flag : " << vertex_properties[i].flag << " ";
-			cout << endl;
+			LOG(INFO) << "vertexid : " << i << " ";
+			LOG(INFO) << "data : " << vertex_properties_[i].data << " ";
+			LOG(INFO) << "indegree : " << vertex_properties_[i].indegree << " ";
+			LOG(INFO) << "outdegree : " << vertex_properties_[i].outdegree << " ";
+			LOG(INFO) << "flag : " << vertex_properties_[i].flag << " ";
+			LOG(INFO)  ;
 		}
 		return;
 	}
 
-	void vertices::print_nth_vertex(uint n)
+	void Vertices::PrintNthVertexProperty(uint n)
 	{
-		cout << "vertexid : " << n << " ";
-		cout << "data : " << vertex_properties[n].data << " ";
-		cout << "indegree : " << vertex_properties[n].indegree << " ";
-		cout << "outdegree : " << vertex_properties[n].outdegree << " ";
-		cout << "flag : " << vertex_properties[n].flag << " ";
-		cout << endl;
+		LOG(INFO) << "vertexid : " << n << " ";
+		LOG(INFO) << "data : " << vertex_properties_[n].data << " ";
+		LOG(INFO) << "indegree : " << vertex_properties_[n].indegree << " ";
+		LOG(INFO) << "outdegree : " << vertex_properties_[n].outdegree << " ";
+		LOG(INFO) << "flag : " << vertex_properties_[n].flag << " ";
+		LOG(INFO)  ;
 		return;
 	}
 
-	vector<vertexproperty_t> &vertices::get_vertex_properties()
-	{
-		return vertex_properties;
-	}
-
-	uint vertices::get_num_vertices()
-	{
-		return num_vertices;
-	}
+	// getter 
+	const vector<vertex_property_t> &Vertices::vertex_properties() const { return vertex_properties_; }
+	const uint Vertices::num_vertices() const { return num_vertices_; }
 } // namespace gt
