@@ -1,11 +1,11 @@
-# generate dataset
+
+# Generate dataset
 
 ```
-# ./PaRMAT look up detailed usage
-./PaRMAT -nEdges 8380000 -nVertices 524288 -output RMAT_500K_8M
+./gen_dataset.sh
 ```
 
-# getting started
+# Getting started
 
 ```
 mkdir build && cd build && cmake ..

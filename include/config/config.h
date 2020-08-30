@@ -7,7 +7,7 @@
 
 
 
-namespace gt{
+namespace graphtinker{
 
     class Graphtinker;
     class Config {

@@ -1,10 +1,7 @@
 project(graphtinker)
 cmake_minimum_required(VERSION 3.6)
 
-include_directories(${PROJECT_SOURCE_DIR}/include/config)
-
-set(config_source_file
-        config.cpp)
+aux_source_directory(. config_source_file)
 
 add_library(config ${config_source_file})
 

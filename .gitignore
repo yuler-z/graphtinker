@@ -1,8 +1,6 @@
-test_edge
-gt.exe
-
 build/
 cmake-build-debug/
+log/
 
 Makefile
 

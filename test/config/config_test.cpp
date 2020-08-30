@@ -3,7 +3,7 @@
 
 int main(){
 
-    gt::Config config("config.ini");
+    graphtinker::Config config("config.ini");
     config.PrintAll();
 
     return 0;

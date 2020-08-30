@@ -1,5 +1,6 @@
 #include "util/util.h"
-namespace util{
+
+namespace graphtinker{
 
     bool StringToNum(const std::string& str, uint &result)
     {

@@ -1,9 +1,6 @@
 
-PROJECT(graphtinker)
-
+PROJECT(graphtinker) 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.6)
-
-include_directories(${PROJECT_SOURCE_DIR}/include/config)
 
 add_executable(config_test config_test.cpp)
 
