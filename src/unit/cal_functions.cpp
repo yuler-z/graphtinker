@@ -1,17 +1,16 @@
-#include "core/graphtinker.h"
-using namespace std;
+#include "unit/unit_flow.h"
+
 namespace graphtinker
 {
 #ifdef EN_CAL
-	void Graphtinker::ll_insert(
+	void UnitFlow::CalInsert(
 		edge_t edge,
-		module_params_t *module_params,
-		insert_params_t *insert_params,
-		vector<ll_edgeblock_t> &ll_edge_block_array_,
-		vector<ll_logicalvertexentity_t> &ll_lva_,
-		ll_eba_tracker_t *ll_eba_tracker_,
+		vector<cal_edgeblock_t> &cal_edgeblock_array_,
+		vector<cal_logical_vertex_entity_t> &cal_lva_,
+		cal_edgeblock_tracker_t *cal_edgeblock_tracker_,
 		uint geni)
 	{
+		module_params_t &module_params = unit_option->module_params;
 		uint tailid = 0;
 		uint offsetaddr = 0;
 		uint localoffsetaddr = 0;
@@ -21,27 +20,27 @@ namespace graphtinker
 		/// calculate lvaindex
 		lvaindex = edge.vtx_id / LVACOARSENESSWIDTH;
 
-		/// resize ll_lva_ if full
-		if (lvaindex >= ll_lva_.size())
+		/// resize cal_lva_ if full
+		if (lvaindex >= cal_lva_.size())
 		{
-			ll_lva_.resize((ll_lva_.size() + ll_lva_expansion_addition_height_));
-			LOG(INFO) << "ll_insert : resizing ll_lva_... "  ;
+			cal_lva_.resize((cal_lva_.size() + cal_lva_expansion_addition_height_));
+			LOG(INFO) << "CalInsert : resizing cal_lva_... "  ;
 		}
 #ifdef EN_BUGCHECK
-		if (lvaindex >= ll_lva_.size())
+		if (lvaindex >= cal_lva_.size())
 		{
-			LOG(INFO) << "Graphtinker::ll_insert : out-of-range 1 lvaindex = " << lvaindex << ", ll_lva_.size() = " << ll_lva_.size()  ;
+			LOG(INFO) << "Graphtinker::CalInsert : out-of-range 1 lvaindex = " << lvaindex << ", cal_lva_.size() = " << cal_lva_.size()  ;
 		}
 #endif
 
-		/// retrieve ll_lva_ entity
-		ll_logicalvertexentity_t entity = ll_lva_[lvaindex];
+		/// retrieve cal_lva_ entity
+		cal_logical_vertex_entity_t entity = cal_lva_[lvaindex];
 
-		/// resize ll_edge_block_array_ if full
-		if (((entity.lastlocalbaseaddr) >= ll_edge_block_array_.size()) || (ll_eba_tracker_->ptraddr >= ll_edge_block_array_.size()))
+		/// resize cal_edgeblock_array_ if full
+		if (((entity.lastlocalbaseaddr) >= cal_edgeblock_array_.size()) || (cal_edgeblock_tracker_->ptraddr >= cal_edgeblock_array_.size()))
 		{
-			LOG(INFO) << "ll_insert : resizing ll_edge_block_array_..."  ;
-			ll_edge_block_array_.resize((ll_edge_block_array_.size() + ll_eba_expansion_addition_height_));
+			LOG(INFO) << "CalInsert : resizing cal_edgeblock_array_..."  ;
+			cal_edgeblock_array_.resize((cal_edgeblock_array_.size() + cal_eba_expansion_addition_height_));
 		}
 
 		/// check if we need to initialize first
@@ -49,29 +48,29 @@ namespace graphtinker
 		{
 			//never used before, initialize first before use
 			// create
-			entity.baseaddr = ll_eba_tracker_->ptraddr;
-			entity.lastlocalbaseaddr = ll_eba_tracker_->ptraddr;
+			entity.baseaddr = cal_edgeblock_tracker_->ptraddr;
+			entity.lastlocalbaseaddr = cal_edgeblock_tracker_->ptraddr;
 			entity.lastlocaladdr = 0;
 			entity.totaledgecount = 0;
 			entity.flag = VALID;
 
 			// insert
-			uint currentlocalbaseaddr = ll_eba_tracker_->ptraddr;
-			ll_edge_block_array_[currentlocalbaseaddr].ll_edgeblock[0] = edge;
-			ll_edge_block_array_[currentlocalbaseaddr].metadata.edgecount = 1;
-			ll_edge_block_array_[currentlocalbaseaddr].metadata.nextcptr = NAv;						 // next edgeblock location
-			ll_edge_block_array_[currentlocalbaseaddr].metadata.currcptr = ll_eba_tracker_->ptraddr; // this current edgeblock location
-			ll_edge_block_array_[currentlocalbaseaddr].metadata.prevcptr = NAv;
+			uint currentlocalbaseaddr = cal_edgeblock_tracker_->ptraddr;
+			cal_edgeblock_array_[currentlocalbaseaddr].ll_edgeblock[0] = edge;
+			cal_edgeblock_array_[currentlocalbaseaddr].metadata.edgecount = 1;
+			cal_edgeblock_array_[currentlocalbaseaddr].metadata.nextcptr = NAv;						 // next edgeblock location
+			cal_edgeblock_array_[currentlocalbaseaddr].metadata.currcptr = cal_edgeblock_tracker_->ptraddr; // this current edgeblock location
+			cal_edgeblock_array_[currentlocalbaseaddr].metadata.prevcptr = NAv;
 
 #ifdef EN_BUGCHECK
-			if ((ll_eba_tracker_->ptraddr) >= ll_edge_block_array_.size())
+			if ((cal_edgeblock_tracker_->ptraddr) >= cal_edgeblock_array_.size())
 			{
 				LOG(ERROR) << " out-of-range 31 (GraphTinkerLL)"  ;
 			}
 #endif
 
 			// increment tracker
-			ll_eba_tracker_->ptraddr += 1; // update
+			cal_edgeblock_tracker_->ptraddr += 1; // update
 		}
 
 		/// insert edge
@@ -83,46 +82,46 @@ namespace graphtinker
 
 				/// update
 				uint currentlocalbaseaddr = entity.lastlocalbaseaddr;
-				if (currentlocalbaseaddr >= ll_edge_block_array_.size())
+				if (currentlocalbaseaddr >= cal_edgeblock_array_.size())
 				{
-					LOG(ERROR) << "Graphtinker::ll_insert : out-of-range 22, entity.lastlocalbaseaddr = " << entity.lastlocalbaseaddr << ", ll_edge_block_array_.size() = " << ll_edge_block_array_.size()  ;
+					LOG(ERROR) << "Graphtinker::CalInsert : out-of-range 22, entity.lastlocalbaseaddr = " << entity.lastlocalbaseaddr << ", cal_edgeblock_array_.size() = " << cal_edgeblock_array_.size()  ;
 				}
-				ll_edge_block_array_[currentlocalbaseaddr].metadata.nextcptr = ll_eba_tracker_->ptraddr; // next edgeblock location
+				cal_edgeblock_array_[currentlocalbaseaddr].metadata.nextcptr = cal_edgeblock_tracker_->ptraddr; // next edgeblock location
 
 				/// update
-				entity.lastlocalbaseaddr = ll_eba_tracker_->ptraddr;
+				entity.lastlocalbaseaddr = cal_edgeblock_tracker_->ptraddr;
 				entity.lastlocaladdr = 0;
 
 				/// insert
-				uint nextlocalbaseaddr = ll_eba_tracker_->ptraddr;
+				uint nextlocalbaseaddr = cal_edgeblock_tracker_->ptraddr;
 #ifdef EN_BUGCHECK
-				if ((ll_eba_tracker_->ptraddr) >= ll_edge_block_array_.size())
+				if ((cal_edgeblock_tracker_->ptraddr) >= cal_edgeblock_array_.size())
 				{
 					LOG(ERROR) << " out-of-range 3 (GraphTinkerLL)"  ;
 				}
 #endif
-				ll_edge_block_array_[nextlocalbaseaddr].ll_edgeblock[entity.lastlocaladdr] = edge;
-				ll_edge_block_array_[nextlocalbaseaddr].metadata.edgecount = 1;
-				ll_edge_block_array_[nextlocalbaseaddr].metadata.nextcptr = NAv;					  // unknown next edgeblock location
-				ll_edge_block_array_[nextlocalbaseaddr].metadata.currcptr = ll_eba_tracker_->ptraddr; // current edgeblock location
-				ll_edge_block_array_[nextlocalbaseaddr].metadata.prevcptr = ll_edge_block_array_[currentlocalbaseaddr].metadata.currcptr;
+				cal_edgeblock_array_[nextlocalbaseaddr].ll_edgeblock[entity.lastlocaladdr] = edge;
+				cal_edgeblock_array_[nextlocalbaseaddr].metadata.edgecount = 1;
+				cal_edgeblock_array_[nextlocalbaseaddr].metadata.nextcptr = NAv;					  // unknown next edgeblock location
+				cal_edgeblock_array_[nextlocalbaseaddr].metadata.currcptr = cal_edgeblock_tracker_->ptraddr; // current edgeblock location
+				cal_edgeblock_array_[nextlocalbaseaddr].metadata.prevcptr = cal_edgeblock_array_[currentlocalbaseaddr].metadata.currcptr;
 
 				/// increment
-				ll_eba_tracker_->ptraddr += 1; // update
+				cal_edgeblock_tracker_->ptraddr += 1; // update
 			}
 			else
 			{
 				/// not full, insert edge
-				ll_edge_block_array_[entity.lastlocalbaseaddr].ll_edgeblock[entity.lastlocaladdr] = edge;
-				ll_edge_block_array_[entity.lastlocalbaseaddr].metadata.edgecount += 1;
+				cal_edgeblock_array_[entity.lastlocalbaseaddr].ll_edgeblock[entity.lastlocaladdr] = edge;
+				cal_edgeblock_array_[entity.lastlocalbaseaddr].metadata.edgecount += 1;
 			}
 		}
 
 /// append entity.lastlocalbaseaddr & entity.lastlocaladdr to insert_params
-/// this is how every edge in edge_block_array gets its pointer to ll_edge_block_array_
+/// this is how every edge in edge_block_array gets its pointer to cal_edgeblock_array_
 #ifdef EN_CAL
-		module_params->ll_localbaseaddrptr_x = entity.lastlocalbaseaddr;
-		module_params->ll_localaddrptr_x = entity.lastlocaladdr;
+		module_params.ll_localbaseaddrptr_x = entity.lastlocalbaseaddr;
+		module_params.ll_localaddrptr_x = entity.lastlocaladdr;
 #endif
 
 		/// common updates
@@ -131,61 +130,62 @@ namespace graphtinker
 
 /// submit changes
 #ifdef EN_BUGCHECK
-		if (lvaindex >= ll_lva_.size())
+		if (lvaindex >= cal_lva_.size())
 		{
-			LOG(ERROR) << " out-of-range 4 (GraphTinkerLL). lvaindex = " << lvaindex << ", ll_lva_.size() = " << ll_lva_.size()  ;
+			LOG(ERROR) << " out-of-range 4 (GraphTinkerLL). lvaindex = " << lvaindex << ", cal_lva_.size() = " << cal_lva_.size()  ;
 		}
 #endif
-		ll_lva_[lvaindex] = entity;
+		cal_lva_[lvaindex] = entity;
 		return;
 	}
 
-	void Graphtinker::ll_update(
+	void UnitFlow::CalUpdate(
 		edge_t edge,
-		vertexid_t ll_localbaseaddrptr,
-		vertexid_t ll_localaddrptr,
-		vector<ll_edgeblock_t> &ll_edge_block_array_)
+		vector<cal_edgeblock_t> &cal_edgeblock_array_)
 	{
-		ll_edge_block_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].edgew += 1;
+		vertexid_t &ll_localaddrptr = unit_option->module_params.ll_localaddrptr_x;
+		vertexid_t &ll_localbaseaddrptr = unit_option->module_params.ll_localbaseaddrptr_x;
+
+		cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].edgew += 1;
 		return;
 	}
 
-	void Graphtinker::ll_delete(
+	void UnitFlow::CalDelete(
 		edge_t edge,
-		vertexid_t ll_localbaseaddrptr,
-		vertexid_t ll_localaddrptr,
-		vector<ll_edgeblock_t> &ll_edge_block_array_)
+		vector<cal_edgeblock_t> &cal_edgeblock_array_)
 	{
-		ll_edge_block_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag = INVALID;
+		vertexid_t &ll_localaddrptr = unit_option->module_params.ll_localaddrptr_x;
+		vertexid_t &ll_localbaseaddrptr = unit_option->module_params.ll_localbaseaddrptr_x;
+		cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag = INVALID;
 		return;
 	}
 
-	void Graphtinker::ll_deleteandcrumplein(
+	void UnitFlow::CalDeleteAndCrumpleIn(
 		edge_t edge,
-		vertexid_t ll_localbaseaddrptr,
-		vertexid_t ll_localaddrptr,
-		vector<ll_edgeblock_t> &ll_edge_block_array_,
-		vector<ll_logicalvertexentity_t> &ll_lva_,
-		ll_eba_tracker_t *ll_eba_tracker_,
+		vector<cal_edgeblock_t> &cal_edgeblock_array_,
+		vector<cal_logical_vertex_entity_t> &cal_lva_,
+		cal_edgeblock_tracker_t *cal_edgeblock_tracker_,
 		vector<work_block_t> &edge_block_array_m_,
 		vector<work_block_t> &edge_block_array_o_,
 		uint geni)
 	{
+		vertexid_t &ll_localaddrptr = unit_option->module_params.ll_localaddrptr_x;
+		vertexid_t &ll_localbaseaddrptr = unit_option->module_params.ll_localbaseaddrptr_x;
 		// find partiton
 		uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
 		edge_t nedge;
 
 		// delete edge
-		ll_edge_block_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag = INVALID;
+		cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag = INVALID;
 		// return;
 
 		// pop-out from end and pop-in to hole where edge was deleted
 		uint lvaindex = edge.vtx_id / LVACOARSENESSWIDTH;
-		if (lvaindex >= ll_lva_.size())
+		if (lvaindex >= cal_lva_.size())
 		{
 			LOG(ERROR) << " addr out-of-range11 (gds_ll) "  ;
 		}
-		ll_logicalvertexentity_t entity = ll_lva_[lvaindex];
+		cal_logical_vertex_entity_t entity = cal_lva_[lvaindex];
 		if (entity.flag != VALID)
 		{
 			LOG(ERROR) << " something wrong4 (gds_ll) "  ;
@@ -214,7 +214,7 @@ namespace graphtinker
 				entity.totaledgecount = entity.totaledgecount - 1;
 
 				// update
-				ll_lva_[lvaindex] = entity;
+				cal_lva_[lvaindex] = entity;
 
 				// get out
 				return;
@@ -227,7 +227,7 @@ namespace graphtinker
 				entity.totaledgecount = entity.totaledgecount - 1;
 
 				// pop-out, pop-in
-				if (localbaseaddr >= ll_edge_block_array_.size())
+				if (localbaseaddr >= cal_edgeblock_array_.size())
 				{
 					LOG(ERROR) << " addr out-of-range7 (gds_ll) "  ;
 				}
@@ -235,7 +235,7 @@ namespace graphtinker
 				{
 					LOG(ERROR) << " addr out-of-range88. entity.lastlocaladdr : " << entity.lastlocaladdr << ", LLEDGEBLOCKSIZE : " << LLEDGEBLOCKSIZE << " (gds_ll) "  ;
 				}
-				if (ll_localbaseaddrptr >= ll_edge_block_array_.size())
+				if (ll_localbaseaddrptr >= cal_edgeblock_array_.size())
 				{
 					LOG(ERROR) << " addr out-of-range9 (gds_ll) "  ;
 				}
@@ -245,7 +245,7 @@ namespace graphtinker
 				}
 
 				// pop-out
-				nedge = ll_edge_block_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge];
+				nedge = cal_edgeblock_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge];
 
 				// invalidate //***
 				if (nedge.flag != VALID)
@@ -253,14 +253,14 @@ namespace graphtinker
 					LOG(ERROR) << " something wrong551. localbaseaddr : " << localbaseaddr << ", localaddrofvalidedge : " << localaddrofvalidedge << ", ll_localbaseaddrptr : " << ll_localbaseaddrptr << ", ll_localaddrptr : " << ll_localaddrptr << " (gds_ll) "  ;
 				}
 
-				ll_edge_block_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge].flag = INVALID;
+				cal_edgeblock_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge].flag = INVALID;
 
 				// pop in
-				if (ll_edge_block_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag == VALID)
+				if (cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag == VALID)
 				{
 					LOG(ERROR) << " something wrong457. ll_localbaseaddrptr : " << ll_localbaseaddrptr << ", ll_localaddrptr : " << ll_localaddrptr << " (gds_ll) "  ;
 				}
-				ll_edge_block_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr] = nedge;
+				cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr] = nedge;
 
 				// redirect pointer (heba -> ll)
 				uint workblockaddr = GetEdgeblockOffset(nedge.heba_hvtx_id) + nedge.heba_workblockid;
@@ -284,7 +284,7 @@ namespace graphtinker
 				}
 
 				// update
-				ll_lva_[lvaindex] = entity;
+				cal_lva_[lvaindex] = entity;
 				return;
 			}
 		}
@@ -294,22 +294,22 @@ namespace graphtinker
 
 			uint localaddrofvalidedge = (LLEDGEBLOCKSIZE - 1);
 
-			if (entity.lastlocalbaseaddr >= ll_edge_block_array_.size())
+			if (entity.lastlocalbaseaddr >= cal_edgeblock_array_.size())
 			{
 				LOG(ERROR) << " addr out-of-range67 (gds_ll) "  ;
 			}
-			uint prevcptr = ll_edge_block_array_[entity.lastlocalbaseaddr].metadata.prevcptr; // next edgeblock location
+			uint prevcptr = cal_edgeblock_array_[entity.lastlocalbaseaddr].metadata.prevcptr; // next edgeblock location
 			if (prevcptr != NAv)
 			{
-				if (prevcptr >= ll_edge_block_array_.size())
+				if (prevcptr >= cal_edgeblock_array_.size())
 				{
-					LOG(ERROR) << " addr out-of-range69. prevcptr : " << prevcptr << ", ll_edge_block_array_.size() : " << ll_edge_block_array_.size() << " (gds_ll) "  ;
+					LOG(ERROR) << " addr out-of-range69. prevcptr : " << prevcptr << ", cal_edgeblock_array_.size() : " << cal_edgeblock_array_.size() << " (gds_ll) "  ;
 				}
 			}
 			uint prevlocalbaseaddr;
 			if (prevcptr != NAv)
 			{
-				prevlocalbaseaddr = ll_edge_block_array_[prevcptr].metadata.currcptr;
+				prevlocalbaseaddr = cal_edgeblock_array_[prevcptr].metadata.currcptr;
 			} //****
 			if (prevcptr != NAv)
 			{
@@ -332,11 +332,11 @@ namespace graphtinker
 
 				if (prevcptr != NAv)
 				{
-					ll_edge_block_array_[prevcptr].metadata.nextcptr = NAv;
+					cal_edgeblock_array_[prevcptr].metadata.nextcptr = NAv;
 				} //****
 
 				// update
-				ll_lva_[lvaindex] = entity;
+				cal_lva_[lvaindex] = entity;
 
 				// get out
 				return;
@@ -351,11 +351,11 @@ namespace graphtinker
 
 				if (prevcptr != NAv)
 				{
-					ll_edge_block_array_[prevcptr].metadata.nextcptr = NAv;
+					cal_edgeblock_array_[prevcptr].metadata.nextcptr = NAv;
 				} //****
 
 				// pop-out, pop-in
-				if (localbaseaddr >= ll_edge_block_array_.size())
+				if (localbaseaddr >= cal_edgeblock_array_.size())
 				{
 					LOG(ERROR) << " addr out-of-range7 (gds_ll) "  ;
 				}
@@ -363,7 +363,7 @@ namespace graphtinker
 				{
 					LOG(ERROR) << " addr out-of-range89. entity.lastlocaladdr : " << entity.lastlocaladdr << ", LLEDGEBLOCKSIZE : " << LLEDGEBLOCKSIZE << " (gds_ll) "  ;
 				}
-				if (ll_localbaseaddrptr >= ll_edge_block_array_.size())
+				if (ll_localbaseaddrptr >= cal_edgeblock_array_.size())
 				{
 					LOG(ERROR) << " addr out-of-range9 (gds_ll) "  ;
 				}
@@ -373,21 +373,21 @@ namespace graphtinker
 				}
 
 				// pop-out
-				nedge = ll_edge_block_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge];
+				nedge = cal_edgeblock_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge];
 
 				// invalidate //***
 				if (nedge.flag != VALID)
 				{
 					LOG(ERROR) << " something wrong552. localbaseaddr : " << localbaseaddr << ", localaddrofvalidedge : " << localaddrofvalidedge << " (gds_ll) "  ;
 				}
-				ll_edge_block_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge].flag = INVALID;
+				cal_edgeblock_array_[localbaseaddr].ll_edgeblock[localaddrofvalidedge].flag = INVALID;
 
 				// pop in
-				if (ll_edge_block_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag == VALID)
+				if (cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].flag == VALID)
 				{
 					LOG(ERROR) << " something wrong557. ll_localbaseaddrptr : " << ll_localbaseaddrptr << ", ll_localaddrptr : " << ll_localaddrptr << " (gds_ll) "  ;
 				}
-				ll_edge_block_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr] = nedge;
+				cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr] = nedge;
 
 				// redirect pointer (heba -> ll)
 				uint workblockaddr = GetEdgeblockOffset(nedge.heba_hvtx_id) + nedge.heba_workblockid;
@@ -411,7 +411,7 @@ namespace graphtinker
 				}
 
 				// update
-				ll_lva_[lvaindex] = entity;
+				cal_lva_[lvaindex] = entity;
 				return;
 			}
 		}
@@ -422,16 +422,16 @@ namespace graphtinker
 		return;
 	}
 
-	void Graphtinker::ll_updateedgeptrs(
+	void UnitFlow::CalUpdateEdgePtrs(
 		edge_t edge,
-		module_params_t module_params,
-		vector<ll_edgeblock_t> &ll_edge_block_array_)
+		vector<cal_edgeblock_t> &cal_edgeblock_array_)
 	{
+		module_params_t &module_params = unit_option->module_params;
 		if (edge.heba_hvtx_id < 0)
 		{
 			LOG(ERROR) << " invalid454. edge.heba_hvtx_id : " << edge.heba_hvtx_id << " (gds_ll) "  ;
 		}
-		if (module_params.ll_localbaseaddrptr_x >= ll_edge_block_array_.size())
+		if (module_params.ll_localbaseaddrptr_x >= cal_edgeblock_array_.size())
 		{
 			LOG(ERROR) << " addr out-of-range47 (gds_ll) "  ;
 		}
@@ -439,9 +439,9 @@ namespace graphtinker
 		{
 			LOG(ERROR) << " addr out-of-range5. ll_localaddrptr : " << module_params.ll_localaddrptr_x << ", LLEDGEBLOCKSIZE : " << LLEDGEBLOCKSIZE << " (gds_ll) "  ;
 		}
-		ll_edge_block_array_[module_params.ll_localbaseaddrptr_x].ll_edgeblock[module_params.ll_localaddrptr_x].heba_hvtx_id = edge.heba_hvtx_id;
-		ll_edge_block_array_[module_params.ll_localbaseaddrptr_x].ll_edgeblock[module_params.ll_localaddrptr_x].heba_workblockid = edge.heba_workblockid;
-		ll_edge_block_array_[module_params.ll_localbaseaddrptr_x].ll_edgeblock[module_params.ll_localaddrptr_x].heba_loffset = edge.heba_loffset;
+		cal_edgeblock_array_[module_params.ll_localbaseaddrptr_x].ll_edgeblock[module_params.ll_localaddrptr_x].heba_hvtx_id = edge.heba_hvtx_id;
+		cal_edgeblock_array_[module_params.ll_localbaseaddrptr_x].ll_edgeblock[module_params.ll_localaddrptr_x].heba_workblockid = edge.heba_workblockid;
+		cal_edgeblock_array_[module_params.ll_localbaseaddrptr_x].ll_edgeblock[module_params.ll_localaddrptr_x].heba_loffset = edge.heba_loffset;
 		return;
 	}
 #endif

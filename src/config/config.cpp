@@ -6,6 +6,7 @@
 #include "util/util.h"
 #include "core/graphtinker.h"
 
+using std::map;
 namespace graphtinker {
 
     Config::Config() {
@@ -44,10 +45,10 @@ namespace graphtinker {
                                           reader.Get("graphtinker", "eba_m_expansion_addition_height", "100000")));
         _config_map.insert(std::make_pair("eba_o_expansion_addition_height",
                                           reader.Get("graphtinker", "eba_o_expansion_addition_height", "100000")));
-        _config_map.insert(std::make_pair("ll_eba_expansion_addition_height",
-                                          reader.Get("graphtinker", "ll_eba_expansion_addition_height", "1000")));
-        _config_map.insert(std::make_pair("ll_lva_expansion_addition_height",
-                                          reader.Get("graphtinker", "ll_lva_expansion_addition_height", "100")));
+        _config_map.insert(std::make_pair("cal_eba_expansion_addition_height",
+                                          reader.Get("graphtinker", "cal_eba_expansion_addition_height", "1000")));
+        _config_map.insert(std::make_pair("cal_lva_expansion_addition_height",
+                                          reader.Get("graphtinker", "cal_lva_expansion_addition_height", "100")));
         _config_map.insert(
                 std::make_pair("eba_expansion_padding", reader.Get("graphtinker", "eba_expansion_padding", "10000")));
 
@@ -61,10 +62,9 @@ namespace graphtinker {
             return false;
         }
 
-        map<string, string>::iterator it;
         LOG(INFO) << "----------Configuration-------------"  ;
 
-        for (it = _config_map.begin(); it != _config_map.end(); it++) {
+        for (auto it = _config_map.begin(); it != _config_map.end(); it++) {
             LOG(INFO) << it->first << " = " << it->second  ;
         }
 
@@ -72,7 +72,7 @@ namespace graphtinker {
     }
 
     bool Config::ConfigGraph(Graphtinker *gt) {
-        DLOG(INFO) << "config::ConfigGraph : start config" << std::endl;
+        DLOG(INFO) << "config::ConfigGraph : start config";
         gt->sgh_for_vtx_id_ = _config_map["sgh_for_vtx_id"].compare("SELF") == 0 ? SELF : OTHER;
         gt->sgh_for_adjvtx_id_ = _config_map["sgh_for_adjvtx_id"].compare("SELF") == 0 ? SELF : OTHER;
         gt->updatev_ = _config_map["updatev"].compare("SELF") == 0 ? SELF : OTHER;
@@ -91,11 +91,11 @@ namespace graphtinker {
         StringToNum(_config_map["page_block_height"], gt->page_block_height_);
         StringToNum(_config_map["eba_m_expansion_addition_height"], gt->eba_m_expansion_addition_height_);
         StringToNum(_config_map["eba_o_expansion_addition_height"], gt->eba_o_expansion_addition_height_);
-        StringToNum(_config_map["ll_eba_expansion_addition_height"], gt->ll_eba_expansion_addition_height_);
-        StringToNum(_config_map["ll_lva_expansion_addition_height"], gt->ll_lva_expansion_addition_height_);
+        StringToNum(_config_map["cal_eba_expansion_addition_height"], gt->cal_eba_expansion_addition_height_);
+        StringToNum(_config_map["cal_lva_expansion_addition_height"], gt->cal_lva_expansion_addition_height_);
         StringToNum(_config_map["eba_expansion_padding"], gt->eba_expansion_padding_);
 
-        DLOG(INFO) << "end config" << std::endl;
+        DLOG(INFO) << "end config";
 
         return true;
     }

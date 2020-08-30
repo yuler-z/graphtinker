@@ -10,7 +10,7 @@
 #include <cmath>
 #include <omp.h>
 #include "core/translator.h"
-using namespace std;
+;
 namespace graphtinker
 {
 	Translator::Translator(vertexid_t vertex_range)

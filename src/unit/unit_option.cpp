@@ -81,4 +81,15 @@ namespace graphtinker{
 		find_report.is_empty = NO;
 		return;
 	}
+
+	void UnitOption::InitCalUnit(){
+		cal_unit_cmd.verdict = NOCMD;
+		return;
+	}
+	void UnitOption::ClearCalAdr()
+	{
+		module_params.ll_localbaseaddrptr_x = 0; // we don't know the value yet  --edge.LLlocalbaseaddrptr;
+		module_params.ll_localaddrptr_x = 0;	 // we don't know the value yet  --edge.LLlocaladdrptr;
+		return;
+	}
 }

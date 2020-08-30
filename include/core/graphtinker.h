@@ -3,14 +3,15 @@
 
 #include <iostream>
 #include <vector>
-#include "common.h"
-#include "vertices.h"
-#include "translator.h"
+#include "core/common.h"
+#include "core/vertices.h"
+#include "core/translator.h"
 #include "config/config.h"
-using namespace std;
+#include "unit/unit_option.h"
+#include "unit/unit_flow.h"
+;
 using std::string;
 /// classes
-// TODO: 1. 计划把unit中的参数，即状态机过程中用到的所有信息，全部封装到UnitOption中, 以简化代码
 namespace graphtinker {
 
     class Graphtinker {
@@ -42,8 +43,8 @@ namespace graphtinker {
 
         uint eba_m_expansion_addition_height_;
         uint eba_o_expansion_addition_height_;
-        uint ll_eba_expansion_addition_height_;
-        uint ll_lva_expansion_addition_height_;
+        uint cal_eba_expansion_addition_height_;
+        uint cal_lva_expansion_addition_height_;
         uint eba_expansion_padding_;
 
         // edge block array
@@ -52,9 +53,9 @@ namespace graphtinker {
         tracker_t lvatracker_;
 
         // ll edge block array
-        vector<ll_edgeblock_t> ll_edge_block_array_;
-        vector<ll_logicalvertexentity_t> ll_lva_;
-        ll_eba_tracker_t ll_eba_tracker_;
+        vector<cal_edgeblock_t> cal_edgeblock_array_;
+        vector<cal_logical_vertex_entity_t> cal_lva_;
+        cal_edgeblock_tracker_t cal_edgeblock_tracker_;
 
         // Vertex Property Array
         Vertices* vertices_handler_;
@@ -88,10 +89,8 @@ namespace graphtinker {
 
         vertexid_t retrieve_edges(vertexid_t vid, vector<edge_tt> &edges);
 
-
-
-        uint printll_edgecount();
-        uint ll_countedges(vector<ll_edgeblock_t> &ll_edge_block_array_);
+        uint PrintCALEdgeCount();
+        uint ll_countedges(vector<cal_edgeblock_t> &cal_edgeblock_array_);
         uint print_svs_size();
         uint print_freed_edgeblock_list_size();
         void initialize_lvas();
@@ -107,8 +106,8 @@ namespace graphtinker {
         const uint sub_block_height() const;
         const vector<work_block_t> &edge_block_array_m() const;
         const vector<work_block_t> &edge_block_array_o() const;
-        const vector<ll_logicalvertexentity_t> &ll_logicalvertexentity() const;
-        const vector<ll_edgeblock_t> &ll_edge_block_array() const;
+        const vector<cal_logical_vertex_entity_t> &ll_logicalvertexentity() const;
+        const vector<cal_edgeblock_t> &ll_edge_block_array() const;
 
         // print function
         uint PrintEdgeCount();
@@ -136,51 +135,9 @@ namespace graphtinker {
         // bucket_t getdib(bucket_t currbkt, bucket_t initialbucket, margin_t sub_block_margin, uint rolledover);
 
 
-#ifdef EN_CAL
-        void clear_lleba_addresses_in_moduleparams(module_params_t *module_params);
-#endif
-
 #ifdef EN_CRUMPLE_IN
         void init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd);
 #endif
-
-        // ll functions
-        void ll_insert(
-                edge_t edge,
-                module_params_t *module_params,
-                insert_params_t *insert_params,
-                vector<ll_edgeblock_t> &ll_edge_block_array_,
-                vector<ll_logicalvertexentity_t> &ll_lva_,
-                ll_eba_tracker_t *ll_eba_tracker_,
-                uint geni);
-
-        void ll_update(
-                edge_t edge,
-                vertexid_t ll_localbaseaddrptr,
-                vertexid_t ll_localaddrptr,
-                vector<ll_edgeblock_t> &ll_edge_block_array_);
-
-        void ll_delete(
-                edge_t edge,
-                vertexid_t ll_localbaseaddrptr,
-                vertexid_t ll_localaddrptr,
-                vector<ll_edgeblock_t> &ll_edge_block_array_);
-
-        void ll_deleteandcrumplein(
-                edge_t edge,
-                vertexid_t ll_localbaseaddrptr,
-                vertexid_t ll_localaddrptr,
-                vector<ll_edgeblock_t> &ll_edge_block_array_,
-                vector<ll_logicalvertexentity_t> &ll_lva_,
-                ll_eba_tracker_t *ll_eba_tracker_,
-                vector<work_block_t> &edge_block_array_m_,
-                vector<work_block_t> &edge_block_array_o_,
-                uint geni);
-
-        void ll_updateedgeptrs(
-                edge_t edge,
-                module_params_t module_params,
-                vector<ll_edgeblock_t> &ll_edge_block_array_);
 
         // super Vertices
         int sv_get_next_edge(
@@ -220,7 +177,7 @@ namespace graphtinker {
                 vector<work_block_t> &edge_block_array_m_,
                 vector<work_block_t> &edge_block_array_o_,
 #ifdef EN_CAL
-                vector<ll_edgeblock_t> &ll_edge_block_array_,
+                vector<cal_edgeblock_t> &cal_edgeblock_array_,
 #endif
                 vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
                 vertexid_t vtx_id,
@@ -228,22 +185,6 @@ namespace graphtinker {
                 margin_t sub_block_margin,
                 uint geni, crumple_in_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs,
                 vector<vertexid_t> &freed_edgeblock_list);
-
-        // ll unit
-        void CALUnit(
-                cal_unit_cmd_t cal_unit_cmd,
-                module_params_t *module_params,
-                insert_params_t *insert_params,
-                edge_t edge,
-                vector<work_block_t> &edge_block_array_m_,
-                vector<work_block_t> &edge_block_array_o_,
-                uint geni
-#ifdef EN_CAL
-                ,
-                vector<ll_edgeblock_t> &ll_edge_block_array_, vector<ll_logicalvertexentity_t> &ll_lva_,
-                ll_eba_tracker_t *ll_eba_tracker_
-#endif
-        );
 
     private:
     };

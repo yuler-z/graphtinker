@@ -43,6 +43,9 @@ namespace graphtinker{
             void InitInsertUnit2();
             void InitFindUnit2();
 
+            void InitCalUnit();
+            void ClearCalAdr();
+
 
 
 

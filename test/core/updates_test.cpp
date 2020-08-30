@@ -16,7 +16,7 @@
 #include <gflags/gflags.h>
 #include "core/graphtinker.h"
 #include "core/vertices.h"
-using namespace std;
+;
 using namespace graphtinker;
 
 int main(int argc, char* argv[])

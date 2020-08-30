@@ -4,9 +4,9 @@
 #include <iostream>
 #include <vector>
 #include <glog/logging.h>
-using namespace std;
+using std::vector;
 
-// #define EN_CAL 0    // Coarse Adjacency List
+#define EN_CAL 0    // Coarse Adjacency List
 // #define EN_CRUMPLE_IN //crumple in on delete 
 
 #define WORK_BLOCK_HEIGHT 4 
@@ -290,16 +290,16 @@ typedef struct {
 	uint nextcptr;
 	uint currcptr;
 	uint prevcptr;
-} ll_edgeblockmetadata_t;
+} cal_edgeblock_metadata_t;
 
 typedef struct {
 	edge_t ll_edgeblock[LLEDGEBLOCKSIZE];
-	ll_edgeblockmetadata_t metadata;
-} ll_edgeblock_t;
+	cal_edgeblock_metadata_t metadata;
+} cal_edgeblock_t;
 
 typedef struct {
 	uint ptraddr;
-} ll_eba_tracker_t;
+} cal_edgeblock_tracker_t;
 
 typedef struct {
 	uint baseaddr;
@@ -307,7 +307,7 @@ typedef struct {
 	uint lastlocaladdr;
 	uint totaledgecount;
 	uint flag;
-} ll_logicalvertexentity_t;
+} cal_logical_vertex_entity_t;
 
 typedef struct {	
 	uint indegree;

@@ -15,7 +15,7 @@
 #include <omp.h>
 #include "core/graphtinker.h"
 #include "core/vertices.h"
-using namespace std;
+;
 using namespace graphtinker;
 /**
 cout<<"NUM_CORES: 1" ;
@@ -121,7 +121,7 @@ void insertions(Graphtinker &tinker)
 		cout << "number of edges : " << tinker.PrintEdgeCount() << " edges"  ;
 		cout << "number of unique edges : " << tinker.PrintUniqueEdgeCount() << " edges"  ;
 #ifdef EN_CAL
-		cout << "number of edges in ll : " << tinker.printll_edgecount() << " edges"  ;
+		cout << "number of edges in ll : " << tinker.PrintCALEdgeCount() << " edges"  ;
 #endif
 		cout << "timelapse (ms) : " << (float)insertion_timelapse_ms << " ms"  ;
 		cout << "total timelapse (ms) : " << (float)total_insertion_time_lapse_ms << " ms"  ;
@@ -208,7 +208,7 @@ void deletions(Graphtinker &tinker)
 		cout << "number of edges : " << tinker.PrintEdgeCount() << " edges"  ;
 		cout << "number of unique edges : " << tinker.PrintUniqueEdgeCount() << " edges"  ;
 #ifdef EN_CAL
-		cout << "number of unique edges in ll : " << tinker.printll_edgecount() << " edges"  ;
+		cout << "number of unique edges in ll : " << tinker.PrintCALEdgeCount() << " edges"  ;
 #endif
 		cout << "timelapse (ms) : " << (float)deletion_timelapse_ms << " ms"  ;
 		cout << "running throughput : " << (float)runningthroughput << " million edges per sec"  ;

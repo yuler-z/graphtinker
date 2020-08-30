@@ -16,7 +16,7 @@
 #include "core/graphtinker.h"
 #include "vertices/vertices.h"
 #define ___use_omp___
-using namespace std;
+;
 
 class multicore_updates_test
 {

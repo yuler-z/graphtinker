@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include "core/graphtinker.h"
-using namespace std;
+;
 
 namespace graphtinker
 {

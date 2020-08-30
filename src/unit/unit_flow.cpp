@@ -10,6 +10,8 @@ namespace graphtinker{
         work_blocks_per_page_ = gt->work_blocks_per_page();
         sub_block_height_ = gt->sub_block_height();
         work_blocks_per_subblock_  = gt->work_blocks_per_subblock();
+        cal_lva_expansion_addition_height_ = gt->cal_lva_expansion_addition_height_;
+        cal_eba_expansion_addition_height_ = gt->cal_eba_expansion_addition_height_;
 
         DLOG(INFO) << "construct UnitFlow";
         DLOG(INFO) << "work_blocks_per_page_ = " << work_blocks_per_page_;

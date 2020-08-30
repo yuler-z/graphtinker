@@ -1,5 +1,5 @@
 #include "unit/unit_flow.h"
-using namespace std;
+;
 
 namespace graphtinker
 {
@@ -16,7 +16,7 @@ namespace graphtinker
 		uint edge_update_cmd
 #ifdef EN_CAL
 		,
-		vector<ll_edgeblock_t> &ll_edge_block_array_
+		vector<cal_edgeblock_t> &cal_edgeblock_array_
 #endif
 #ifdef EN_CRUMPLE_IN
 		,
@@ -199,9 +199,9 @@ namespace graphtinker
 				edge_block_array_o_[writeback_unit_cmd.addr] = *work_block;
 			}
 
-// update ll_edge_block_array_
+// update cal_edgeblock_array_
 #ifdef EN_CRUMPLE_IN
-			ll_edge_block_array_[module_params->ll_localbaseaddrptr_x].ll_edgeblock[module_params->ll_localaddrptr_x].which_gen_is_the_main_copy_located = geni; //***
+			cal_edgeblock_array_[module_params->ll_localbaseaddrptr_x].ll_edgeblock[module_params->ll_localaddrptr_x].which_gen_is_the_main_copy_located = geni; //***
 #endif
 		}
 

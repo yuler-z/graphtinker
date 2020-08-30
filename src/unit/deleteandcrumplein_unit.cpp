@@ -1,5 +1,5 @@
 #include "core/graphtinker.h"
-using namespace std;
+;
 
 namespace graphtinker
 {
@@ -11,7 +11,7 @@ namespace graphtinker
 		vector<work_block_t> &edge_block_array_m_,
 		vector<work_block_t> &edge_block_array_o_,
 #ifdef EN_CAL
-		vector<ll_edgeblock_t> &ll_edge_block_array_,
+		vector<cal_edgeblock_t> &cal_edgeblock_array_,
 #endif
 		vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
 		vertexid_t vtx_id,
@@ -79,10 +79,10 @@ namespace graphtinker
 // remember that ll may need to update which edgeblockarray (m or c) it's now pointing to!
 #ifdef EN_CAL
 				uint work_block_height = WORK_BLOCK_HEIGHT;
-				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_hvtx_id = vtx_id;
-				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_workblockid = work_block_margin.top / work_block_height;
-				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_loffset = find_report.local_offset;
-				ll_edge_block_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].which_gen_is_the_main_copy_located = geni;
+				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_hvtx_id = vtx_id;
+				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_workblockid = work_block_margin.top / work_block_height;
+				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_loffset = find_report.local_offset;
+				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].which_gen_is_the_main_copy_located = geni;
 #endif
 			}
 			else if (retstatus == 6)

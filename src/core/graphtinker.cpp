@@ -1,21 +1,8 @@
-#include <string.h>
-#include <stdio.h>
-#include <iostream>
+
 #include <ctime>
-#include <functional>
-#include <sys/time.h>
-#include <time.h>
-#include <stdlib.h>
-#include <iomanip>
-#include <cmath>
-#include <omp.h>
-
-#include "core/vertices.h"
 #include "core/graphtinker.h"
-#include "unit/unit_option.h"
-#include "unit/unit_flow.h"
 
-using namespace std;
+using std::vector;
 
 namespace graphtinker
 {
@@ -49,8 +36,8 @@ namespace graphtinker
         }
 
 #ifdef EN_CAL
-        ll_edge_block_array_.clear();
-        ll_lva_.clear();
+        cal_edgeblock_array_.clear();
+        cal_lva_.clear();
 #endif
     }
 
@@ -70,9 +57,9 @@ namespace graphtinker
         LOG(INFO) << "lvatracker_ start mark : " << lvatracker_.mark;
 
 #ifdef EN_CAL
-        ll_edge_block_array_.resize(((num_vertices_ * page_block_height_) / LLEDGEBLOCKSIZE));
-        ll_lva_.resize(((num_vertices_ + (LVACOARSENESSWIDTH - 1)) / LVACOARSENESSWIDTH));
-        ll_eba_tracker_.ptraddr = 0;
+        cal_edgeblock_array_.resize(((num_vertices_ * page_block_height_) / LLEDGEBLOCKSIZE));
+        cal_lva_.resize(((num_vertices_ + (LVACOARSENESSWIDTH - 1)) / LVACOARSENESSWIDTH));
+        cal_edgeblock_tracker_.ptraddr = 0;
         initialize_lvas();
 #endif
 
@@ -96,9 +83,9 @@ namespace graphtinker
         LOG(INFO) << "edge_block_array_o_.size() : " << edge_block_array_o_.size();
 // enable ---- linked-list graph data structure
 #ifdef EN_CAL
-        LOG(INFO) << "ll_edge_block_array_.size() : " << ll_edge_block_array_.size();
-        LOG(INFO) << "ll_lva_.size() : " << ll_lva_.size();
-        LOG(INFO) << "ll_eba_tracker_.ptraddr : " << ll_eba_tracker_.ptraddr;
+        LOG(INFO) << "cal_edgeblock_array_.size() : " << cal_edgeblock_array_.size();
+        LOG(INFO) << "cal_lva_.size() : " << cal_lva_.size();
+        LOG(INFO) << "cal_edgeblock_tracker_.ptraddr : " << cal_edgeblock_tracker_.ptraddr;
 #endif
         return;
     }
@@ -180,7 +167,7 @@ namespace graphtinker
 
     void Graphtinker::BatchInsertEdge(const char *path, uint batch_size)
     {
-        LOG(INFO) << endl;
+        LOG(INFO) << std::endl;
         LOG(INFO) << "----------Bath insertion edge-----------";
         vector<tuple_t> src_dst_pairs;
         uint edges_inserted = 0;
@@ -250,13 +237,13 @@ namespace graphtinker
             total_insertion_time_lapse_ms += insertion_timelapse_ms;
             throughput = ((edges_inserted / insertion_timelapse_ms) * 1000) / 1000000;
             runningthroughput = ((total_edges_inserted / total_insertion_time_lapse_ms) * 1000) / 1000000;
-            LOG(INFO) << endl;
+            LOG(INFO) << std::endl;
             LOG(INFO) << "batch : " << batchid;
             LOG(INFO) << "edges loaded : " << edges_inserted << " edges";
             LOG(INFO) << "number of edges : " << PrintEdgeCount() << " edges";
             LOG(INFO) << "number of unique edges : " << PrintUniqueEdgeCount() << " edges";
 #ifdef EN_CAL
-            LOG(INFO) << "number of edges in ll : " << printll_edgecount() << " edges";
+            LOG(INFO) << "number of edges in ll : " << PrintCALEdgeCount() << " edges";
 #endif
             LOG(INFO) << "timelapse (ms) : " << (float)insertion_timelapse_ms << " ms";
             LOG(INFO) << "total timelapse (ms) : " << (float)total_insertion_time_lapse_ms << " ms";
@@ -301,7 +288,7 @@ namespace graphtinker
 
     void Graphtinker::BatchDeleteEdge(const char *path, uint batch_size)
     {
-        LOG(INFO) << endl;
+        LOG(INFO) << std::endl;
         LOG(INFO) << "-----------deletions started--------------";
         vector<tuple_t> src_dst_pairs;
         uint edges_deleted = 0;
@@ -370,13 +357,13 @@ namespace graphtinker
             total_deletion_time_lapse_ms += deletion_timelapse_ms;
             throughput = ((edges_deleted / deletion_timelapse_ms) * 1000) / 1000000;
             runningthroughput = ((total_edges_deleted / total_deletion_time_lapse_ms) * 1000) / 1000000;
-            LOG(INFO) << endl;
+            LOG(INFO) << std::endl;
             LOG(INFO) << "batch : " << batchid;
             LOG(INFO) << "edges loaded : " << edges_deleted << " edges";
             LOG(INFO) << "number of edges : " << PrintEdgeCount() << " edges";
             LOG(INFO) << "number of unique edges : " << PrintUniqueEdgeCount() << " edges";
 #ifdef EN_CAL
-            LOG(INFO) << "number of unique edges in ll : " << printll_edgecount() << " edges";
+            LOG(INFO) << "number of unique edges in ll : " << PrintCALEdgeCount() << " edges";
 #endif
             LOG(INFO) << "timelapse (ms) : " << (float)deletion_timelapse_ms << " ms";
             LOG(INFO) << "running throughput : " << (float)runningthroughput << " million edges per sec";
@@ -461,8 +448,8 @@ namespace graphtinker
 #endif
 
 #ifdef EN_CAL
-        initialize_llebaverdictcmd(&cal_unit_cmd);
-        clear_lleba_addresses_in_moduleparams(&module_params);
+        unit_option->InitCalUnit();
+        unit_option->ClearCalAdr();
 #endif
 #ifdef EN_CRUMPLE_IN
         init_deleteandcrumplein_verdictcmd(&deleteandcrumpleincmd);
@@ -551,7 +538,7 @@ namespace graphtinker
                 edge_update_cmd
 #ifdef EN_CAL
                 ,
-                ll_edge_block_array_
+                cal_edgeblock_array_
 #endif
 #ifdef EN_CRUMPLE_IN
                 ,
@@ -569,7 +556,7 @@ namespace graphtinker
                 edge_block_array_m_,
                 edge_block_array_o_,
 #ifdef EN_CAL
-                ll_edge_block_array_,
+                cal_edgeblock_array_,
 #endif
                 edgeblock_parentinfo,
                 vtx_id,
@@ -582,13 +569,12 @@ namespace graphtinker
 
 //***********************************************************************************************// GraphTinkerLL
 #ifdef EN_CAL
-            CALUnit(
-                unit_option,
+            unit_flow->CalUnit(
                 edge,
                 edge_block_array_m_,
                 edge_block_array_o_,
                 geni,
-                ll_edge_block_array_, ll_lva_, &ll_eba_tracker_);
+                cal_edgeblock_array_, cal_lva_, &cal_edgeblock_tracker_);
 #endif
             // Interval unit
             unit_flow->IntervalUnit(
@@ -762,23 +748,23 @@ namespace graphtinker
         return edgecount;
     }
 
-    uint Graphtinker::printll_edgecount()
+    uint Graphtinker::PrintCALEdgeCount()
     {
         uint uniqueedgecount = 0;
-        uniqueedgecount += ll_countedges(ll_edge_block_array_);
+        uniqueedgecount += ll_countedges(cal_edgeblock_array_);
         return uniqueedgecount;
     }
 
-    uint Graphtinker::ll_countedges(vector<ll_edgeblock_t> &ll_edge_block_array_)
+    uint Graphtinker::ll_countedges(vector<cal_edgeblock_t> &cal_edgeblock_array_)
     {
         uint uniqueedgecount = 0;
-        for (uint i = 0; i < ll_edge_block_array_.size(); i++)
+        for (uint i = 0; i < cal_edgeblock_array_.size(); i++)
         { //ll_edgeblock_array_size
             for (uint j = 0; j < LLEDGEBLOCKSIZE; j++)
             {
-                if (ll_edge_block_array_[i].ll_edgeblock[j].flag == VALID)
+                if (cal_edgeblock_array_[i].ll_edgeblock[j].flag == VALID)
                 {
-                    uniqueedgecount += ll_edge_block_array_[i].ll_edgeblock[j].edgew;
+                    uniqueedgecount += cal_edgeblock_array_[i].ll_edgeblock[j].edgew;
                 }
             }
         }
@@ -799,13 +785,13 @@ namespace graphtinker
 
     void Graphtinker::initialize_lvas()
     {
-        for (uint i = 0; i < ll_lva_.size(); i++)
+        for (uint i = 0; i < cal_lva_.size(); i++)
         {
-            ll_lva_[i].baseaddr = 0;
-            ll_lva_[i].lastlocalbaseaddr = 0;
-            ll_lva_[i].lastlocaladdr = 0;
-            ll_lva_[i].totaledgecount = 0;
-            ll_lva_[i].flag = INVALID;
+            cal_lva_[i].baseaddr = 0;
+            cal_lva_[i].lastlocalbaseaddr = 0;
+            cal_lva_[i].lastlocaladdr = 0;
+            cal_lva_[i].totaledgecount = 0;
+            cal_lva_[i].flag = INVALID;
         }
         return;
     }
@@ -821,8 +807,8 @@ namespace graphtinker
     const Vertices *Graphtinker::vertices() const { return vertices_handler_; }
     const vector<work_block_t> &Graphtinker::edge_block_array_m() const { return edge_block_array_m_; }
     const vector<work_block_t> &Graphtinker::edge_block_array_o() const { return edge_block_array_o_; }
-    const vector<ll_logicalvertexentity_t> &Graphtinker::ll_logicalvertexentity() const { return ll_lva_; }
-    const vector<ll_edgeblock_t> &Graphtinker::ll_edge_block_array() const { return ll_edge_block_array_; }
+    const vector<cal_logical_vertex_entity_t> &Graphtinker::ll_logicalvertexentity() const { return cal_lva_; }
+    const vector<cal_edgeblock_t> &Graphtinker::ll_edge_block_array() const { return cal_edgeblock_array_; }
 
     void Graphtinker::PrintEdgeblockArray(vertexid_t begin, vertexid_t end)
     {

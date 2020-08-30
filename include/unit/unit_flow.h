@@ -16,6 +16,9 @@ namespace graphtinker{
         uint work_blocks_per_page_;
         uint sub_block_height_;
         uint work_blocks_per_subblock_;
+        uint cal_lva_expansion_addition_height_;
+        uint cal_eba_expansion_addition_height_;
+
 
         UnitFlow(Graphtinker *gt);
         ~UnitFlow();
@@ -66,7 +69,7 @@ namespace graphtinker{
                 uint edge_update_cmd
                 #ifdef EN_CAL
                 ,
-                vector<ll_edgeblock_t> &ll_edge_block_array_
+                vector<cal_edgeblock_t> &cal_edgeblock_array_
                 #endif
                 #ifdef EN_CRUMPLE_IN
                 ,
@@ -239,6 +242,45 @@ namespace graphtinker{
 
         bool IsLastWorkBlockInSubBlock(margin_t work_block_margin, margin_t start_wblkmargin, margin_t sub_block_margin);
 
+// ----------------CAL Unit-----------------------
+
+	void CalUnit(
+		edge_t edge,
+		vector<work_block_t> &edge_block_array_m_,
+		vector<work_block_t> &edge_block_array_o_,
+		uint geni
+#ifdef EN_CAL
+		,
+		vector<cal_edgeblock_t> &cal_edgeblock_array_, vector<cal_logical_vertex_entity_t> &cal_lva_, cal_edgeblock_tracker_t *cal_edgeblock_tracker_
+#endif
+	);
+        void CalInsert(
+                edge_t edge,
+                vector<cal_edgeblock_t> &cal_edgeblock_array_,
+                vector<cal_logical_vertex_entity_t> &cal_lva_,
+                cal_edgeblock_tracker_t *cal_edgeblock_tracker_,
+                uint geni);
+
+        void CalUpdate(
+                edge_t edge,
+                vector<cal_edgeblock_t> &cal_edgeblock_array_);
+
+        void CalDelete(
+                edge_t edge,
+                vector<cal_edgeblock_t> &cal_edgeblock_array_);
+
+        void CalDeleteAndCrumpleIn(
+                edge_t edge,
+                vector<cal_edgeblock_t> &cal_edgeblock_array_,
+                vector<cal_logical_vertex_entity_t> &cal_lva_,
+                cal_edgeblock_tracker_t *cal_edgeblock_tracker_,
+                vector<work_block_t> &edge_block_array_m_,
+                vector<work_block_t> &edge_block_array_o_,
+                uint geni);
+
+        void CalUpdateEdgePtrs(
+                edge_t edge,
+                vector<cal_edgeblock_t> &cal_edgeblock_array_);
         // eba_manager
 	bucket_t GoogleHash(vertexid_t vid, uint geni) const;
         uint GetEdgeblockOffset(vertexid_t vid) const;

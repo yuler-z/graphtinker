@@ -1,5 +1,5 @@
 #include "unit/unit_flow.h"
-using namespace std;
+;
 
 namespace graphtinker
 {
@@ -95,7 +95,7 @@ namespace graphtinker
 			unit_option->InitFindUnit(edge.adjvtx_id, *adjvtx_id_hash, edge.edgew);
 			unit_option->InitWritebackUnit();
 #ifdef EN_CAL
-			unit_option->initialize_llebaverdictcmd(cal_unit_cmd);
+			unit_option->InitCalUnit();
 #endif
 #ifdef EN_CRUMPLE_IN
 			init_deleteandcrumplein_verdictcmd(heba_deleteandcrumplein_cmd);
@@ -107,4 +107,13 @@ namespace graphtinker
 		}
 		return;
 	}
+	
+#ifdef EN_CRUMPLE_IN
+	void Graphtinker::init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd)
+	{
+		heba_deleteandcrumplein_cmd->verdict = DCI_NOCMD;
+		return;
+	}
+
+#endif
 } // namespace graphtinker

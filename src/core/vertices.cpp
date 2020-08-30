@@ -13,7 +13,7 @@
 #include <cmath>
 #include <omp.h>
 #include "core/vertices.h" // Courtesy : Jinja 2.0
-using namespace std;
+;
 
 namespace graphtinker
 {

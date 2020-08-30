@@ -1,6 +1,6 @@
 #include "unit/unit_option.h"
 #include "unit/unit_flow.h"
-using namespace std;
+;
 namespace graphtinker
 {
 	uint debug_totaledgeinsertions;
@@ -29,6 +29,8 @@ namespace graphtinker
 
 		bucket_t DIB_i;
 		bucket_t DIB_x;
+
+		module_params_t &module_params = unit_option->module_params;
 
 		// if this isn't altered in the for-loop, then this would be the report
 		insert_report_t &insert_report = unit_option->insert_report;
@@ -77,13 +79,13 @@ namespace graphtinker
 					work_block->edges[local_offset].edge_weight = insert_params.edge_weight;
 					work_block->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
-					work_block->edges[local_offset].ll_localbaseaddrptr = module_params->ll_localbaseaddrptr_x;
-					work_block->edges[local_offset].ll_localaddrptr = module_params->ll_localaddrptr_x;
+					work_block->edges[local_offset].ll_localbaseaddrptr = module_params.ll_localbaseaddrptr_x;
+					work_block->edges[local_offset].ll_localaddrptr = module_params.ll_localaddrptr_x;
 #endif
 
 #ifdef EN_CAL
 					// one-time-assignments : if initial edge, track its location
-					if (insert_params->adjvtx_id == edge->adjvtx_id)
+					if (insert_params.adjvtx_id == edge->adjvtx_id)
 					{
 						edge->heba_hvtx_id = vtx_id;
 						edge->heba_workblockid = work_block_margin.top / WORK_BLOCK_HEIGHT;
@@ -119,13 +121,13 @@ namespace graphtinker
 					work_block->edges[local_offset].edge_weight = insert_params.edge_weight;
 					work_block->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
-					work_block->edges[local_offset].ll_localbaseaddrptr = module_params->ll_localbaseaddrptr_x;
-					work_block->edges[local_offset].ll_localaddrptr = module_params->ll_localaddrptr_x;
+					work_block->edges[local_offset].ll_localbaseaddrptr = module_params.ll_localbaseaddrptr_x;
+					work_block->edges[local_offset].ll_localaddrptr = module_params.ll_localaddrptr_x;
 #endif
 
 #ifdef EN_CAL
 					// one-time-assignments : if initial edge, track its location
-					if (insert_params->adjvtx_id == edge->adjvtx_id)
+					if (insert_params.adjvtx_id == edge->adjvtx_id)
 					{
 						edge->heba_hvtx_id = vtx_id;
 						edge->heba_workblockid = work_block_margin.top / WORK_BLOCK_HEIGHT;

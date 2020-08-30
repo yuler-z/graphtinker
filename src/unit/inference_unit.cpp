@@ -1,10 +1,10 @@
 #include "unit/unit_flow.h"
 
 #ifdef EN_CAL
-	#define	EN_CAL_SET_CAL_CMD(cal_unit_cmd, CMD) \
-		set_cal_unit_cmd(cal_unit_cmd, CMD)
+	#define	EN_CAL_SET_CAL_CMD(CMD) \
+		set_cal_unit_cmd(CMD)
 #else
-	#define	EN_CAL_SET_CAL_CMD(cal_unit_cmd, CMD)
+	#define	EN_CAL_SET_CAL_CMD(CMD)
 #endif
 
 #ifdef EN_CRUMPLE_IN
@@ -271,7 +271,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB(YES);
 		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_from_first_generation();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, INSERTCMD);
+		EN_CAL_SET_CAL_CMD(INSERTCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -289,7 +289,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB(YES);																										  //load next EB
 		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, UPDATECMD);
+		EN_CAL_SET_CAL_CMD(UPDATECMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -307,7 +307,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB(YES);																										//load next EB
 		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(work_block_margin, sub_block_margin);
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -329,7 +329,7 @@ namespace graphtinker
 			setwritebackunitcmd_markasclustered(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		} //***???
 		set_intervalunitcmd_continue_in_lower_generation();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -348,7 +348,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB(YES);																										 //load next EB
 		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(work_block_margin, sub_block_margin);
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -370,7 +370,7 @@ namespace graphtinker
 			setwritebackunitcmd_markasclustered(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		}
 		set_intervalunitcmd_continue_in_lower_generation();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -388,7 +388,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB(YES);																										  //load next EB
 		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, UPDATEEDGEPTRSCMD);
+		EN_CAL_SET_CAL_CMD(UPDATEEDGEPTRSCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -406,7 +406,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB(YES);																										  //load next EB
 		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -424,7 +424,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB(YES);																										//load next EB
 		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation( work_block_margin, sub_block_margin);
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -446,7 +446,7 @@ namespace graphtinker
 			setwritebackunitcmd_markasclustered(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		}
 		set_intervalunitcmd_continue_in_lower_generation();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 		return;
 	}
@@ -465,7 +465,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB( YES);																										 //*** NO YES
 		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 #ifdef EN_OTHERS
 		LOG(ERROR) << " find not successfull (inference_unit22)"  ; //***
@@ -486,7 +486,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB( YES);																										  //*** NO YES
 		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, DELETECMD);
+		EN_CAL_SET_CAL_CMD(DELETECMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
 
 #ifdef EN_OTHERS
@@ -520,7 +520,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB( YES);																										 //*** NO YES
 		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, NOCMD);
+		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_JUSTQUITCMD);
 
 #ifdef EN_OTHERS
@@ -542,7 +542,7 @@ namespace graphtinker
 		set_loadunitcmd_loadnextEB( YES);
 		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin);
 		set_intervalunitcmd_quit_to_next_edge();
-		EN_CAL_SET_CAL_CMD(cal_unit_cmd, DELETEANDCRUMPLEINCMD);
+		EN_CAL_SET_CAL_CMD(DELETEANDCRUMPLEINCMD);
 		if (unit_option->module_params.clustered == YES)
 		{
 			EN_CRUMPLE_IN_SET_VERDICT(DCI_CRUMPLEINCMD);

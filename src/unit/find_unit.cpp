@@ -1,5 +1,5 @@
 #include "unit/unit_flow.h"
-using namespace std;
+;
 namespace graphtinker
 {
 	// 实际的update edge和delete edge操作
@@ -80,8 +80,8 @@ namespace graphtinker
 					}
 
 #ifdef EN_CAL
-					module_params->ll_localbaseaddrptr_x = ll_localbaseaddrptr_i;
-					module_params->ll_localaddrptr_x = ll_localaddrptr_i;
+					unit_option->module_params.ll_localbaseaddrptr_x = ll_localbaseaddrptr_i;
+					unit_option->module_params.ll_localaddrptr_x = ll_localaddrptr_i;
 #endif
 					break;
 				}
