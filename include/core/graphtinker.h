@@ -132,12 +132,11 @@ namespace graphtinker {
         // initialize
         uint add_page(tracker_t *tracker, vector<work_block_t> &edge_block_array);
 
-        // bucket_t getdib(bucket_t currbkt, bucket_t initialbucket, margin_t sub_block_margin, uint rolledover);
+        // bucket_t getdib(bucket_t currbkt, bucket_t initial_bucket, margin_t sub_block_margin, uint rolledover);
 
 
 #ifdef EN_CRUMPLE_IN
         void init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd);
-#endif
 
         // super Vertices
         int sv_get_next_edge(
@@ -186,7 +185,7 @@ namespace graphtinker {
                 uint geni, crumple_in_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs,
                 vector<vertexid_t> &freed_edgeblock_list);
 
-    private:
+#endif
     };
 
 }

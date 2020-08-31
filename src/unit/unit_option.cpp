@@ -82,6 +82,7 @@ namespace graphtinker{
 		return;
 	}
 
+#ifdef EN_CAL
 	void UnitOption::InitCalUnit(){
 		cal_unit_cmd.verdict = NOCMD;
 		return;
@@ -92,4 +93,5 @@ namespace graphtinker{
 		module_params.ll_localaddrptr_x = 0;	 // we don't know the value yet  --edge.LLlocaladdrptr;
 		return;
 	}
+#endif
 }

@@ -1,10 +1,10 @@
 #include "unit/unit_flow.h"
 
 #ifdef EN_CAL
-	#define	EN_CAL_SET_CAL_CMD(CMD) \
-		set_cal_unit_cmd(CMD)
+	#define	EN_CAL_SET_CAL_CMD(cmd) \
+		set_cal_unit_cmd(cmd)
 #else
-	#define	EN_CAL_SET_CAL_CMD(CMD)
+	#define	EN_CAL_SET_CAL_CMD(cmd)
 #endif
 
 #ifdef EN_CRUMPLE_IN
@@ -46,25 +46,25 @@ namespace graphtinker
 		module_unit_cmd_t &module_unit_cmd = unit_option->module_unit_cmd;
 		find_params_t &find_params = unit_option->find_params;
 		find_report_t &find_report = unit_option->find_report;
-		insert_report_t &insert_report = unit_option->insert_report;\
+		insert_report_t &insert_report = unit_option->insert_report;
 
-		search_report.search_stop = false;
-		search_report.search_success = false;
+		search_report.is_search_stop = false;
+		search_report.is_search_success = false;
 		if (module_unit_cmd.mode == FIND_MODE)
 		{
-			search_report.search_stop = find_report.is_found || find_report.is_empty || find_report.is_reach_max_prob_length;
-			search_report.search_success = find_report.is_found;
+			search_report.is_search_stop = find_report.is_found || find_report.is_empty || find_report.is_reach_max_prob_length;
+			search_report.is_search_success = find_report.is_found;
 		}
 		DLOG(INFO) << "-----Inference Unit-----";
-		if(search_report.search_stop) DLOG(INFO) << "search_report.search_stop";
-		if(search_report.search_success) DLOG(INFO) << "search_report.search_success";
+		if(search_report.is_search_stop) DLOG(INFO) << "search_report.is_search_stop";
+		if(search_report.is_search_success) DLOG(INFO) << "search_report.is_search_success";
 
 		bool is_last_work_block = IsLastWorkBlockInSubBlock(*work_block_margin, start_wblkmargin, sub_block_margin);
 
 #ifdef EN_OTHERS
 		//LOG(INFO) <<"inference params of tinker = "<< tinkerid <<", batch = "<<batchid<<", chunk = "<<chunkid ;
-		LOG(INFO) << "search_report.search_stop = " << search_report.search_stop;
-		LOG(INFO) << "search_report.search_success = " << search_report.search_success ;
+		LOG(INFO) << "search_report.is_search_stop = " << search_report.is_search_stop;
+		LOG(INFO) << "search_report.is_search_success = " << search_report.is_search_success ;
 		LOG(INFO) << "insert_report.exittype = " << insert_report.exittype ;
 		LOG(INFO) << "module_unit_cmd.mode = " << module_unit_cmd.mode ;
 		LOG(INFO) << "is_last_work_block = " << is_last_work_block ;
@@ -72,7 +72,7 @@ namespace graphtinker
 
 		//|Mode|_|Searchstopped|_|searchsuccessfull_|InsertReport.exittype|_|is_last_work_block?|
 		//find-only mode
-		if (module_unit_cmd.mode == FIND_MODE && search_report.search_stop && !search_report.search_success)
+		if (module_unit_cmd.mode == FIND_MODE && search_report.is_search_stop && !search_report.is_search_success)
 		{
 			if (edge_update_cmd == INSERTEDGE)
 			{
@@ -119,7 +119,7 @@ namespace graphtinker
 				LOG(ERROR) << " should never be seen here (inference_unit34)"  ;
 			}
 		}
-		else if (module_unit_cmd.mode == FIND_MODE && search_report.search_stop && search_report.search_success)
+		else if (module_unit_cmd.mode == FIND_MODE && search_report.is_search_stop && search_report.is_search_success)
 		{
 			if (edge_update_cmd == INSERTEDGE)
 			{
@@ -167,7 +167,7 @@ namespace graphtinker
 				LOG(ERROR) << " should never be seen here (inference_unit35)"  ;
 			}
 		}
-		else if (module_unit_cmd.mode == FIND_MODE && !search_report.search_stop && search_report.search_success == false && !is_last_work_block)
+		else if (module_unit_cmd.mode == FIND_MODE && !search_report.is_search_stop && search_report.is_search_success == false && !is_last_work_block)
 		{
 			findonlymode_searchnotstopped_searchnotsuccessful_x_notlastworkblock(
 				work_block_margin,
@@ -177,7 +177,7 @@ namespace graphtinker
 				heba_popoutpopin_cmd
 			);
 		}
-		else if (module_unit_cmd.mode == FIND_MODE && !search_report.search_stop && !search_report.search_success && is_last_work_block)
+		else if (module_unit_cmd.mode == FIND_MODE && !search_report.is_search_stop && !search_report.is_search_success && is_last_work_block)
 		{
 			findonlymode_searchnotstopped_searchnotsuccessful_x_lastworkblock(
 				*work_block_margin,

@@ -2,8 +2,8 @@
 #include <iostream>
 #include <string>
 #include "core/graphtinker.h"
-;
 
+#ifdef EN_CRUMPLE_IN
 namespace graphtinker
 {
 	int Graphtinker::sv_get_next_edge(
@@ -163,3 +163,4 @@ namespace graphtinker
 		return -1;
 	}
 } // namespace graphtinker
+#endif

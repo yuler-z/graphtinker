@@ -6,8 +6,8 @@
 #include <glog/logging.h>
 using std::vector;
 
-#define EN_CAL 0    // Coarse Adjacency List
-// #define EN_CRUMPLE_IN //crumple in on delete 
+// #define EN_CAL 0    // Coarse Adjacency List
+// #define EN_CRUMPLE_IN //delete and crumple in 
 
 #define WORK_BLOCK_HEIGHT 4 
 #define BATCH_SIZE 1048576
@@ -126,7 +126,7 @@ typedef struct {
 
 typedef struct {
 	vertexid_t adjvtx_id;
-	bucket_t initialbucket;
+	bucket_t initial_bucket;
 	edgeweight_t edge_weight;
     flag_t flag; // VALID, DELETED
 	#ifdef EN_CAL
@@ -236,14 +236,9 @@ typedef struct {
 } margin_t;
 
 typedef struct {
-	bool search_stop;
-	bool search_success;
+	bool is_search_stop;
+	bool is_search_success;
 } search_report_t;
-
-typedef struct {
-	uint search;
-	uint insert;
-} encontrol_t;
 
 /// trackers
 typedef struct {

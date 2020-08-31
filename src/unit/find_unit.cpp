@@ -44,7 +44,7 @@ namespace graphtinker
 
 			// retrieve current entry
 			entry_i = work_block->edges[local_offset].adjvtx_id;
-			initialbucket_i = work_block->edges[local_offset].initialbucket;
+			initialbucket_i = work_block->edges[local_offset].initial_bucket;
 			edgeweight_i = work_block->edges[local_offset].edge_weight;
 			flag_i = work_block->edges[local_offset].flag;
 #ifdef EN_CAL

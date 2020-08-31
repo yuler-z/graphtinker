@@ -617,16 +617,16 @@ namespace graphtinker
             if (geni > 500000)
             {
                 LOG(ERROR) << " too many generations (" << geni << ") spun!, exiting...";
-                LOG(ERROR) << "search_report.search_stop = " << unit_option->search_report.search_stop;
-                LOG(ERROR) << "search_report.search_success = " << unit_option->search_report.search_success;
+                LOG(ERROR) << "search_report.is_search_stop = " << unit_option->search_report.is_search_stop;
+                LOG(ERROR) << "search_report.is_search_success = " << unit_option->search_report.is_search_success;
                 LOG(ERROR) << "insert_report.exittype = " << unit_option->insert_report.exittype;
                 LOG(ERROR) << "module_unit_cmd.mode = " << unit_option->module_unit_cmd.mode;
                 return;
             }
         }
         LOG(ERROR) << "bug! : infiniti exhausted : infiniti = " << infiniti << "";
-        LOG(ERROR) << "search_report.search_stop = " << unit_option->search_report.search_stop;
-        LOG(ERROR) << "search_report.search_success = " << unit_option->search_report.search_success;
+        LOG(ERROR) << "search_report.is_search_stop = " << unit_option->search_report.is_search_stop;
+        LOG(ERROR) << "search_report.is_search_success = " << unit_option->search_report.is_search_success;
         LOG(ERROR) << "insert_report.exittype = " << unit_option->insert_report.exittype;
         LOG(ERROR) << "module_unit_cmd.mode = " << unit_option->module_unit_cmd.mode;
         return;

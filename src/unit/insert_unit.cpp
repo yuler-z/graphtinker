@@ -52,7 +52,7 @@ namespace graphtinker
 
 			// retrieve current entry
 			entry_i = work_block->edges[local_offset].adjvtx_id;
-			initialbucket_i = work_block->edges[local_offset].initialbucket;
+			initialbucket_i = work_block->edges[local_offset].initial_bucket;
 			edgeweight_i = work_block->edges[local_offset].edge_weight;
 			flag_i = work_block->edges[local_offset].flag;
 
@@ -75,7 +75,7 @@ namespace graphtinker
 					// empty bucket found, insert and exit <//*** NB: this is repeated below>
 
 					work_block->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
-					work_block->edges[local_offset].initialbucket = insert_params.initial_bucket;
+					work_block->edges[local_offset].initial_bucket = insert_params.initial_bucket;
 					work_block->edges[local_offset].edge_weight = insert_params.edge_weight;
 					work_block->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
@@ -117,7 +117,7 @@ namespace graphtinker
 					// empty bucket found, insert and exit
 
 					work_block->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
-					work_block->edges[local_offset].initialbucket = insert_params.initial_bucket;
+					work_block->edges[local_offset].initial_bucket = insert_params.initial_bucket;
 					work_block->edges[local_offset].edge_weight = insert_params.edge_weight;
 					work_block->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
@@ -155,7 +155,7 @@ namespace graphtinker
 		return;
 	}
 
-	// bucket_t Graphtinker::getdib(bucket_t currbkt, bucket_t initialbucket, margin_t sub_block_margin, uint rolledover)
+	// bucket_t Graphtinker::getdib(bucket_t currbkt, bucket_t initial_bucket, margin_t sub_block_margin, uint rolledover)
 	// {
 	// 	bucket_t DIB = 0;
 	// 	bucket_t rightpad = 0;
@@ -163,22 +163,22 @@ namespace graphtinker
 	// 	uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
 	// 	uint work_block_height = WORK_BLOCK_HEIGHT;
 
-	// 	bucket_t diff = currbkt - initialbucket;
+	// 	bucket_t diff = currbkt - initial_bucket;
 	// 	if (diff >= 0)
 	// 	{
-	// 		// DIB = currbkt - initialbucket;
+	// 		// DIB = currbkt - initial_bucket;
 	// 		if (rolledover == YES)
 	// 		{
-	// 			DIB = (work_blocks_per_subblock_ * work_block_height) + (currbkt - initialbucket);
+	// 			DIB = (work_blocks_per_subblock_ * work_block_height) + (currbkt - initial_bucket);
 	// 		}
 	// 		else
 	// 		{
-	// 			DIB = currbkt - initialbucket;
+	// 			DIB = currbkt - initial_bucket;
 	// 		}
 	// 	}
 	// 	else
 	// 	{
-	// 		rightpad = sub_block_margin.bottom - initialbucket;
+	// 		rightpad = sub_block_margin.bottom - initial_bucket;
 	// 		leftpad = currbkt - sub_block_margin.top;
 	// 		DIB = rightpad + leftpad;
 	// 	}
