@@ -20,9 +20,9 @@ namespace graphtinker
 		DLOG(INFO) << "trueoffset4rmbase = " << trueoffset4rmbase;
 		DLOG(INFO) << "addr of work_block = " << addr;
 
-		// TODO: prevLoadAddr accelerating
+		// prevLoadAddr accelerating
 		static uint preLoadAddr = NAv;
-		if (unit_option->load_unit_cmd.load == YES && preLoadAddr != addr )
+		if (unit_option->load_unit_cmd.load && preLoadAddr != addr )
 		{
 			if (addr >= edge_block_array.size())
 			{

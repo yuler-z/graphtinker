@@ -7,7 +7,7 @@
 using std::vector;
 
 // #define EN_CAL 0    // Coarse Adjacency List
-// #define EN_CRUMPLE_IN //delete and crumple in 
+// #define EN_DCI //delete and crumple in 
 
 #define WORK_BLOCK_HEIGHT 4 
 #define BATCH_SIZE 1048576
@@ -23,12 +23,12 @@ using std::vector;
 #define NONE 666
 #define FIRST 111
 
-#define LOADEDINTOEMPTYBUCKET 0
+// insert_report.exittype
+#define LOAD_INTO_EMPTY_BUCKET 0
 #define FOUNDANDUPDATEDITSELF 1
 #define PASSEDTHROUGH 2
 #define PASSEDTHROUGHANDSWAPPEDATSOMEPOINT 3
 
-#define SOMESMALLNO 10
 #define SOMELARGENO 100000000
 
 #define VALID 5
@@ -36,25 +36,15 @@ using std::vector;
 #define METAVALID 7
 #define DELETED 8
 
-#define SUCCESSFUL 1
-#define UNSUCCESSFUL 0
-
 #define NO 0
 #define YES 1
 
 #define OFF 0
 #define ON 1
 
-#define READ 5 
-#define WRITE 6
-#define NEITHER_READ_NOR_WRITE 7
-
-//
+// module unit mode 
 #define FIND_MODE 0
 #define INSERT_MODE 1
-
-#define GRAPHGEN_TOTAL_VERTEX_COUNT 10
-#define GRAPHGEN_NO_OF_DSTV_PER_SRCV 10
 
 // verdict after inference
 #define CONTINUE_FROM_FIRST_GENERATION 0
@@ -65,7 +55,7 @@ using std::vector;
 #define LLEDGEBLOCKSIZE 512
 #define LVACOARSENESSWIDTH 2048 //should be a power of 2
 
-// ll commands
+// cal commands
 #define NOCMD 0
 #define INSERTCMD 5 
 #define UPDATECMD 6
@@ -78,23 +68,8 @@ using std::vector;
 #define DCI_JUSTQUITCMD 6
 #define DCI_CRUMPLEINCMD 7 
 
-#define NO_OF_VERTEX_PARTITIONS  //8
-#define MAX_INDEX_FINDABLE_IN_A_PARTITION 
-#define SIZE_OF_EACH_VERTEX_PARTITION 
-#define SIZE_OF_EACH_VERTEX_SUBPARTITION 
-
-#define SRC_DST 5
-#define DST_SRC 6
-
-#define INEDGE 5
-#define OUTEDGE 6
-#define NOEDGE 7
-
 #define INSERTEDGE 5
 #define DELETEEDGE 6
-
-#define HIGH_DEGREE_VERTEX 5
-#define LOW_DEGREE_VERTEX 6
 
 #define SELF 1
 #define OTHER 2
@@ -102,13 +77,21 @@ using std::vector;
 typedef unsigned int vertexid_t;
 typedef unsigned int edgeid_t;
 typedef unsigned int bucket_t;
-typedef unsigned int edgeweight_t;
+typedef unsigned int edge_type_t;
+typedef unsigned int edge_weight_t;
 typedef unsigned int flag_t;
 typedef double vertexdata_t;
 typedef unsigned int clusterptr_t;
 typedef unsigned int id_t;
 
-/// struct declarations
+
+struct Edge{
+	vertexid_t src;
+	vertexid_t dst;
+	edge_type_t type;
+	edge_weight_t weight;
+};
+
 
 
 /** sv_ptr : pointer to a supervertex
@@ -124,10 +107,12 @@ typedef struct {
 	flag_t flag; 
 } edgeinfo_t;
 
+// edge structure in edge block
 typedef struct {
 	vertexid_t adjvtx_id;
 	bucket_t initial_bucket;
-	edgeweight_t edge_weight;
+	edge_type_t type;
+	edge_weight_t weight;
     flag_t flag; // VALID, DELETED
 	#ifdef EN_CAL
 	vertexid_t ll_localbaseaddrptr;
@@ -148,10 +133,12 @@ typedef struct {
 	flag_t flag;
 } edgeblock_parentinfo_t;
 
+// edge in CAL
 typedef struct {
 	vertexid_t vtx_id;
 	vertexid_t adjvtx_id;
-	edgeweight_t edgew;
+	edge_type_t type;
+	edge_weight_t weight;
 	flag_t flag;
 	#ifdef EN_CAL
 	int heba_hvtx_id;
@@ -169,8 +156,9 @@ typedef struct {
 	uint rolledover;  //Y/N // traversal info
 	uint clustered; //Y/N // cluster info
     int cptr;	
+	edge_type_t type;
 	vertexid_t adjvtx_id; // edge info
-	edgeweight_t edge_weight;
+	edge_weight_t weight;
 	#ifdef EN_CAL
 	vertexid_t ll_localbaseaddrptr_x;
 	vertexid_t ll_localaddrptr_x;
@@ -192,7 +180,8 @@ typedef struct {
 typedef struct {
 	vertexid_t adjvtx_id; // edge info
 	bucket_t initial_bucket;
-	edgeweight_t edge_weight;
+	edge_type_t type;
+	edge_weight_t weight;
 	bool is_start_blk; // additional info	
 } insert_params_t;
 
@@ -206,7 +195,8 @@ typedef struct {
 typedef struct {	
 	vertexid_t adjvtx_id; // edge info
 	bucket_t initial_bucket;
-	edgeweight_t edge_weight;	
+	edge_type_t type;
+	edge_weight_t weight;	
 	bool is_start_blk; // additional info
 } find_params_t;
 
@@ -249,29 +239,6 @@ typedef struct {
 	uint marker;
 } markertracker_t;
 
-/// profiling
-
-typedef struct {
-	vertexid_t A;
-	vertexid_t B;
-} tuple_vid_t;
-
-typedef struct {
-	uint A;
-	uint B;
-} tuple_t;
-
-typedef struct {
-	int A;
-	int B;
-} tuple_int_t;
-
-typedef struct {
-	vertexid_t A;
-	vertexid_t B;
-	vertexid_t C;
-} triple_vid_t; 
-
 typedef struct {
 	vertexid_t globalvid;
 	vertexid_t localvid;
@@ -304,7 +271,7 @@ typedef struct {
 	uint flag;
 } cal_logical_vertex_entity_t;
 
-typedef struct {	
+typedef struct {
 	uint indegree;
 	uint outdegree;
 	vertexdata_t data;

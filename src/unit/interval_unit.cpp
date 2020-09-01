@@ -22,7 +22,7 @@ namespace graphtinker
 		,
 		cal_unit_cmd_t *cal_unit_cmd
 #endif
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 		,
 		crumple_in_cmd_t *heba_deleteandcrumplein_cmd
 		,
@@ -43,7 +43,7 @@ namespace graphtinker
 		else if (interval_unit_cmd.verdict == CONTINUE_IN_LOWER_GENERATION)
 		{
 
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 			// keep track of workblock address before moving to a lower generation (or in first launch) -  might be needed in the lower generation if we decide to share supervertex entry
 			*lastgenworkblockaddr = GetEdgeblockOffset(*vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT;
 #endif
@@ -52,8 +52,8 @@ namespace graphtinker
 			*geni += 1;
 			*vtx_id = module_params.cptr;
 			*tripiteration_lcs = 0;
-			*adjvtx_id_hash = GoogleHash(module_params.adjvtx_id, *geni);
-			FindWorkBlockMargin(*adjvtx_id_hash,work_block_margin);
+			*adjvtx_id_hash = GoogleHash(module_params.adjvtx_id,module_params.type, *geni);
+			FindWorkBlockMargin(*adjvtx_id_hash, work_block_margin);
 			*start_wblkmargin = *work_block_margin;
 			FindSubBlockMargin(*adjvtx_id_hash,sub_block_margin);
 
@@ -78,7 +78,7 @@ namespace graphtinker
 			*geni = 1;
 			*vtx_id = edge.vtx_id;
 			*tripiteration_lcs = 0;
-			*adjvtx_id_hash = GoogleHash(edge.adjvtx_id, *geni); //calculate hashes
+			*adjvtx_id_hash = GoogleHash(edge.adjvtx_id,edge.type,*geni); //calculate hashes
 			FindWorkBlockMargin(*adjvtx_id_hash,work_block_margin);		  //find margins
 			*start_wblkmargin = *work_block_margin;
 			*first_wblkmargin = *work_block_margin;
@@ -89,15 +89,15 @@ namespace graphtinker
 
 			// initialize appropriate fields of lcs units
 			// everything is initialized here
-			unit_option->InitModuleUnitParams(edge.adjvtx_id, edge.edgew);
+			unit_option->InitModuleUnitParams(edge);
 			unit_option->InitLoadUnit();
-			unit_option->InitInsertUnit(edge.adjvtx_id, *adjvtx_id_hash, edge.edgew);
-			unit_option->InitFindUnit(edge.adjvtx_id, *adjvtx_id_hash, edge.edgew);
+			unit_option->InitInsertUnit(edge, *adjvtx_id_hash);
+			unit_option->InitFindUnit(edge, *adjvtx_id_hash);
 			unit_option->InitWritebackUnit();
 #ifdef EN_CAL
 			unit_option->InitCalUnit();
 #endif
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 			init_deleteandcrumplein_verdictcmd(heba_deleteandcrumplein_cmd);
 #endif
 		}
@@ -108,7 +108,7 @@ namespace graphtinker
 		return;
 	}
 	
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 	void Graphtinker::init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd)
 	{
 		heba_deleteandcrumplein_cmd->verdict = DCI_NOCMD;

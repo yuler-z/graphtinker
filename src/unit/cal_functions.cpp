@@ -146,7 +146,7 @@ namespace graphtinker
 		vertexid_t &ll_localaddrptr = unit_option->module_params.ll_localaddrptr_x;
 		vertexid_t &ll_localbaseaddrptr = unit_option->module_params.ll_localbaseaddrptr_x;
 
-		cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].edgew += 1;
+		cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr].weight += 1;
 		return;
 	}
 

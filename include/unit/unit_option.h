@@ -33,10 +33,10 @@ namespace graphtinker{
         public:
 
             // Init Unit Option of the State Machine
-            void InitModuleUnitParams(vertexid_t adjvtx_id, edgeweight_t edge_weight);
+            void InitModuleUnitParams(const edge_t &edge);
             void InitLoadUnit();
-            void InitInsertUnit(vertexid_t adjvtx_id, bucket_t adjvtx_id_hash, edgeweight_t edge_weight);
-            void InitFindUnit(vertexid_t adjvtx_id, bucket_t adjvtx_id_hash, edgeweight_t edge_weight);
+            void InitInsertUnit(const edge_t &edge, bucket_t adjvtx_id_hash);
+            void InitFindUnit(const edge_t &edge, bucket_t adjvtx_id_hash);
             void InitWritebackUnit();
 
             void InitModuleUnitParams2();

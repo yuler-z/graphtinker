@@ -3,17 +3,14 @@
 namespace graphtinker
 {
 	// 实际的update edge和delete edge操作
-	void UnitFlow::FindUnit(
-		margin_t work_block_margin,
-		bucket_t adjvtx_id_hash,
-		work_block_t *work_block,
-		uint edge_update_cmd)
+	void UnitFlow::FindUnit( margin_t work_block_margin, bucket_t adjvtx_id_hash, work_block_t *work_block, uint edge_update_cmd)
 	{
 		bucket_t local_offset;
 
 		vertexid_t entry_i;
 		bucket_t initialbucket_i;
-		edgeweight_t edgeweight_i;
+		edge_type_t type_i;
+		edge_weight_t edgeweight_i;
 		flag_t flag_i;
 #ifdef EN_CAL
 		vertexid_t ll_localbaseaddrptr_i;
@@ -44,15 +41,16 @@ namespace graphtinker
 
 			// retrieve current entry
 			entry_i = work_block->edges[local_offset].adjvtx_id;
+			type_i = work_block->edges[local_offset].type;
 			initialbucket_i = work_block->edges[local_offset].initial_bucket;
-			edgeweight_i = work_block->edges[local_offset].edge_weight;
+			edgeweight_i = work_block->edges[local_offset].weight;
 			flag_i = work_block->edges[local_offset].flag;
 #ifdef EN_CAL
 			ll_localbaseaddrptr_i = work_block->edges[local_offset].ll_localbaseaddrptr;
 			ll_localaddrptr_i = work_block->edges[local_offset].ll_localaddrptr;
 #endif
 			// 判断该位置是否就是要查找的边 
-			if (entry_i == find_params.adjvtx_id)
+			if (entry_i == find_params.adjvtx_id && type_i == find_params.type)
 			{
 				if (flag_i == VALID)
 				{
@@ -61,9 +59,9 @@ namespace graphtinker
 
 					if (edge_update_cmd == INSERTEDGE)
 					{
-						work_block->edges[local_offset].edge_weight += 1; // update it!
+						work_block->edges[local_offset].weight += 1; // update it!
 					}
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 					else if (edge_update_cmd == DELETEEDGE)
 					{
 						work_block->edges[local_offset].flag = DELETED; // remove it!

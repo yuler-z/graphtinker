@@ -30,11 +30,7 @@ int main(int argc, char* argv[])
 	// FLAGS_log_dir = "/home/yuler/graphtinker/log";
     google::InitGoogleLogging(argv[0]);
 	LOG(INFO) <<"started  (updates_test)" ;	
-	LOG(INFO) <<"NUM_CORES: 1" ;
-	LOG(INFO) <<"LLFULLDB: ON" ;
-	LOG(INFO) <<"WORK_BLOCK_HEIGHT: 4" ;;
 
-	// Graphtinker tinkerA(SELF, SELF, SELF, 0, 524288, 524288, 8380000, DIRECTEDGRAPH, 8, 64, 100000, 100000, 1000, 100, 10000);
 	std::string config_file_path = "config.ini";
 	graphtinker::Graphtinker tinkerA(config_file_path);
 	tinkerA.BatchInsertEdge("RMAT_500K_8M", BATCH_SIZE);

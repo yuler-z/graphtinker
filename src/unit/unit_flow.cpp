@@ -27,7 +27,7 @@ namespace graphtinker{
         gt = nullptr;
     }
 
-	bucket_t UnitFlow::GoogleHash(vertexid_t vid, uint geni) const{ return gt->GoogleHash(vid, geni); }
+	bucket_t UnitFlow::GoogleHash(vertexid_t vid, edge_type_t type, uint geni) const{ return gt->GoogleHash(vid, type, geni); }
     uint UnitFlow::GetEdgeblockOffset(vertexid_t vid) const{ return gt->GetEdgeblockOffset(vid); }
     void UnitFlow::FindWorkBlockMargin(bucket_t adjvtx_id_hash, margin_t *blkmargin)const{ gt->FindWorkBlockMargin(adjvtx_id_hash, blkmargin); }
     void UnitFlow::FindSubBlockMargin(bucket_t adjvtx_id_hash, margin_t *blkmargin)const{ gt->FindSubBlockMargin(adjvtx_id_hash, blkmargin); }

@@ -10,14 +10,15 @@ namespace graphtinker
 		bucket_t adjvtx_id_hash,
 		work_block_t *work_block,
 		edge_t *edge,
-		vertexid_t vtx_id,
 		uint geni)
 	{
 		bucket_t local_offset;
 
+		vertexid_t vtx_id = edge->vtx_id;
 		vertexid_t entry_i;
 		bucket_t initialbucket_i;
-		edgeweight_t edgeweight_i;
+		edge_type_t type_i;
+		edge_weight_t edgeweight_i;
 		flag_t flag_i;
 #ifdef EN_CAL
 		vertexid_t ll_localbaseaddrptr_i;
@@ -53,7 +54,8 @@ namespace graphtinker
 			// retrieve current entry
 			entry_i = work_block->edges[local_offset].adjvtx_id;
 			initialbucket_i = work_block->edges[local_offset].initial_bucket;
-			edgeweight_i = work_block->edges[local_offset].edge_weight;
+			type_i = work_block->edges[local_offset].type;
+			edgeweight_i = work_block->edges[local_offset].weight;
 			flag_i = work_block->edges[local_offset].flag;
 
 #ifdef EN_CAL
@@ -61,7 +63,7 @@ namespace graphtinker
 			ll_localaddrptr_i = work_block->edges[local_offset].ll_localaddrptr;
 #endif
 
-			if (entry_i == insert_params.adjvtx_id)
+			if (entry_i == insert_params.adjvtx_id && type_i == insert_params.type)
 			{
 				if (flag_i == VALID)
 				{
@@ -76,7 +78,8 @@ namespace graphtinker
 
 					work_block->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
 					work_block->edges[local_offset].initial_bucket = insert_params.initial_bucket;
-					work_block->edges[local_offset].edge_weight = insert_params.edge_weight;
+					work_block->edges[local_offset].type = insert_params.type;
+					work_block->edges[local_offset].weight = insert_params.weight;
 					work_block->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
 					work_block->edges[local_offset].ll_localbaseaddrptr = module_params.ll_localbaseaddrptr_x;
@@ -97,7 +100,7 @@ namespace graphtinker
 					debug_totaledgeinsertions += 1;
 
 					// update insert_report
-					insert_report.exittype = LOADEDINTOEMPTYBUCKET;
+					insert_report.exittype = LOAD_INTO_EMPTY_BUCKET;
 					insert_report.validbuckets_incr = 1;
 					insert_report.overflowbkt = NONE;
 					insert_report.lastbktloadedinto = currbkt;
@@ -118,7 +121,8 @@ namespace graphtinker
 
 					work_block->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
 					work_block->edges[local_offset].initial_bucket = insert_params.initial_bucket;
-					work_block->edges[local_offset].edge_weight = insert_params.edge_weight;
+					work_block->edges[local_offset].type = insert_params.type;
+					work_block->edges[local_offset].weight = insert_params.weight;
 					work_block->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
 					work_block->edges[local_offset].ll_localbaseaddrptr = module_params.ll_localbaseaddrptr_x;
@@ -139,7 +143,7 @@ namespace graphtinker
 					debug_totaledgeinsertions += 1;
 
 					// update insert_report
-					insert_report.exittype = LOADEDINTOEMPTYBUCKET;
+					insert_report.exittype = LOAD_INTO_EMPTY_BUCKET;
 					insert_report.validbuckets_incr = 1;
 					insert_report.overflowbkt = NONE;
 					insert_report.lastbktloadedinto = currbkt;

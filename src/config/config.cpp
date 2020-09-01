@@ -13,43 +13,49 @@ namespace graphtinker {
 
     };
 
-    Config::Config(std::string file_path) {
+    Config::Config(string file_path) {
 
-        _file_path = file_path;
+        file_path_ = file_path;
 
-        Load();
+        string edge_types[] = {"type0", "type1", "type2", "type3"};
+        edge_type_array_ = vector<string>(std::begin(edge_types), std::end(edge_types));
+        edge_type_mark_ = 0;
+        for (auto &&i : edge_type_array_)
+        {
+            edge_type_map_.insert(std::make_pair(i,edge_type_mark_++));
+        }
+
+        Load("default_config.ini");
+        Load(file_path_);
     }
 
-    bool Config::Load() {
+    bool Config::Load(string file_path) {
         DLOG(INFO) <<  "config::Load : start load configuration file";
-        INIReader reader(_file_path);
+        INIReader reader(file_path);
 
         if (reader.ParseError() != 0) {
             LOG(ERROR) << "can't load config file"  ;
             return false;
         }
 
-
-        _config_map.insert(std::make_pair("sgh_for_vtx_id", reader.Get("graphtinker", "sgh_for_vtx_id", "SELF")));
-        _config_map.insert(std::make_pair("sgh_for_adjvtx_id", reader.Get("graphtinker", "sgh_for_adjvtx_id", "SELF")));
-        _config_map.insert(std::make_pair("updatev", reader.Get("graphtinker", "updatev", "SELF")));
-        _config_map.insert(std::make_pair("min_vertex", reader.Get("graphtinker", "min_vertex", "0")));
-        _config_map.insert(std::make_pair("max_vertex", reader.Get("graphtinker", "max_vertex", "524288")));
-        _config_map.insert(std::make_pair("num_vertices", reader.Get("graphtinker", "num_vertices", "524288")));
-        _config_map.insert(std::make_pair("num_edges", reader.Get("graphtinker", "num_edges", "8380000")));
-        _config_map.insert(
-                std::make_pair("graphdirectiontype", reader.Get("graphtinker", "graphdirectiontype", "DIRECTED")));
-        _config_map.insert(std::make_pair("sub_block_height", reader.Get("graphtinker", "sub_block_height", "8")));
-        _config_map.insert(std::make_pair("page_block_height", reader.Get("graphtinker", "page_block_height", "64")));
-        _config_map.insert(std::make_pair("eba_m_expansion_addition_height",
+        config_map_.insert(std::make_pair("sgh_for_vtx_id", reader.Get("graphtinker", "sgh_for_vtx_id", "true")));
+        config_map_.insert(std::make_pair("sgh_for_adjvtx_id", reader.Get("graphtinker", "sgh_for_adjvtx_id","true")));
+        config_map_.insert(std::make_pair("updatev", reader.Get("graphtinker", "updatev", "true")));
+        config_map_.insert(std::make_pair("num_vertices", reader.Get("graphtinker", "num_vertices", "524288")));
+        config_map_.insert(std::make_pair("num_edges", reader.Get("graphtinker", "num_edges", "8380000")));
+        config_map_.insert(
+                std::make_pair("is_directed", reader.Get("graphtinker", "is_directed", "true")));
+        config_map_.insert(std::make_pair("sub_block_height", reader.Get("graphtinker", "sub_block_height", "8")));
+        config_map_.insert(std::make_pair("page_block_height", reader.Get("graphtinker", "page_block_height", "64")));
+        config_map_.insert(std::make_pair("eba_m_expansion_addition_height",
                                           reader.Get("graphtinker", "eba_m_expansion_addition_height", "100000")));
-        _config_map.insert(std::make_pair("eba_o_expansion_addition_height",
+        config_map_.insert(std::make_pair("eba_o_expansion_addition_height",
                                           reader.Get("graphtinker", "eba_o_expansion_addition_height", "100000")));
-        _config_map.insert(std::make_pair("cal_eba_expansion_addition_height",
+        config_map_.insert(std::make_pair("cal_eba_expansion_addition_height",
                                           reader.Get("graphtinker", "cal_eba_expansion_addition_height", "1000")));
-        _config_map.insert(std::make_pair("cal_lva_expansion_addition_height",
+        config_map_.insert(std::make_pair("cal_lva_expansion_addition_height",
                                           reader.Get("graphtinker", "cal_lva_expansion_addition_height", "100")));
-        _config_map.insert(
+        config_map_.insert(
                 std::make_pair("eba_expansion_padding", reader.Get("graphtinker", "eba_expansion_padding", "10000")));
 
         return true;
@@ -57,14 +63,14 @@ namespace graphtinker {
 
     bool Config::PrintAll() {
 
-        if (_config_map.empty()) {
+        if (config_map_.empty()) {
             LOG(ERROR) << "No configuration file or file is not loaded!"  ;
             return false;
         }
 
         LOG(INFO) << "----------Configuration-------------"  ;
 
-        for (auto it = _config_map.begin(); it != _config_map.end(); it++) {
+        for (auto it = config_map_.begin(); it != config_map_.end(); it++) {
             LOG(INFO) << it->first << " = " << it->second  ;
         }
 
@@ -73,27 +79,24 @@ namespace graphtinker {
 
     bool Config::ConfigGraph(Graphtinker *gt) {
         DLOG(INFO) << "config::ConfigGraph : start config";
-        gt->sgh_for_vtx_id_ = _config_map["sgh_for_vtx_id"].compare("SELF") == 0 ? SELF : OTHER;
-        gt->sgh_for_adjvtx_id_ = _config_map["sgh_for_adjvtx_id"].compare("SELF") == 0 ? SELF : OTHER;
-        gt->updatev_ = _config_map["updatev"].compare("SELF") == 0 ? SELF : OTHER;
+        gt->sgh_for_vtx_id_ = config_map_["sgh_for_vtx_id"].compare("true") == 0;
+        gt->sgh_for_adjvtx_id_ = config_map_["sgh_for_adjvtx_id"].compare("true") == 0;
+        gt->updatev_ = config_map_["updatev"].compare("true") == 0;
 
-        uint min_vertex, max_vertex;
-        StringToNum(_config_map["min_vertex"], min_vertex);
-        StringToNum(_config_map["max_vertex"], max_vertex);
-        gt->vertex_range_ = max_vertex - min_vertex;
 
-        StringToNum(_config_map["num_vertices"], gt->num_vertices_);
-        StringToNum(_config_map["num_edges"], gt->num_edges_);
+        StringToNum(config_map_["num_vertices"], gt->num_vertices_);
+        StringToNum(config_map_["num_edges"], gt->num_edges_);
+        gt->vertex_range_ = gt->num_edges_;
 
-        gt->graphdirectiontype_ = _config_map.at("graphdirectiontype").compare("DIRECTEDGRAPH") == 0?DIRECTEDGRAPH:UNDIRECTEDGRAPH;
+        gt->is_directed_ = config_map_.at("is_directed").compare("true") == 0;
 
-        StringToNum(_config_map["sub_block_height"], gt->sub_block_height_);
-        StringToNum(_config_map["page_block_height"], gt->page_block_height_);
-        StringToNum(_config_map["eba_m_expansion_addition_height"], gt->eba_m_expansion_addition_height_);
-        StringToNum(_config_map["eba_o_expansion_addition_height"], gt->eba_o_expansion_addition_height_);
-        StringToNum(_config_map["cal_eba_expansion_addition_height"], gt->cal_eba_expansion_addition_height_);
-        StringToNum(_config_map["cal_lva_expansion_addition_height"], gt->cal_lva_expansion_addition_height_);
-        StringToNum(_config_map["eba_expansion_padding"], gt->eba_expansion_padding_);
+        StringToNum(config_map_["sub_block_height"], gt->sub_block_height_);
+        StringToNum(config_map_["page_block_height"], gt->page_block_height_);
+        StringToNum(config_map_["eba_m_expansion_addition_height"], gt->eba_m_expansion_addition_height_);
+        StringToNum(config_map_["eba_o_expansion_addition_height"], gt->eba_o_expansion_addition_height_);
+        StringToNum(config_map_["cal_eba_expansion_addition_height"], gt->cal_eba_expansion_addition_height_);
+        StringToNum(config_map_["cal_lva_expansion_addition_height"], gt->cal_lva_expansion_addition_height_);
+        StringToNum(config_map_["eba_expansion_padding"], gt->eba_expansion_padding_);
 
         DLOG(INFO) << "end config";
 
@@ -101,11 +104,15 @@ namespace graphtinker {
     }
 
 
-    std::string Config::get_file_path() {
-        return _file_path;
+    string Config::get_file_path() {
+        return file_path_;
     }
 
-    void Config::set_file_path(std::string file_path) {
-        _file_path = file_path;
+    void Config::set_file_path(string file_path) {
+        file_path_ = file_path;
     }
+
+    // getter
+    const std::vector<string> &Config::edge_type_array() const{return edge_type_array_;}
+    const std::map<string, edge_type_t> &Config::edge_type_map() const{return edge_type_map_;}
 }

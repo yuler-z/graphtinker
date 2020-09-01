@@ -32,7 +32,7 @@ namespace graphtinker {
         uint vertex_range_;
         uint num_vertices_;
         uint num_edges_;
-        uint graphdirectiontype_;
+        bool is_directed_;
 
         uint sub_block_height_;
         uint page_block_height_;
@@ -64,7 +64,7 @@ namespace graphtinker {
         Translator* translator_handler_;
 
 // metadata (for delete and crumple in)
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
         vector<supervertex_t> svs;
         vector<vertexid_t> freed_edgeblock_list;
         vector<edgeblock_parentinfo_t> edgeblock_parentinfo;
@@ -74,17 +74,17 @@ namespace graphtinker {
         // member functions
         void CreateGraph();
 
-        void InsertEdge(uint src, uint dst, uint ew); 
-        void InsertEdge(uint src, uint dst, uint ew, Vertices* vertices_handler_); 
-        void InsertEdge(uint src, uint dst, uint ew, Translator* translator_handler_); 
-        void InsertEdge(uint src, uint dst, uint ew, Vertices* external_vertices_handler, Translator* translator_handler_); 
+        void InsertEdge(Edge& edge); 
+        void InsertEdge(Edge& edge, Vertices* vertices_handler_); 
+        void InsertEdge(Edge& edge, Translator* translator_handler_); 
+        void InsertEdge(Edge& edge, Vertices* external_vertices_handler, Translator* translator_handler_); 
         void BatchInsertEdge(const char* path, uint batch_size);
 
-        void DeleteEdge(uint src, uint dst, uint ew);
-        void DeleteEdge(uint src, uint dst, uint ew, Vertices* vertices_handler_);
+        void DeleteEdge(Edge& edge);
+        void DeleteEdge(Edge& edge, Vertices* vertices_handler_);
         void BatchDeleteEdge(const char* path, uint batch_size);
 
-        void UpdateEdge(uint src, uint dst, uint ew, uint edge_update_cmd, Vertices* vertices_handler_);
+        void UpdateEdge(const Edge& edge, uint edge_update_cmd, Vertices* vertices_handler_);
 
 
         vertexid_t retrieve_edges(vertexid_t vid, vector<edge_tt> &edges);
@@ -99,7 +99,7 @@ namespace graphtinker {
         const uint vertex_range() const;
         const Translator* translator() const;
         const Vertices* vertices() const;
-        const uint graphdirectiontype() const;
+        const bool is_directed() const;
         const uint translator_tracker_mark() const;
         const uint work_blocks_per_page() const;
         const uint work_blocks_per_subblock() const;
@@ -127,7 +127,7 @@ namespace graphtinker {
         uint getsvtracker(markertracker_t *svtracker);
 
         // hash scripts
-        bucket_t GoogleHash(vertexid_t vid, uint geni) const;
+        bucket_t GoogleHash(vertexid_t vid, edge_type_t etype, uint geni) const;
 
         // initialize
         uint add_page(tracker_t *tracker, vector<work_block_t> &edge_block_array);
@@ -135,7 +135,7 @@ namespace graphtinker {
         // bucket_t getdib(bucket_t currbkt, bucket_t initial_bucket, margin_t sub_block_margin, uint rolledover);
 
 
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
         void init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd);
 
         // super Vertices

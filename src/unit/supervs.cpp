@@ -3,7 +3,7 @@
 #include <string>
 #include "core/graphtinker.h"
 
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 namespace graphtinker
 {
 	int Graphtinker::sv_get_next_edge(

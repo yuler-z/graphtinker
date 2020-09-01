@@ -24,7 +24,7 @@ namespace graphtinker
 		vertex_property_t ReadProperty(vertexid_t vertexid);
 		void WriteProperty(vertexid_t vertexid, vertex_property_t vertexproperty);
 		void IncreaseOutdegree(vertexid_t vertexid);
-		void UpdateVertexProperty(vertexid_t vtx_id, vertexid_t adjvtx_id, uint edge_update_cmd, uint graphdirectiontype);
+		void UpdateVertexProperty(vertexid_t vtx_id, vertexid_t adjvtx_id, uint edge_update_cmd, bool is_directed);
 		void PrintVerticesProperty(uint n);
 		void PrintNthVertexProperty(uint n);
 

@@ -3,9 +3,11 @@
 
 #include <string>
 #include <map>
+#include <core/common.h>
 #include <glog/logging.h>
 
 
+using std::string;
 
 namespace graphtinker{
 
@@ -13,18 +15,28 @@ namespace graphtinker{
     class Config {
 
         private:
-            std::string _file_path;
-            std::map<std::string, std::string> _config_map;
+            string file_path_;
+            std::map<string, string> config_map_;
+
+        private:
+            std::map<string, edge_type_t> edge_type_map_;
+            std::vector<string> edge_type_array_;
+            edge_type_t edge_type_mark_;
 
         public:
             Config();
-            Config(std::string file_path);
+            Config(string file_path);
             bool Load();
+            bool Load(string file_path);
             bool ConfigGraph(Graphtinker *gt);
             bool PrintAll();
 
-            std::string get_file_path();
-            void set_file_path(std::string);
+            string get_file_path();
+            void set_file_path(string);
+
+            // getter
+            const std::vector<string> &edge_type_array() const ;
+            const std::map<string, edge_type_t> &edge_type_map() const ;
     };
 }
 #endif

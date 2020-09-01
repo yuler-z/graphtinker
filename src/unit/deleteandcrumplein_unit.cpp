@@ -1,6 +1,6 @@
 #include "core/graphtinker.h"
 
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 namespace graphtinker
 {
 	/// this function is only used when when an edge is removed from a *clustered region*

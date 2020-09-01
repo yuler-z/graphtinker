@@ -87,11 +87,11 @@ namespace graphtinker
 		return;
 	}
 
-	void Vertices::UpdateVertexProperty(vertexid_t vtx_id, vertexid_t adjvtx_id, uint edge_update_cmd, uint graphdirectiontype)
+	void Vertices::UpdateVertexProperty(vertexid_t vtx_id, vertexid_t adjvtx_id, uint edge_update_cmd, bool is_directed)
 	{
 		if (edge_update_cmd == INSERTEDGE)
 		{
-			if (graphdirectiontype == DIRECTEDGRAPH)
+			if (is_directed)
 			{
 				if (vtx_id < num_vertices_)
 				{
@@ -102,7 +102,7 @@ namespace graphtinker
 					vertex_properties_[adjvtx_id].indegree += 1;
 				}
 			}
-			else if (graphdirectiontype == UNDIRECTEDGRAPH)
+			else if (is_directed == UNDIRECTEDGRAPH)
 			{
 				if (vtx_id < num_vertices_)
 				{
@@ -121,7 +121,7 @@ namespace graphtinker
 					vertex_properties_[adjvtx_id].indegree += 1;
 				}
 			}
-			else if (graphdirectiontype == REVERSE_DIRECTED_GRAPH)
+			else if (is_directed == REVERSE_DIRECTED_GRAPH)
 			{
 				if (vtx_id < num_vertices_)
 				{
@@ -139,7 +139,7 @@ namespace graphtinker
 		}
 		else if (edge_update_cmd == DELETEEDGE)
 		{
-			if (graphdirectiontype == DIRECTEDGRAPH)
+			if (is_directed)
 			{
 				if (vtx_id < num_vertices_)
 				{
@@ -150,7 +150,7 @@ namespace graphtinker
 					vertex_properties_[adjvtx_id].indegree -= 1;
 				}
 			}
-			else if (graphdirectiontype == UNDIRECTEDGRAPH)
+			else if (is_directed == UNDIRECTEDGRAPH)
 			{
 				if (vtx_id < num_vertices_)
 				{
@@ -169,7 +169,7 @@ namespace graphtinker
 					vertex_properties_[adjvtx_id].indegree -= 1;
 				}
 			}
-			else if (graphdirectiontype == REVERSE_DIRECTED_GRAPH)
+			else if (is_directed == REVERSE_DIRECTED_GRAPH)
 			{
 				if (vtx_id < num_vertices_)
 				{

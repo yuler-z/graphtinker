@@ -18,7 +18,7 @@ namespace graphtinker
 		,
 		vector<cal_edgeblock_t> &cal_edgeblock_array_
 #endif
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 		,
 		vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
 		,
@@ -48,7 +48,7 @@ namespace graphtinker
 			work_block->clusterinfo = clusterinfo;
 		}
 
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 		/** once we are in REGULAR UPDATE OPERATION, and a subblock becomes clustered, the child of that subblock MUST point to an entry in the supervertex vector. Whether or not that entry is shared with another (formerly) clustered subblock depends on where the subblock is located 
 	CASE 1 : if the sublock is a first child, and the subblock lies in generation 1 => then a new supervertex should be created and should be updated.
 	CASE 2 : if the subblock is a first child, and the subblock DOES NOT lie in generation 1 => then a supervertex should have been created by it's founding father. thus it should simply be updated.
@@ -200,7 +200,7 @@ namespace graphtinker
 			}
 
 // update cal_edgeblock_array_
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 			cal_edgeblock_array_[module_params->ll_localbaseaddrptr_x].ll_edgeblock[module_params->ll_localaddrptr_x].which_gen_is_the_main_copy_located = geni; //***
 #endif
 		}
@@ -226,7 +226,7 @@ namespace graphtinker
 			}
 		}
 
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
 		if (writeback_unit_cmd.markasclustered == YES)
 		{
 			uint index = clusterinfo.data;

@@ -3,26 +3,28 @@
 namespace graphtinker{
     UnitOption::UnitOption(){}
     UnitOption::~UnitOption(){}
-    void UnitOption::InitModuleUnitParams(vertexid_t adjvtx_id, edgeweight_t edge_weight)
+    void UnitOption::InitModuleUnitParams(const edge_t &edge)
 	{
 		module_params.rolledover = NO;
 		module_params.clustered = NO;
 		module_params.cptr = -1;
-		module_params.adjvtx_id = adjvtx_id;
-		module_params.edge_weight = edge_weight;
+		module_params.type = edge.type;
+		module_params.adjvtx_id = edge.adjvtx_id;
+		module_params.weight = edge.weight;
 		return;
 	}
 
     void UnitOption::InitLoadUnit()
 	{
-		load_unit_cmd.load = YES;
+		load_unit_cmd.load = true;
 		return;
 	}
-    void UnitOption::InitInsertUnit(vertexid_t adjvtx_id, bucket_t adjvtx_id_hash, edgeweight_t edge_weight)
+    void UnitOption::InitInsertUnit(const edge_t &edge, bucket_t adjvtx_id_hash)
 	{
-		insert_params.adjvtx_id = adjvtx_id;
+		insert_params.adjvtx_id = edge.adjvtx_id;
 		insert_params.initial_bucket = adjvtx_id_hash;
-		insert_params.edge_weight = edge_weight;
+		insert_params.type = edge.type;
+		insert_params.weight = edge.weight;
 
 		insert_report.exittype = PASSEDTHROUGH;
 		insert_report.validbuckets_incr = 0;
@@ -30,11 +32,12 @@ namespace graphtinker{
 		insert_report.lastbktloadedinto = NONE;
 		return;
 	}
-	void UnitOption::InitFindUnit(vertexid_t adjvtx_id, bucket_t adjvtx_id_hash, edgeweight_t edge_weight)
+	void UnitOption::InitFindUnit(const edge_t &edge, bucket_t adjvtx_id_hash)
 	{
-		find_params.adjvtx_id = adjvtx_id; // edge info
+		find_params.adjvtx_id = edge.adjvtx_id; 
 		find_params.initial_bucket = adjvtx_id_hash;
-		find_params.edge_weight = edge_weight;
+		find_params.type = edge.type;
+		find_params.weight = edge.weight;
 		find_params.is_start_blk = true;
 
 		find_report.local_offset = NULLL;

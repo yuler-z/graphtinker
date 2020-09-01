@@ -7,4 +7,5 @@ add_executable(updates_test updates_test.cpp)
 target_link_libraries(updates_test core glog gflags)
 
 file(COPY ../../config.ini DESTINATION .)
+file(COPY ../../default_config.ini DESTINATION .)
 file(COPY ../../RMAT_500K_8M DESTINATION .)

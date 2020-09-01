@@ -44,7 +44,6 @@ namespace graphtinker{
                 bucket_t adjvtx_id_hash,
                 work_block_t *work_block,
                 edge_t *edge,
-                vertexid_t vtx_id,
                 uint geni);
 
         void InferenceUnit(
@@ -71,7 +70,7 @@ namespace graphtinker{
                 ,
                 vector<cal_edgeblock_t> &cal_edgeblock_array_
                 #endif
-                #ifdef EN_CRUMPLE_IN
+                #ifdef EN_DCI
                 ,
                 vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
                 ,
@@ -95,7 +94,7 @@ namespace graphtinker{
                 ,
                 cal_unit_cmd_t *cal_unit_cmd
 #endif
-#ifdef EN_CRUMPLE_IN
+#ifdef EN_DCI
                 ,
                 crumple_in_cmd_t *heba_deleteandcrumplein_cmd,
                 uint *lastgenworkblockaddr
@@ -229,7 +228,7 @@ namespace graphtinker{
         void set_moduleunitcmd(uint cmd);
 
         void
-        set_moduleunitparamsedgefields(vertexid_t adjvtx_id, edgeweight_t edge_weight);
+        set_moduleunitparamsedgefields(vertexid_t adjvtx_id, edge_weight_t weight);
 
         void set_writebackunitcmd_writebackcurrentEB(uint cmd, uint addr,
                                                      margin_t sub_block_margin);
@@ -282,7 +281,7 @@ namespace graphtinker{
                 edge_t edge,
                 vector<cal_edgeblock_t> &cal_edgeblock_array_);
         // eba_manager
-	bucket_t GoogleHash(vertexid_t vid, uint geni) const;
+	bucket_t GoogleHash(vertexid_t vid,edge_type_t type, uint geni) const;
         uint GetEdgeblockOffset(vertexid_t vid) const;
         void FindWorkBlockMargin(bucket_t adjvtx_id_hash, margin_t *blkmargin) const;
         void FindSubBlockMargin(bucket_t adjvtx_id_hash, margin_t *blkmargin) const;
