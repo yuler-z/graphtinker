@@ -3,7 +3,7 @@
 namespace graphtinker
 {
 	// 实际的update edge和delete edge操作
-	void UnitFlow::FindUnit( margin_t work_block_margin, bucket_t adjvtx_id_hash, work_block_t *work_block, uint edge_update_cmd)
+	void UnitFlow::find_unit( margin_t work_block_margin, bucket_t adjvtx_id_hash, work_block_t *work_block, uint edge_update_cmd)
 	{
 		bucket_t local_offset;
 

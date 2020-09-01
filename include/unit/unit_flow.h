@@ -6,47 +6,37 @@
 namespace graphtinker{
     class UnitFlow
     {
-    private:
-        
     public:
-
-        Graphtinker *gt;
+        Graphtinker *gt_;
         UnitOption *unit_option;
-        
-        uint work_blocks_per_page_;
-        uint sub_block_height_;
-        uint work_blocks_per_subblock_;
-        uint cal_lva_expansion_addition_height_;
-        uint cal_eba_expansion_addition_height_;
 
-
-        UnitFlow(Graphtinker *gt);
+        UnitFlow(Graphtinker* gt);
         ~UnitFlow();
 
-        void LoadUnit(
+        void load_unit(
                 margin_t work_block_margin,
                 vertexid_t vtx_id,
                 vector<work_block_t> &edge_block_array,
                 work_block_t *work_block);
         
-        void LoadParams(
+        void load_params(
                 margin_t work_block_margin,
                 bucket_t adjvtx_id_hash); 
 
-        void FindUnit(
+        void find_unit(
                 margin_t work_block_margin,
                 bucket_t adjvtx_id_hash,
                 work_block_t *work_block,
                 uint edge_update_cmd);
 
-        void InsertUnit(
+        void insert_unit(
                 margin_t work_block_margin,
                 bucket_t adjvtx_id_hash,
                 work_block_t *work_block,
                 edge_t *edge,
                 uint geni);
 
-        void InferenceUnit(
+        void inference_unit(
                 uint edge_update_cmd,
                 margin_t *work_block_margin,
                 margin_t sub_block_margin,
@@ -55,7 +45,7 @@ namespace graphtinker{
                 cal_unit_cmd_t *cal_unit_cmd = nullptr,
                 crumple_in_cmd_t *heba_popoutpopin_cmd = nullptr);
         // writeback unit
-        void WritebackUnit(
+        void writeback_unit(
                 edge_t edge,
                 work_block_t *work_block,
                 vector<work_block_t> &edge_block_array_m_,
@@ -78,7 +68,7 @@ namespace graphtinker{
                 #endif
         );
 
-        void IntervalUnit(
+        void interval_unit(
                 margin_t *work_block_margin,
                 margin_t *sub_block_margin,
                 margin_t *start_wblkmargin,
@@ -237,13 +227,13 @@ namespace graphtinker{
 
         void set_cal_unit_cmd(uint cmd);
 
-        void updatemarginandrolloverstatus(margin_t *work_block_margin, margin_t sub_block_margin);
+        void update_margin_and_rollover_status(margin_t *work_block_margin, margin_t sub_block_margin);
 
-        bool IsLastWorkBlockInSubBlock(margin_t work_block_margin, margin_t start_wblkmargin, margin_t sub_block_margin);
+        bool is_last_workblock_in_subblock(margin_t work_block_margin, margin_t start_wblkmargin, margin_t sub_block_margin);
 
 // ----------------CAL Unit-----------------------
 
-	void CalUnit(
+	void cal_unit(
 		edge_t edge,
 		vector<work_block_t> &edge_block_array_m_,
 		vector<work_block_t> &edge_block_array_o_,
@@ -253,22 +243,22 @@ namespace graphtinker{
 		vector<cal_edgeblock_t> &cal_edgeblock_array_, vector<cal_logical_vertex_entity_t> &cal_lva_, cal_edgeblock_tracker_t *cal_edgeblock_tracker_
 #endif
 	);
-        void CalInsert(
+        void cal_insert(
                 edge_t edge,
                 vector<cal_edgeblock_t> &cal_edgeblock_array_,
                 vector<cal_logical_vertex_entity_t> &cal_lva_,
                 cal_edgeblock_tracker_t *cal_edgeblock_tracker_,
                 uint geni);
 
-        void CalUpdate(
+        void cal_update(
                 edge_t edge,
                 vector<cal_edgeblock_t> &cal_edgeblock_array_);
 
-        void CalDelete(
+        void cal_delete(
                 edge_t edge,
                 vector<cal_edgeblock_t> &cal_edgeblock_array_);
 
-        void CalDeleteAndCrumpleIn(
+        void cal_delete_and_crumple_in(
                 edge_t edge,
                 vector<cal_edgeblock_t> &cal_edgeblock_array_,
                 vector<cal_logical_vertex_entity_t> &cal_lva_,
@@ -277,15 +267,7 @@ namespace graphtinker{
                 vector<work_block_t> &edge_block_array_o_,
                 uint geni);
 
-        void CalUpdateEdgePtrs(
-                edge_t edge,
-                vector<cal_edgeblock_t> &cal_edgeblock_array_);
-        // eba_manager
-	bucket_t GoogleHash(vertexid_t vid,edge_type_t type, uint geni) const;
-        uint GetEdgeblockOffset(vertexid_t vid) const;
-        void FindWorkBlockMargin(bucket_t adjvtx_id_hash, margin_t *blkmargin) const;
-        void FindSubBlockMargin(bucket_t adjvtx_id_hash, margin_t *blkmargin) const;
-        uint add_page(tracker_t *tracker, vector<work_block_t> &edge_block_array) const;
+        void cal_update_edge_ptrs( edge_t edge, vector<cal_edgeblock_t> &cal_edgeblock_array_);
     };
     
 

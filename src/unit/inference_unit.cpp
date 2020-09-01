@@ -32,7 +32,7 @@ namespace graphtinker
 	 * 选择退出循环
 	 * 还是其他行为
 	 */
-	void UnitFlow::InferenceUnit(
+	void UnitFlow::inference_unit(
 		uint edge_update_cmd,
 		margin_t *work_block_margin,
 		margin_t sub_block_margin,
@@ -59,7 +59,7 @@ namespace graphtinker
 		if(search_report.is_search_stop) DLOG(INFO) << "search_report.is_search_stop";
 		if(search_report.is_search_success) DLOG(INFO) << "search_report.is_search_success";
 
-		bool is_last_work_block = IsLastWorkBlockInSubBlock(*work_block_margin, start_wblkmargin, sub_block_margin);
+		bool is_last_work_block = is_last_workblock_in_subblock(*work_block_margin, start_wblkmargin, sub_block_margin);
 
 #ifdef EN_OTHERS
 		//LOG(INFO) <<"inference params of tinker = "<< tinkerid <<", batch = "<<batchid<<", chunk = "<<chunkid ;
@@ -269,7 +269,7 @@ namespace graphtinker
 		set_moduleunitcmd(INSERT_MODE);
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight); //***
 		set_loadunitcmd_loadnextEB(true);
-		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(NO, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_from_first_generation();
 		EN_CAL_SET_CAL_CMD(INSERTCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -287,7 +287,7 @@ namespace graphtinker
 		set_moduleunitcmd(FIND_MODE);																										  //default mode
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);														  //***
 		set_loadunitcmd_loadnextEB(true);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
 		EN_CAL_SET_CAL_CMD(UPDATECMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -305,7 +305,7 @@ namespace graphtinker
 		set_moduleunitcmd(FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);														//***
 		set_loadunitcmd_loadnextEB(true);																										//load next EB
-		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(NO, (gt_->get_edgeblock_offset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(work_block_margin, sub_block_margin);
 		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -323,10 +323,10 @@ namespace graphtinker
 		set_moduleunitcmd(FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);														 //***
 		set_loadunitcmd_loadnextEB(true);																										 //load next EB
-		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(NO, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		if (unit_option->module_params.clustered != YES)
 		{
-			setwritebackunitcmd_markasclustered(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
+			setwritebackunitcmd_markasclustered(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		} //***???
 		set_intervalunitcmd_continue_in_lower_generation();
 		EN_CAL_SET_CAL_CMD(NOCMD);
@@ -346,7 +346,7 @@ namespace graphtinker
 		set_moduleunitcmd(INSERT_MODE);
 		set_moduleunitparamsedgefields(unit_option->insert_params.adjvtx_id, unit_option->insert_params.weight);													 //***
 		set_loadunitcmd_loadnextEB(true);																										 //load next EB
-		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(YES, (gt_->get_edgeblock_offset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(work_block_margin, sub_block_margin);
 		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -364,10 +364,10 @@ namespace graphtinker
 		set_moduleunitcmd(INSERT_MODE);
 		set_moduleunitparamsedgefields(unit_option->insert_params.adjvtx_id, unit_option->insert_params.weight);													  //***
 		set_loadunitcmd_loadnextEB(true);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		if (unit_option->module_params.clustered != YES)
 		{
-			setwritebackunitcmd_markasclustered(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
+			setwritebackunitcmd_markasclustered(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		}
 		set_intervalunitcmd_continue_in_lower_generation();
 		EN_CAL_SET_CAL_CMD(NOCMD);
@@ -386,7 +386,7 @@ namespace graphtinker
 		set_moduleunitcmd(FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->insert_params.adjvtx_id, unit_option->insert_params.weight);													  //***
 		set_loadunitcmd_loadnextEB(true);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
 		EN_CAL_SET_CAL_CMD(UPDATEEDGEPTRSCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -404,7 +404,7 @@ namespace graphtinker
 		set_moduleunitcmd(FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->insert_params.adjvtx_id, unit_option->insert_params.weight);													  //***
 		set_loadunitcmd_loadnextEB(true);																										  //load next EB
-		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
 		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -422,7 +422,7 @@ namespace graphtinker
 		set_moduleunitcmd(INSERT_MODE);
 		set_moduleunitparamsedgefields(unit_option->insert_params.adjvtx_id, unit_option->insert_params.weight);													//***
 		set_loadunitcmd_loadnextEB(true);																										//load next EB
-		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(NO, (gt_->get_edgeblock_offset(vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT), sub_block_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation( work_block_margin, sub_block_margin);
 		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -440,10 +440,10 @@ namespace graphtinker
 		set_moduleunitcmd( INSERT_MODE);
 		set_moduleunitparamsedgefields(unit_option->insert_params.adjvtx_id, unit_option->insert_params.weight);													 //***
 		set_loadunitcmd_loadnextEB(true);																										 //load next EB
-		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(NO, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		if (unit_option->module_params.clustered != YES)
 		{
-			setwritebackunitcmd_markasclustered(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
+			setwritebackunitcmd_markasclustered(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)));
 		}
 		set_intervalunitcmd_continue_in_lower_generation();
 		EN_CAL_SET_CAL_CMD(NOCMD);
@@ -463,7 +463,7 @@ namespace graphtinker
 		set_moduleunitcmd( FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);														 //***
 		set_loadunitcmd_loadnextEB(true);																										 //*** NO YES
-		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(NO, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
 		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -484,7 +484,7 @@ namespace graphtinker
 		set_moduleunitcmd( FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);														  //***
 		set_loadunitcmd_loadnextEB(true);																										  //*** NO YES
-		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
 		EN_CAL_SET_CAL_CMD(DELETECMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_NOCMD);
@@ -518,7 +518,7 @@ namespace graphtinker
 		set_moduleunitcmd( FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);														 //***
 		set_loadunitcmd_loadnextEB(true);																										 //*** NO YES
-		set_writebackunitcmd_writebackcurrentEB(NO, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
+		set_writebackunitcmd_writebackcurrentEB(NO, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin); //writeback EB
 		set_intervalunitcmd_quit_to_next_edge();
 		EN_CAL_SET_CAL_CMD(NOCMD);
 		EN_CRUMPLE_IN_SET_VERDICT(DCI_JUSTQUITCMD);
@@ -540,7 +540,7 @@ namespace graphtinker
 		set_moduleunitcmd( FIND_MODE);
 		set_moduleunitparamsedgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);
 		set_loadunitcmd_loadnextEB(true);
-		set_writebackunitcmd_writebackcurrentEB(YES, (GetEdgeblockOffset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin);
+		set_writebackunitcmd_writebackcurrentEB(YES, (gt_->get_edgeblock_offset(vtx_id) + (work_block_margin.top / WORK_BLOCK_HEIGHT)), sub_block_margin);
 		set_intervalunitcmd_quit_to_next_edge();
 		EN_CAL_SET_CAL_CMD(DELETEANDCRUMPLEINCMD);
 		if (unit_option->module_params.clustered == YES)
@@ -585,7 +585,7 @@ namespace graphtinker
 	void UnitFlow::set_intervalunitcmd_continue_in_current_generation(margin_t *work_block_margin, margin_t sub_block_margin)
 	{
 		unit_option->interval_unit_cmd.verdict = CONTINUE_IN_CURRENT_GENERATION;
-		updatemarginandrolloverstatus(work_block_margin, sub_block_margin);
+		update_margin_and_rollover_status(work_block_margin, sub_block_margin);
 		return;
 	}
 
@@ -618,7 +618,7 @@ namespace graphtinker
 	{
 		unit_option->writeback_unit_cmd.writeback = cmd; //writeback EB
 		unit_option->writeback_unit_cmd.addr = addr;
-		unit_option->writeback_unit_cmd.subblockid = sub_block_margin.top / sub_block_height_;
+		unit_option->writeback_unit_cmd.subblockid = sub_block_margin.top / gt_->sub_block_height_;
 		return;
 	}
 
@@ -636,7 +636,7 @@ namespace graphtinker
 	}
 
 	//utility functions
-	void UnitFlow::updatemarginandrolloverstatus(margin_t *work_block_margin, margin_t sub_block_margin)
+	void UnitFlow::update_margin_and_rollover_status(margin_t *work_block_margin, margin_t sub_block_margin)
 	{
 		if (work_block_margin->bottom == sub_block_margin.bottom)
 		{ //roll over
@@ -653,7 +653,7 @@ namespace graphtinker
 		return;
 	}
 
-	bool UnitFlow::IsLastWorkBlockInSubBlock(margin_t work_block_margin, margin_t start_wblkmargin, margin_t sub_block_margin)
+	bool UnitFlow::is_last_workblock_in_subblock(margin_t work_block_margin, margin_t start_wblkmargin, margin_t sub_block_margin)
 	{
 		if (unit_option->module_params.rolledover == YES && work_block_margin.top == start_wblkmargin.top)
 		{

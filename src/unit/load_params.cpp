@@ -6,7 +6,7 @@ namespace graphtinker
 	 * 设置insert unit和find unit的params
 	 * 该边是否是所处work_block的start block
 	 */
-	void UnitFlow::LoadParams(
+	void UnitFlow::load_params(
 		margin_t work_block_margin,
 		bucket_t adjvtx_id_hash)
 	{

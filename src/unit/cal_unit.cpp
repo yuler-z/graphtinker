@@ -2,7 +2,7 @@
 
 namespace graphtinker
 {
-	void UnitFlow::CalUnit(
+	void UnitFlow::cal_unit(
 		edge_t edge,
 		vector<work_block_t> &edge_block_array_m_,
 		vector<work_block_t> &edge_block_array_o_,
@@ -21,7 +21,7 @@ namespace graphtinker
 		cal_unit_cmd_t &cal_unit_cmd = unit_option->cal_unit_cmd;
 		if (cal_unit_cmd.verdict == INSERTCMD)
 		{
-			CalInsert(
+			cal_insert(
 				edge,
 				cal_edgeblock_array_,
 				cal_lva_,
@@ -30,19 +30,19 @@ namespace graphtinker
 		}
 		else if (cal_unit_cmd.verdict == UPDATECMD)
 		{
-			CalUpdate(
+			cal_update(
 				edge,
 				cal_edgeblock_array_);
 		}
 		else if (cal_unit_cmd.verdict == DELETECMD)
 		{
-			CalDelete(
+			cal_delete(
 				edge,
 				cal_edgeblock_array_);
 		}
 		else if (cal_unit_cmd.verdict == DELETEANDCRUMPLEINCMD)
 		{
-			CalDeleteAndCrumpleIn(
+			cal_delete_and_crumple_in(
 				edge,
 				cal_edgeblock_array_,
 				cal_lva_,
@@ -53,7 +53,7 @@ namespace graphtinker
 		}
 		else if (cal_unit_cmd.verdict == UPDATEEDGEPTRSCMD)
 		{
-			CalUpdateEdgePtrs(
+			cal_update_edge_ptrs(
 				edge,
 				cal_edgeblock_array_);
 		}

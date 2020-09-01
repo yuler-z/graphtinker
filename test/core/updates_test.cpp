@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
 	std::string config_file_path = "config.ini";
 	graphtinker::Graphtinker tinkerA(config_file_path);
-	tinkerA.BatchInsertEdge("RMAT_500K_8M", BATCH_SIZE);
-	tinkerA.BatchDeleteEdge("RMAT_500K_8M", BATCH_SIZE);
+	tinkerA.batch_insert_edge("RMAT_500K_8M", BATCH_SIZE);
+	tinkerA.batch_delete_edge("RMAT_500K_8M", BATCH_SIZE);
 	return 0;
 }

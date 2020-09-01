@@ -5,7 +5,7 @@ namespace graphtinker
 {
 	uint debug_totaledgeinsertions;
 
-	void UnitFlow::InsertUnit(
+	void UnitFlow::insert_unit(
 		margin_t work_block_margin,
 		bucket_t adjvtx_id_hash,
 		work_block_t *work_block,
@@ -159,33 +159,4 @@ namespace graphtinker
 		return;
 	}
 
-	// bucket_t Graphtinker::getdib(bucket_t currbkt, bucket_t initial_bucket, margin_t sub_block_margin, uint rolledover)
-	// {
-	// 	bucket_t DIB = 0;
-	// 	bucket_t rightpad = 0;
-	// 	bucket_t leftpad = 0;
-	// 	uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
-	// 	uint work_block_height = WORK_BLOCK_HEIGHT;
-
-	// 	bucket_t diff = currbkt - initial_bucket;
-	// 	if (diff >= 0)
-	// 	{
-	// 		// DIB = currbkt - initial_bucket;
-	// 		if (rolledover == YES)
-	// 		{
-	// 			DIB = (work_blocks_per_subblock_ * work_block_height) + (currbkt - initial_bucket);
-	// 		}
-	// 		else
-	// 		{
-	// 			DIB = currbkt - initial_bucket;
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		rightpad = sub_block_margin.bottom - initial_bucket;
-	// 		leftpad = currbkt - sub_block_margin.top;
-	// 		DIB = rightpad + leftpad;
-	// 	}
-	// 	return DIB;
-	// }
 } // namespace graphtinker

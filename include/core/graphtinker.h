@@ -9,23 +9,15 @@
 #include "config/config.h"
 #include "unit/unit_option.h"
 #include "unit/unit_flow.h"
-;
+
 using std::string;
-/// classes
 namespace graphtinker {
 
     class Graphtinker {
     private:
+        friend class UnitFlow;
+        friend class Config;
 
-
-    public:
-        Graphtinker(); 
-        Graphtinker(string file_path); 
-        ~Graphtinker();
-
-
-        Config *_config;
-        // config
         uint sgh_for_vtx_id_;
         uint sgh_for_adjvtx_id_;
         uint updatev_;
@@ -37,7 +29,6 @@ namespace graphtinker {
         uint sub_block_height_;
         uint page_block_height_;
         uint sub_blocks_per_page_;
-        //compute
         uint work_blocks_per_page_;
         uint work_blocks_per_subblock_;
 
@@ -46,6 +37,8 @@ namespace graphtinker {
         uint cal_eba_expansion_addition_height_;
         uint cal_lva_expansion_addition_height_;
         uint eba_expansion_padding_;
+
+        Config *_config;
 
         // edge block array
         vector<work_block_t> edge_block_array_m_;
@@ -63,77 +56,60 @@ namespace graphtinker {
         // Scatter Gather Hash
         Translator* translator_handler_;
 
+    public:
+        Graphtinker(); 
+        Graphtinker(string file_path); 
+        ~Graphtinker();
+
 // metadata (for delete and crumple in)
 #ifdef EN_DCI
         vector<supervertex_t> svs;
         vector<vertexid_t> freed_edgeblock_list;
         vector<edgeblock_parentinfo_t> edgeblock_parentinfo;
 #endif
-
-
         // member functions
-        void CreateGraph();
+        void create_graph();
 
-        void InsertEdge(Edge& edge); 
-        void InsertEdge(Edge& edge, Vertices* vertices_handler_); 
-        void InsertEdge(Edge& edge, Translator* translator_handler_); 
-        void InsertEdge(Edge& edge, Vertices* external_vertices_handler, Translator* translator_handler_); 
-        void BatchInsertEdge(const char* path, uint batch_size);
+        void insert_edge(Edge& edge); 
+        void insert_edge(Edge& edge, Vertices* vertices_handler_); 
+        void insert_edge(Edge& edge, Translator* translator_handler_); 
+        void insert_edge(Edge& edge, Vertices* external_vertices_handler, Translator* translator_handler_); 
+        void batch_insert_edge(const char* path, uint batch_size);
 
-        void DeleteEdge(Edge& edge);
-        void DeleteEdge(Edge& edge, Vertices* vertices_handler_);
-        void BatchDeleteEdge(const char* path, uint batch_size);
+        void delete_edge(Edge& edge);
+        void delete_edge(Edge& edge, Vertices* vertices_handler_);
+        void batch_delete_edge(const char* path, uint batch_size);
 
-        void UpdateEdge(const Edge& edge, uint edge_update_cmd, Vertices* vertices_handler_);
-
+        void update_edge(const Edge& edge, uint edge_update_cmd, Vertices* vertices_handler_);
 
         vertexid_t retrieve_edges(vertexid_t vid, vector<edge_tt> &edges);
 
-        uint PrintCALEdgeCount();
-        uint ll_countedges(vector<cal_edgeblock_t> &cal_edgeblock_array_);
+        // print function
+        uint print_cal_edge_count();
         uint print_svs_size();
         uint print_freed_edgeblock_list_size();
         void initialize_lvas();
+        uint ll_countedges(vector<cal_edgeblock_t> &cal_edgeblock_array_);
+        uint print_edge_count();
+        uint print_unique_edge_count();
+        void print_edgeblock_array(const vertexid_t begin, const vertexid_t end);
 
-        // getter
-        const uint vertex_range() const;
-        const Translator* translator() const;
-        const Vertices* vertices() const;
-        const bool is_directed() const;
-        const uint translator_tracker_mark() const;
-        const uint work_blocks_per_page() const;
-        const uint work_blocks_per_subblock() const;
-        const uint sub_block_height() const;
-        const vector<work_block_t> &edge_block_array_m() const;
-        const vector<work_block_t> &edge_block_array_o() const;
-        const vector<cal_logical_vertex_entity_t> &ll_logicalvertexentity() const;
-        const vector<cal_edgeblock_t> &ll_edge_block_array() const;
-
-        // print function
-        uint PrintEdgeCount();
-        uint GetEdgeCount(vector<work_block_t> edge_block_array_x, uint height);
-        uint PrintUniqueEdgeCount();
-        uint GetUniqueEdgeCount(vector<work_block_t> edge_block_array_x, uint height);
-        void PrintEdgeblockArray(const vertexid_t begin, const vertexid_t end);
-        uint GetEdgeBlockArrayHeight(const vector<work_block_t> &edge_block_array); 
+private:
+        uint get_edge_count(vector<work_block_t> edge_block_array_x, uint height);
+        uint get_unique_edge_count(vector<work_block_t> edge_block_array_x, uint height);
+        uint get_edgeblock_array_height(const vector<work_block_t> &edge_block_array); 
         void check_whether_to_resize_edgeblockarray_m(uint vid);
 
         // find margin
-        void FindWorkBlockMargin(bucket_t adjvtx_id_hash,margin_t *blkmargin);
-        void FindSubBlockMargin(bucket_t adjvtx_id_hash,margin_t *sub_block_margin);
-        uint GetEdgeblockOffset(vertexid_t vid);
-
-        // gds_utility
-        uint getsvtracker(markertracker_t *svtracker);
+        void find_workblock_margin(bucket_t adjvtx_id_hash,margin_t *blkmargin);
+        void find_subblock_margin(bucket_t adjvtx_id_hash,margin_t *sub_block_margin);
+        uint get_edgeblock_offset(vertexid_t vid);
 
         // hash scripts
-        bucket_t GoogleHash(vertexid_t vid, edge_type_t etype, uint geni) const;
+        bucket_t google_hash(vertexid_t vid, edge_type_t etype, uint geni) const;
 
         // initialize
         uint add_page(tracker_t *tracker, vector<work_block_t> &edge_block_array);
-
-        // bucket_t getdib(bucket_t currbkt, bucket_t initial_bucket, margin_t sub_block_margin, uint rolledover);
-
 
 #ifdef EN_DCI
         void init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd);
@@ -169,7 +145,7 @@ namespace graphtinker {
                 vector<work_block_t> &edge_block_array);
 
         // delete and crumple in unit
-        void CrumpleInUnit(
+        void dci_unit(
                 writeback_unit_cmd_t writeback_unit_cmd,
                 find_report_t find_report,
                 edge_t edge,

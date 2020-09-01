@@ -41,32 +41,32 @@ void insertions(Graphtinker &tinkerA, Graphtinker &tinkerB, vector<tuple_t> &src
 		{
 			for (uint j = 0; j < src_dst_pairs.size(); j++)
 			{
-				tinkerA.InsertEdge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
+				tinkerA.insert_edge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
 			}
-			cout << "number of edges in tinkerA : " << tinkerA.PrintEdgeCount() << " edges"  ;
+			cout << "number of edges in tinkerA : " << tinkerA.print_edge_count() << " edges"  ;
 		}
 #pragma omp section
 		{
 			for (uint j = 0; j < src_dst_pairs.size(); j++)
 			{
-				tinkerB.InsertEdge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
+				tinkerB.insert_edge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
 			}
-			cout << "number of edges in tinkerB : " << tinkerB.PrintEdgeCount() << " edges"  ;
+			cout << "number of edges in tinkerB : " << tinkerB.print_edge_count() << " edges"  ;
 		}
 	}
 #else
 	tinkerA.create(SELF, SELF, SELF, 0, 524288, 524288, 8380000, DIRECTEDGRAPH, 8, 64);
 	for (uint j = 0; j < src_dst_pairs.size(); j++)
 	{
-		tinkerA.InsertEdge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
+		tinkerA.insert_edge((uint)src_dst_pairs[j].A, (uint)src_dst_pairs[j].B, 1);
 	}
-	cout << "number of edges in tinkerA : " << tinkerA.PrintEdgeCount() << " edges"  ;
+	cout << "number of edges in tinkerA : " << tinkerA.print_edge_count() << " edges"  ;
 	tinkerB.create(SELF, SELF, SELF, 0, 524288, 524288, 8380000, DIRECTEDGRAPH, 8, 64);
 	for (uint j = 0; j < src_dst_pairs.size(); j++)
 	{
-		tinkerB.InsertEdge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
+		tinkerB.insert_edge((uint)src_dst_pairs[j].B, (uint)src_dst_pairs[j].A, 1);
 	}
-	cout << "number of edges in tinkerB : " << tinkerB.PrintEdgeCount() << " edges"  ;
+	cout << "number of edges in tinkerB : " << tinkerB.print_edge_count() << " edges"  ;
 #endif
 	return;
 }
@@ -133,8 +133,8 @@ int main()
 	gettimeofday(&end1_tod, NULL);
 	timelapse_tod = (float)((end1_tod.tv_sec * 1000000 + end1_tod.tv_usec) - (start1_tod.tv_sec * 1000000 + start1_tod.tv_usec)) / 1000;
 
-	cout << "number of edges A : " << tinkerA.PrintEdgeCount() << " edges"  ;
-	cout << "number of edges B : " << tinkerB.PrintEdgeCount() << " edges"  ;
+	cout << "number of edges A : " << tinkerA.print_edge_count() << " edges"  ;
+	cout << "number of edges B : " << tinkerB.print_edge_count() << " edges"  ;
 
 	cout << "jurassicpark::run_jpasyn : time lapse (clock) : " << timelapse_clock << " ms"  ;
 	cout << "jurassicpark::run_jpasyn : time lapse (tod) : " << timelapse_tod << " ms"  ;

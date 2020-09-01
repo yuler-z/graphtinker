@@ -6,14 +6,14 @@
 namespace graphtinker
 {
 
-	void UnitFlow::LoadUnit(
+	void UnitFlow::load_unit(
 		margin_t work_block_margin,
 		vertexid_t vtx_id,
 		vector<work_block_t> &edge_block_array,
 		work_block_t *work_block)
 	{
 
-		uint trueoffset4rmbase = GetEdgeblockOffset(vtx_id);
+		uint trueoffset4rmbase = gt_->get_edgeblock_offset(vtx_id);
 		uint addr = trueoffset4rmbase + work_block_margin.top / WORK_BLOCK_HEIGHT;
 
 		DLOG(INFO) << "----Load Unit----";
@@ -26,7 +26,7 @@ namespace graphtinker
 		{
 			if (addr >= edge_block_array.size())
 			{
-				LOG(ERROR) << " addr out-of-range (LoadUnit) : vtx_id : " << vtx_id << ", work_block_margin.top/WORK_BLOCK_HEIGHT : " << work_block_margin.top / WORK_BLOCK_HEIGHT << " addr : " << addr << ", edge_block_array.size() : " << edge_block_array.size(); // << ", geni : " << geni  ;
+				LOG(ERROR) << " addr out-of-range (load_unit) : vtx_id : " << vtx_id << ", work_block_margin.top/WORK_BLOCK_HEIGHT : " << work_block_margin.top / WORK_BLOCK_HEIGHT << " addr : " << addr << ", edge_block_array.size() : " << edge_block_array.size(); // << ", geni : " << geni  ;
 				return;
 			}
 
@@ -38,7 +38,7 @@ namespace graphtinker
 
 		if (addr >= edge_block_array.size())
 		{
-			LOG(ERROR) << " addr out-of-range (LoadUnit) (B) : addr = " << addr  ;
+			LOG(ERROR) << " addr out-of-range (load_unit) (B) : addr = " << addr  ;
 		}
 
 		clusterinfo_t clusterinfo = work_block->clusterinfo; //retreive cluster info

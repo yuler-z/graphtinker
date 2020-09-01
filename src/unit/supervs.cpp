@@ -24,7 +24,7 @@ namespace graphtinker
 		/// we got here because the current subblock we're in is clustered, this cluster info has our svs index pointer (sv_ptr)
 		uint work_block_height = WORK_BLOCK_HEIGHT;
 		uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
-		uint currworkblockaddr = GetEdgeblockOffset(vtx_id) + work_block_margin.top / work_block_height;
+		uint currworkblockaddr = get_edgeblock_offset(vtx_id) + work_block_margin.top / work_block_height;
 
 		// get tail edgeblock
 		// uint svs_index=0;
@@ -37,7 +37,7 @@ namespace graphtinker
 		{
 
 			// get offset of edgeblock in edge_block_array
-			uint offset = GetEdgeblockOffset(*tailhvtx_id);
+			uint offset = get_edgeblock_offset(*tailhvtx_id);
 
 			// pick any edge from it
 			int edgefound = -1;

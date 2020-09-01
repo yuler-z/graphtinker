@@ -3,7 +3,7 @@
 namespace graphtinker
 {
 #ifdef EN_CAL
-	void UnitFlow::CalInsert(
+	void UnitFlow::cal_insert(
 		edge_t edge,
 		vector<cal_edgeblock_t> &cal_edgeblock_array_,
 		vector<cal_logical_vertex_entity_t> &cal_lva_,
@@ -24,12 +24,12 @@ namespace graphtinker
 		if (lvaindex >= cal_lva_.size())
 		{
 			cal_lva_.resize((cal_lva_.size() + cal_lva_expansion_addition_height_));
-			LOG(INFO) << "CalInsert : resizing cal_lva_... "  ;
+			LOG(INFO) << "cal_insert : resizing cal_lva_... "  ;
 		}
 #ifdef EN_BUGCHECK
 		if (lvaindex >= cal_lva_.size())
 		{
-			LOG(INFO) << "Graphtinker::CalInsert : out-of-range 1 lvaindex = " << lvaindex << ", cal_lva_.size() = " << cal_lva_.size()  ;
+			LOG(INFO) << "Graphtinker::cal_insert : out-of-range 1 lvaindex = " << lvaindex << ", cal_lva_.size() = " << cal_lva_.size()  ;
 		}
 #endif
 
@@ -39,7 +39,7 @@ namespace graphtinker
 		/// resize cal_edgeblock_array_ if full
 		if (((entity.lastlocalbaseaddr) >= cal_edgeblock_array_.size()) || (cal_edgeblock_tracker_->ptraddr >= cal_edgeblock_array_.size()))
 		{
-			LOG(INFO) << "CalInsert : resizing cal_edgeblock_array_..."  ;
+			LOG(INFO) << "cal_insert : resizing cal_edgeblock_array_..."  ;
 			cal_edgeblock_array_.resize((cal_edgeblock_array_.size() + cal_eba_expansion_addition_height_));
 		}
 
@@ -84,7 +84,7 @@ namespace graphtinker
 				uint currentlocalbaseaddr = entity.lastlocalbaseaddr;
 				if (currentlocalbaseaddr >= cal_edgeblock_array_.size())
 				{
-					LOG(ERROR) << "Graphtinker::CalInsert : out-of-range 22, entity.lastlocalbaseaddr = " << entity.lastlocalbaseaddr << ", cal_edgeblock_array_.size() = " << cal_edgeblock_array_.size()  ;
+					LOG(ERROR) << "Graphtinker::cal_insert : out-of-range 22, entity.lastlocalbaseaddr = " << entity.lastlocalbaseaddr << ", cal_edgeblock_array_.size() = " << cal_edgeblock_array_.size()  ;
 				}
 				cal_edgeblock_array_[currentlocalbaseaddr].metadata.nextcptr = cal_edgeblock_tracker_->ptraddr; // next edgeblock location
 
@@ -139,7 +139,7 @@ namespace graphtinker
 		return;
 	}
 
-	void UnitFlow::CalUpdate(
+	void UnitFlow::cal_update(
 		edge_t edge,
 		vector<cal_edgeblock_t> &cal_edgeblock_array_)
 	{
@@ -150,7 +150,7 @@ namespace graphtinker
 		return;
 	}
 
-	void UnitFlow::CalDelete(
+	void UnitFlow::cal_delete(
 		edge_t edge,
 		vector<cal_edgeblock_t> &cal_edgeblock_array_)
 	{
@@ -160,7 +160,7 @@ namespace graphtinker
 		return;
 	}
 
-	void UnitFlow::CalDeleteAndCrumpleIn(
+	void UnitFlow::cal_delete_and_crumple_in(
 		edge_t edge,
 		vector<cal_edgeblock_t> &cal_edgeblock_array_,
 		vector<cal_logical_vertex_entity_t> &cal_lva_,
@@ -263,7 +263,7 @@ namespace graphtinker
 				cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr] = nedge;
 
 				// redirect pointer (heba -> ll)
-				uint workblockaddr = GetEdgeblockOffset(nedge.heba_hvtx_id) + nedge.heba_workblockid;
+				uint workblockaddr = get_edgeblock_offset(nedge.heba_hvtx_id) + nedge.heba_workblockid;
 				if (nedge.which_gen_is_the_main_copy_located == 1)
 				{
 					if (workblockaddr >= edge_block_array_m_.size())
@@ -390,7 +390,7 @@ namespace graphtinker
 				cal_edgeblock_array_[ll_localbaseaddrptr].ll_edgeblock[ll_localaddrptr] = nedge;
 
 				// redirect pointer (heba -> ll)
-				uint workblockaddr = GetEdgeblockOffset(nedge.heba_hvtx_id) + nedge.heba_workblockid;
+				uint workblockaddr = get_edgeblock_offset(nedge.heba_hvtx_id) + nedge.heba_workblockid;
 				if (nedge.which_gen_is_the_main_copy_located == 1)
 				{
 					if (workblockaddr >= edge_block_array_m_.size())
@@ -422,7 +422,7 @@ namespace graphtinker
 		return;
 	}
 
-	void UnitFlow::CalUpdateEdgePtrs(
+	void UnitFlow::cal_update_edge_ptrs(
 		edge_t edge,
 		vector<cal_edgeblock_t> &cal_edgeblock_array_)
 	{

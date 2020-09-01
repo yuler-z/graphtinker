@@ -4,7 +4,7 @@
 namespace graphtinker
 {
 	/// this function is only used when when an edge is removed from a *clustered region*
-	void Graphtinker::CrumpleInUnit(
+	void Graphtinker::dci_unit(
 		writeback_unit_cmd_t writeback_unit_cmd,
 		find_report_t find_report,
 		edge_t edge,
@@ -54,11 +54,11 @@ namespace graphtinker
 				{
 					if (writeback_unit_cmd.addr >= edge_block_array_m_.size())
 					{
-						LOG(ERROR) << " addr out-of-range1 (UpdateEdge) "  ;
+						LOG(ERROR) << " addr out-of-range1 (update_edge) "  ;
 					}
 					if (find_report.local_offset >= WORK_BLOCK_HEIGHT)
 					{
-						LOG(ERROR) << " addr out-of-range2 (UpdateEdge) "  ;
+						LOG(ERROR) << " addr out-of-range2 (update_edge) "  ;
 					}
 					edge_block_array_m_[writeback_unit_cmd.addr].edges[find_report.local_offset] = edgett;
 				}
@@ -66,11 +66,11 @@ namespace graphtinker
 				{
 					if (writeback_unit_cmd.addr >= edge_block_array_o_.size())
 					{
-						LOG(ERROR) << " addr out-of-range1 (UpdateEdge) "  ;
+						LOG(ERROR) << " addr out-of-range1 (update_edge) "  ;
 					}
 					if (find_report.local_offset >= WORK_BLOCK_HEIGHT)
 					{
-						LOG(ERROR) << " addr out-of-range2 (UpdateEdge) "  ;
+						LOG(ERROR) << " addr out-of-range2 (update_edge) "  ;
 					}
 					edge_block_array_o_[writeback_unit_cmd.addr].edges[find_report.local_offset] = edgett;
 				}
@@ -93,12 +93,12 @@ namespace graphtinker
 				{
 
 					// edgeblock is empty. free it. edge_block_array_o_ is always used because tailhvtx_id can never be in edge_block_array_m_
-					uint offset = GetEdgeblockOffset(tailhvtx_id);
+					uint offset = get_edgeblock_offset(tailhvtx_id);
 					for (uint addr = offset; addr < (offset + work_blocks_per_page_); addr++)
 					{
 						if (addr >= edge_block_array_o_.size())
 						{
-							LOG(ERROR) << " addr out-of-range3 (UpdateEdge) "  ;
+							LOG(ERROR) << " addr out-of-range3 (update_edge) "  ;
 						}
 						edge_block_array_o_[addr].clusterinfo.flag = INVALID;
 					}
@@ -107,14 +107,14 @@ namespace graphtinker
 					uint index = tailhvtx_id;
 					if (index >= edgeblock_parentinfo.size())
 					{
-						LOG(ERROR) << " addr out-of-range4 (UpdateEdge) "  ;
+						LOG(ERROR) << " addr out-of-range4 (update_edge) "  ;
 					}
 					if (edgeblock_parentinfo[index].flag != VALID)
 					{
 						LOG(ERROR) << " incorrect (update_edge66)"  ;
 					}
 					edgeblock_parentinfo_t parentinfo = edgeblock_parentinfo[index];
-					uint subblockbaseaddr = GetEdgeblockOffset(parentinfo.vtx_id) + (parentinfo.subblockid * work_blocks_per_subblock_);
+					uint subblockbaseaddr = get_edgeblock_offset(parentinfo.vtx_id) + (parentinfo.subblockid * work_blocks_per_subblock_);
 					if (parentinfo.gen_of_parent == 1)
 					{
 						for (uint id = 0; id < work_blocks_per_subblock_; id++)
@@ -133,14 +133,14 @@ namespace graphtinker
 					// update edgeblock_parentinfo
 					if (index >= edgeblock_parentinfo.size())
 					{
-						LOG(ERROR) << " addr out-of-range4 (UpdateEdge) "  ;
+						LOG(ERROR) << " addr out-of-range4 (update_edge) "  ;
 					}
 					edgeblock_parentinfo[index].flag = INVALID;
 
 					// pop it out of svs
 					if (svs_index >= svs.size())
 					{
-						LOG(ERROR) << " addr out-of-range5 (UpdateEdge) "  ;
+						LOG(ERROR) << " addr out-of-range5 (update_edge) "  ;
 					}
 					if (svs[svs_index].hvtx_ids.back() != tailhvtx_id)
 					{
@@ -161,7 +161,7 @@ namespace graphtinker
 			}
 			else
 			{
-				LOG(ERROR) << " should never get here2 (UpdateEdge)"  ;
+				LOG(ERROR) << " should never get here2 (update_edge)"  ;
 			}
 		}
 		else if (deleteandcrumpleincmd.verdict == DCI_JUSTQUITCMD)
@@ -172,7 +172,7 @@ namespace graphtinker
 		}
 		else
 		{
-			LOG(ERROR) << " should never get here3 (UpdateEdge)"  ;
+			LOG(ERROR) << " should never get here3 (update_edge)"  ;
 		}
 	}
 } // namespace graphtinker

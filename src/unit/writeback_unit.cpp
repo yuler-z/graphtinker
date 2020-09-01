@@ -3,7 +3,7 @@
 
 namespace graphtinker
 {
-	void UnitFlow::WritebackUnit(
+	void UnitFlow::writeback_unit(
 		edge_t edge,
 		work_block_t *work_block,
 		vector<work_block_t> &edge_block_array_m_,
@@ -36,7 +36,7 @@ namespace graphtinker
 		if (writeback_unit_cmd.markasclustered == YES)
 		{
 			//initialize LVAentity row
-			newpageindexpos = add_page(lvatracker_, edge_block_array_o_);
+			newpageindexpos = gt_->add_page(lvatracker_, edge_block_array_o_);
 
 			//update cluster pointer
 			module_params.clustered = YES;
@@ -75,7 +75,7 @@ namespace graphtinker
 
 #ifdef EN_OTHERS
 					LOG(ERROR) << "case 1: founding father doesn't exist. create one : "  ;
-					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (writeback_unit)"  ;
 #endif
 				}
 				else if ((subblockid == (subblocksperpage - 1)) && (geni > 1))
@@ -89,11 +89,11 @@ namespace graphtinker
 					{ /// last work_block was in generation 1
 						if (lastgenworkblockaddr >= edge_block_array_m_.size())
 						{
-							LOG(ERROR) << "Graphtinker::WritebackUnit : out-of-range34"  ;
+							LOG(ERROR) << "Graphtinker::writeback_unit : out-of-range34"  ;
 						}
 						if (edge_block_array_m_[lastgenworkblockaddr].clusterinfo.flag != VALID)
 						{
-							LOG(ERROR) << "Graphtinker::WritebackUnit : addr out-of-range8"  ;
+							LOG(ERROR) << "Graphtinker::writeback_unit : addr out-of-range8"  ;
 						}
 						svs_index = edge_block_array_m_[lastgenworkblockaddr].clusterinfo.sv_ptr;
 					}
@@ -101,11 +101,11 @@ namespace graphtinker
 					{
 						if (lastgenworkblockaddr >= edge_block_array_o_.size())
 						{
-							LOG(ERROR) << "Graphtinker::WritebackUnit : out-of-range35"  ;
+							LOG(ERROR) << "Graphtinker::writeback_unit : out-of-range35"  ;
 						}
 						if (edge_block_array_o_[lastgenworkblockaddr].clusterinfo.flag != VALID)
 						{
-							LOG(ERROR) << "Graphtinker::WritebackUnit : addr out-of-range82"  ;
+							LOG(ERROR) << "Graphtinker::writeback_unit : addr out-of-range82"  ;
 						}
 						svs_index = edge_block_array_o_[lastgenworkblockaddr].clusterinfo.sv_ptr;
 					}
@@ -114,7 +114,7 @@ namespace graphtinker
 					// #ifdef EN_OTHERS
 					if (svs[svs_index].hvtx_ids.empty())
 					{
-						LOG(ERROR) << "bug should not be empty5  (WritebackUnit)"  ;
+						LOG(ERROR) << "bug should not be empty5  (writeback_unit)"  ;
 					}
 					// #endif
 
@@ -123,8 +123,8 @@ namespace graphtinker
 
 #ifdef EN_OTHERS
 					LOG(ERROR) << "case 2: founding father already exist. lastgenworkblockaddr : " << lastgenworkblockaddr  ;
-					LOG(ERROR) << "svs[svs_index].hvtx_ids.size() : " << svs[svs_index].hvtx_ids.size() << " (WritebackUnit)"  ;
-					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
+					LOG(ERROR) << "svs[svs_index].hvtx_ids.size() : " << svs[svs_index].hvtx_ids.size() << " (writeback_unit)"  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (writeback_unit)"  ;
 #endif
 				}
 				else if ((subblockid != (subblocksperpage - 1)) && (geni == 1))
@@ -141,7 +141,7 @@ namespace graphtinker
 
 #ifdef EN_OTHERS
 					LOG(ERROR) << "case 3: founding father doesn't exist. create one : "  ;
-					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (writeback_unit)"  ;
 #endif
 				}
 				else if ((subblockid != (subblocksperpage - 1)) && (geni > 1))
@@ -158,7 +158,7 @@ namespace graphtinker
 
 #ifdef EN_OTHERS
 					LOG(ERROR) << "case 4: founding father doesn't exist. create one "  ;
-					LOG(ERROR) << "svs.size() : " << svs.size() << " (WritebackUnit)"  ;
+					LOG(ERROR) << "svs.size() : " << svs.size() << " (writeback_unit)"  ;
 #endif
 				}
 				else
@@ -177,14 +177,14 @@ namespace graphtinker
 			{
 				if (writeback_unit_cmd.addr >= edge_block_array_m_.size())
 				{
-					LOG(ERROR) << " writeback_unit_cmd.addr out-of-range2 (WritebackUnit)"  ;
+					LOG(ERROR) << " writeback_unit_cmd.addr out-of-range2 (writeback_unit)"  ;
 				}
 			}
 			else
 			{
 				if (writeback_unit_cmd.addr >= edge_block_array_o_.size())
 				{
-					LOG(ERROR) << " writeback_unit_cmd.addr out-of-range3 (WritebackUnit)"  ;
+					LOG(ERROR) << " writeback_unit_cmd.addr out-of-range3 (writeback_unit)"  ;
 				}
 			}
 #endif
@@ -210,16 +210,16 @@ namespace graphtinker
 		{
 			if (geni == 1)
 			{
-				uint subblockbaseaddr = GetEdgeblockOffset(hvtx_id) + (writeback_unit_cmd.subblockid * work_blocks_per_subblock_);
-				for (uint id = 0; id < work_blocks_per_subblock_; id++)
+				uint subblockbaseaddr = gt_->get_edgeblock_offset(hvtx_id) + (writeback_unit_cmd.subblockid * gt_->work_blocks_per_subblock_);
+				for (uint id = 0; id < gt_->work_blocks_per_subblock_; id++)
 				{
 					edge_block_array_m_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
 				}
 			}
 			else
 			{
-				uint subblockbaseaddr = GetEdgeblockOffset(hvtx_id) + (writeback_unit_cmd.subblockid * work_blocks_per_subblock_);
-				for (uint id = 0; id < work_blocks_per_subblock_; id++)
+				uint subblockbaseaddr = gt_->get_edgeblock_offset(hvtx_id) + (writeback_unit_cmd.subblockid * gt_->work_blocks_per_subblock_);
+				for (uint id = 0; id < gt_->work_blocks_per_subblock_; id++)
 				{
 					edge_block_array_o_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
 				}
@@ -232,7 +232,7 @@ namespace graphtinker
 			uint index = clusterinfo.data;
 			if (index > edgeblock_parentinfo.size())
 			{
-				LOG(ERROR) << " out of range. WritebackUnit"  ;
+				LOG(ERROR) << " out of range. writeback_unit"  ;
 			}
 			if (edgeblock_parentinfo[index].flag != VALID)
 			{

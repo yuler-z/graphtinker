@@ -6,7 +6,7 @@ namespace graphtinker
 	/**
 	 * 根据之前的计算，为下个循环做准备，或退出循环。
 	 */ 
-	void UnitFlow::IntervalUnit(
+	void UnitFlow::interval_unit(
 		margin_t *work_block_margin,
 		margin_t *sub_block_margin,
 		margin_t *start_wblkmargin,
@@ -34,7 +34,6 @@ namespace graphtinker
 		load_unit_cmd_t &load_unit_cmd = unit_option->load_unit_cmd;
 		interval_unit_cmd_t &interval_unit_cmd = unit_option->interval_unit_cmd;
 
-
 		if (interval_unit_cmd.verdict == QUIT_TO_NEXT_EDGE)
 		{
 			// exit
@@ -45,17 +44,17 @@ namespace graphtinker
 
 #ifdef EN_DCI
 			// keep track of workblock address before moving to a lower generation (or in first launch) -  might be needed in the lower generation if we decide to share supervertex entry
-			*lastgenworkblockaddr = GetEdgeblockOffset(*vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT;
+			*lastgenworkblockaddr = get_edgeblock_offset(*vtx_id) + work_block_margin->top / WORK_BLOCK_HEIGHT;
 #endif
 
 			// update/initialize appropriate module globals
 			*geni += 1;
 			*vtx_id = module_params.cptr;
 			*tripiteration_lcs = 0;
-			*adjvtx_id_hash = GoogleHash(module_params.adjvtx_id,module_params.type, *geni);
-			FindWorkBlockMargin(*adjvtx_id_hash, work_block_margin);
+			*adjvtx_id_hash = gt_->google_hash(module_params.adjvtx_id,module_params.type, *geni);
+			gt_->find_workblock_margin(*adjvtx_id_hash, work_block_margin);
 			*start_wblkmargin = *work_block_margin;
-			FindSubBlockMargin(*adjvtx_id_hash,sub_block_margin);
+			gt_->find_subblock_margin(*adjvtx_id_hash,sub_block_margin);
 
 			// initialize appropriate fields of lcs units
 			// ..2 funcs don't touch edge fields, to avoid overriding any swapping which may have occurred
@@ -78,11 +77,11 @@ namespace graphtinker
 			*geni = 1;
 			*vtx_id = edge.vtx_id;
 			*tripiteration_lcs = 0;
-			*adjvtx_id_hash = GoogleHash(edge.adjvtx_id,edge.type,*geni); //calculate hashes
-			FindWorkBlockMargin(*adjvtx_id_hash,work_block_margin);		  //find margins
+			*adjvtx_id_hash = gt_->google_hash(edge.adjvtx_id,edge.type,*geni); //calculate hashes
+			gt_->find_workblock_margin(*adjvtx_id_hash,work_block_margin);		  //find margins
 			*start_wblkmargin = *work_block_margin;
 			*first_wblkmargin = *work_block_margin;
-			FindSubBlockMargin(*adjvtx_id_hash, sub_block_margin);
+			gt_->find_subblock_margin(*adjvtx_id_hash, sub_block_margin);
 
 			//set module cmd
 			unit_option->module_unit_cmd.mode = INSERT_MODE;
@@ -103,7 +102,7 @@ namespace graphtinker
 		}
 		else
 		{
-			LOG(ERROR) << " should never get here (IntervalUnit)"  ;
+			LOG(ERROR) << " should never get here (interval_unit)"  ;
 		}
 		return;
 	}
