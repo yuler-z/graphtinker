@@ -11,20 +11,20 @@ namespace graphtinker
 		vector<supervertex_t> &svs,
 		vector<vertexid_t> &freed_edgeblock_list,
 		edge_tt *edgett,
-		margin_t work_block_margin,
+		margin_t workblock_margin,
 		writeback_unit_cmd_t writeback_unit_cmd,
 		int *tailhvtx_id,
 		uint *svs_index,
 		uint *numclusteredworkblocks,
 		uint geni,
-		vector<work_block_t> &edge_block_array_m_,
-		vector<work_block_t> &edge_block_array_o_)
+		vector<workblock_t> &edge_block_array_m_,
+		vector<workblock_t> &edge_block_array_o_)
 	{
 		// return 5;
 		/// we got here because the current subblock we're in is clustered, this cluster info has our svs index pointer (sv_ptr)
-		uint work_block_height = WORK_BLOCK_HEIGHT;
-		uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
-		uint currworkblockaddr = get_edgeblock_offset(vtx_id) + work_block_margin.top / work_block_height;
+		uint workblock_height = WORK_BLOCK_HEIGHT;
+		uint workblocks_per_subblock_ = workblocks_per_subblock_;
+		uint currworkblockaddr = get_edgeblock_offset(vtx_id) + workblock_margin.top / workblock_height;
 
 		// get tail edgeblock
 		// uint svs_index=0;
@@ -66,8 +66,8 @@ namespace graphtinker
 		uint currworkblockaddr,
 		uint *svs_index,
 		uint geni,
-		vector<work_block_t> &edge_block_array_m_,
-		vector<work_block_t> &edge_block_array_o_)
+		vector<workblock_t> &edge_block_array_m_,
+		vector<workblock_t> &edge_block_array_o_)
 	{
 		// get where in svs the founding father is pointing to
 		if (geni == 1)
@@ -127,14 +127,14 @@ namespace graphtinker
 		uint offset,
 		edge_tt *edgett,
 		uint *numclusteredworkblocks,
-		vector<work_block_t> &edge_block_array)
+		vector<workblock_t> &edge_block_array)
 	{
 		// edge_tt eedge;
-		uint work_block_height = WORK_BLOCK_HEIGHT;
-		uint work_blocks_per_page_ = work_blocks_per_page_;
+		uint workblock_height = WORK_BLOCK_HEIGHT;
+		uint workblocks_per_page_ = workblocks_per_page_;
 		*numclusteredworkblocks = 0;
 
-		for (int addr = offset; addr < (offset + work_blocks_per_page_); addr++)
+		for (int addr = offset; addr < (offset + workblocks_per_page_); addr++)
 		{
 			if (addr >= edge_block_array.size())
 			{
@@ -144,9 +144,9 @@ namespace graphtinker
 			{
 				*numclusteredworkblocks += 1;
 			}
-			for (uint f = 0; f < work_block_height; f++)
+			for (uint f = 0; f < workblock_height; f++)
 			{
-				if (f >= work_block_height)
+				if (f >= workblock_height)
 				{
 					LOG(ERROR) << " addr out-of-range7 (supervs) "  ;
 				}

@@ -87,9 +87,9 @@ namespace graphtinker
 		return;
 	}
 
-	void Vertices::UpdateVertexProperty(vertexid_t vtx_id, vertexid_t adjvtx_id, uint edge_update_cmd, bool is_directed)
+	void Vertices::UpdateVertexProperty(vertexid_t vtx_id, vertexid_t adjvtx_id, bool is_insert_edge, bool is_directed)
 	{
-		if (edge_update_cmd == INSERTEDGE)
+		if (is_insert_edge)
 		{
 			if (is_directed)
 			{
@@ -137,7 +137,7 @@ namespace graphtinker
 				LOG(ERROR) << "Vertices::UpdateVertexProperty : error1"  ;
 			}
 		}
-		else if (edge_update_cmd == DELETEEDGE)
+		else if (!is_insert_edge) /*delete edge*/
 		{
 			if (is_directed)
 			{

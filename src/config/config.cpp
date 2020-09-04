@@ -25,13 +25,12 @@ namespace graphtinker {
             edge_type_map_.insert(std::make_pair(i,edge_type_mark_++));
         }
 
-        Load("default_config.ini");
-        Load(file_path_);
+        load();
     }
 
-    bool Config::Load(string file_path) {
-        DLOG(INFO) <<  "config::Load : start load configuration file";
-        INIReader reader(file_path);
+    bool Config::load() {
+        DLOG(INFO) <<  "config::load : start load configuration file";
+        INIReader reader(file_path_);
 
         if (reader.ParseError() != 0) {
             LOG(ERROR) << "can't load config file"  ;
@@ -45,7 +44,7 @@ namespace graphtinker {
         config_map_.insert(std::make_pair("num_edges", reader.Get("graphtinker", "num_edges", "8380000")));
         config_map_.insert(
                 std::make_pair("is_directed", reader.Get("graphtinker", "is_directed", "true")));
-        config_map_.insert(std::make_pair("sub_block_height", reader.Get("graphtinker", "sub_block_height", "8")));
+        config_map_.insert(std::make_pair("subblock_height", reader.Get("graphtinker", "subblock_height", "8")));
         config_map_.insert(std::make_pair("page_block_height", reader.Get("graphtinker", "page_block_height", "64")));
         config_map_.insert(std::make_pair("eba_m_expansion_addition_height",
                                           reader.Get("graphtinker", "eba_m_expansion_addition_height", "100000")));
@@ -61,7 +60,7 @@ namespace graphtinker {
         return true;
     }
 
-    bool Config::PrintAll() {
+    bool Config::pring_configuration() {
 
         if (config_map_.empty()) {
             LOG(ERROR) << "No configuration file or file is not loaded!"  ;
@@ -77,8 +76,8 @@ namespace graphtinker {
         return true;
     }
 
-    bool Config::ConfigGraph(Graphtinker *gt) {
-        DLOG(INFO) << "config::ConfigGraph : start config";
+    bool Config::config(Graphtinker *gt) {
+        DLOG(INFO) << "config::config : start config";
         gt->sgh_for_vtx_id_ = config_map_["sgh_for_vtx_id"].compare("true") == 0;
         gt->sgh_for_adjvtx_id_ = config_map_["sgh_for_adjvtx_id"].compare("true") == 0;
         gt->updatev_ = config_map_["updatev"].compare("true") == 0;
@@ -90,7 +89,7 @@ namespace graphtinker {
 
         gt->is_directed_ = config_map_.at("is_directed").compare("true") == 0;
 
-        StringToNum(config_map_["sub_block_height"], gt->sub_block_height_);
+        StringToNum(config_map_["subblock_height"], gt->subblock_height_);
         StringToNum(config_map_["page_block_height"], gt->page_block_height_);
         StringToNum(config_map_["eba_m_expansion_addition_height"], gt->eba_m_expansion_addition_height_);
         StringToNum(config_map_["eba_o_expansion_addition_height"], gt->eba_o_expansion_addition_height_);

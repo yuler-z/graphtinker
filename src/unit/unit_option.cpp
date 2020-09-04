@@ -92,8 +92,8 @@ namespace graphtinker{
 	}
 	void UnitOption::ClearCalAdr()
 	{
-		module_params.ll_localbaseaddrptr_x = 0; // we don't know the value yet  --edge.LLlocalbaseaddrptr;
-		module_params.ll_localaddrptr_x = 0;	 // we don't know the value yet  --edge.LLlocaladdrptr;
+		module_params.cal_localbaseaddrptr = 0; // we don't know the value yet  --edge.LLlocalbaseaddrptr;
+		module_params.cal_localaddrptr = 0;	 // we don't know the value yet  --edge.LLlocaladdrptr;
 		return;
 	}
 #endif
