@@ -8,11 +8,13 @@
 # Getting started
 
 ```
-// make
 mkdir build && cd build && cmake ..
 make
+```
+# Test
 
-// test
-cd test/core
+```
+// add more test cases in furture
+cd build/test/core
 ./update_test
 ```
