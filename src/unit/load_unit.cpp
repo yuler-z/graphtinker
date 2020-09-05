@@ -9,9 +9,13 @@ namespace graphtinker
 	void UnitFlow::load_unit(
 		margin_t workblock_margin,
 		vertexid_t vtx_id,
-		vector<workblock_t> &edge_block_array,
+		uint geni,
 		workblock_t *workblock)
 	{
+
+		// 根据geni选择 edgeblock为main区还是overflow区
+		vector<workblock_t> &edge_block_array = (geni == 1 ?gt_->edge_block_array_m_:gt_->edge_block_array_o_);
+
 
 		uint trueoffset4rmbase = gt_->get_edgeblock_offset(vtx_id);
 		uint addr = trueoffset4rmbase + workblock_margin.top / WORK_BLOCK_HEIGHT;

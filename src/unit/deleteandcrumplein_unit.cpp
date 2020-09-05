@@ -7,7 +7,6 @@ namespace graphtinker
 	void Graphtinker::dci_unit(
 		writeback_unit_cmd_t writeback_unit_cmd,
 		find_report_t find_report,
-		edge_t edge,
 		vector<workblock_t> &edge_block_array_m_,
 		vector<workblock_t> &edge_block_array_o_,
 #ifdef EN_CAL
@@ -27,8 +26,8 @@ namespace graphtinker
 		{
 			int retstatus = -1;
 			edge_tt edgett;
-			vertexid_t ll_localbaseaddrptr = 0;
-			vertexid_t ll_localaddrptr = 0;
+			vertexid_t cal_localbaseaddrptr = 0;
+			vertexid_t cal_localaddrptr = 0;
 			int tailhvtx_id = -1;
 			uint svs_index = 0;
 			uint numclusteredworkblocks = NULLL;
@@ -79,10 +78,10 @@ namespace graphtinker
 // remember that ll may need to update which edgeblockarray (m or c) it's now pointing to!
 #ifdef EN_CAL
 				uint workblock_height = WORK_BLOCK_HEIGHT;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].cal_edgeblock[edgett.ll_localaddrptr].heba_hvtx_id = vtx_id;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].cal_edgeblock[edgett.ll_localaddrptr].heba_workblockid = workblock_margin.top / workblock_height;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].cal_edgeblock[edgett.ll_localaddrptr].heba_loffset = find_report.local_offset;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].cal_edgeblock[edgett.ll_localaddrptr].which_gen_is_the_main_copy_located = geni;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].heba_hvtx_id = vtx_id;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].heba_workblockid = workblock_margin.top / workblock_height;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].heba_loffset = find_report.local_offset;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].which_gen_is_the_main_copy_located = geni;
 #endif
 			}
 			else if (retstatus == 6)

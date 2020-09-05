@@ -6,10 +6,11 @@
 #include <glog/logging.h>
 using std::vector;
 
-#define EN_CAL    // Coarse Adjacency List
+// #define EN_CAL    // Coarse Adjacency List
 // #define EN_DCI //delete and crumple in 
 
 #define WORK_BLOCK_HEIGHT 4 
+#define EDGE_PROPERTY_NUM 1
 #define BATCH_SIZE 1048576
 
 #define DIRECTEDGRAPH 0
@@ -71,18 +72,15 @@ typedef double vertexdata_t;
 typedef unsigned int clusterptr_t;
 typedef unsigned int id_t;
 
-// data structure
-
-struct Edge{
-	vertexid_t src;
-	vertexid_t dst;
-	edge_type_t type;
-	edge_weight_t weight;
-};
-
 /** sv_ptr : pointer to a supervertex
 	NB: many subblocks can (and should) have the same sv_ptr. means they all are 1st borns in a descendancy tree
 */
+typedef struct{
+	char key[10];
+	char value[10];
+}edge_property_t;
+
+
 typedef struct {
 	clusterptr_t data;
 	flag_t flag;
@@ -99,10 +97,11 @@ typedef struct {
 	bucket_t initial_bucket;
 	edge_type_t type;
 	edge_weight_t weight;
+	edge_property_t properties[EDGE_PROPERTY_NUM];
     flag_t flag; // VALID, DELETED
 	#ifdef EN_CAL
-	vertexid_t ll_localbaseaddrptr;
-	vertexid_t ll_localaddrptr;
+	vertexid_t cal_localbaseaddrptr;
+	vertexid_t cal_localaddrptr;
 	#endif
 } edge_tt;
 
@@ -118,6 +117,7 @@ typedef struct {
 	vertexid_t adjvtx_id;
 	edge_type_t type;
 	edge_weight_t weight;
+	edge_property_t properties[EDGE_PROPERTY_NUM];
 	flag_t flag;
 	#ifdef EN_CAL
 	int heba_hvtx_id;
@@ -230,7 +230,7 @@ typedef struct {
 /** 
 - except stated otherwise, when used, the array of this struct is indexed by the *** raw local vertex ids ***  
 - hvtx_id is a hashed vertex id value (calculated from the raw local vertex id) AND (w.r.t the given cluster!) ...
-- ... this is done like this because each cluster exist as its own independent EdgeblockArray ...
+- ... this is done like this because each cluster exist as its own independent edge_tblockArray ...
 - ... so the hvtx_id is just like that used in GT
 - ... therefore, multiple entries in the *vertexlink_t can have the same hvtx_id, but these entry's cluster id (cid) must be all different
 - status (VALID/INVALID) indicates whether or not this struct entry is valid and points to an edge cluster
@@ -310,7 +310,7 @@ typedef struct {
 } edgeblock_parentinfo_t;
 
 /** used in the crumpling-in deletion functionality
-hvtx_id specifies an index to an edgeblock in the EdgeblockArray */
+hvtx_id specifies an index to an edgeblock in the edge_tblockArray */
 typedef struct {
 	vector<uint> hvtx_ids;
 	uint geni_ofparentsubblock;
@@ -320,5 +320,6 @@ typedef struct {
 	uint verdict;
 } dci_cmd_t;
 #endif
+
 #endif
 

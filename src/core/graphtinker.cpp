@@ -47,13 +47,14 @@ namespace graphtinker
 
         config_->config(this);
         config_->pring_configuration();
+        DLOG(INFO) << "create edgeblock";
 
         workblocks_per_page_ = page_block_height_ / WORK_BLOCK_HEIGHT;
         workblocks_per_subblock_ = subblock_height_ / WORK_BLOCK_HEIGHT;
 
         edge_block_array_m_.resize((num_vertices_ * workblocks_per_page_));
         edge_block_array_o_.resize((100 * workblocks_per_page_));
-        lvatracker_.mark = 100;
+        lvatracker_.mark = 0;
 
         LOG(INFO) << "lvatracker_ start mark : " << lvatracker_.mark;
 
@@ -91,76 +92,76 @@ namespace graphtinker
         return;
     }
 
-    void Graphtinker::insert_edge(Edge &edge)
+    void Graphtinker::insert_edge(edge_t &edge)
     {
         bool is_insert_edge = INSERTEDGE;
         if (sgh_for_vtx_id_ == SELF)
         {
-            edge.src = translator_handler_->GetLocalVid((vertexid_t)edge.src);
+            edge.vtx_id = translator_handler_->GetLocalVid((vertexid_t)edge.vtx_id);
         }
         if (sgh_for_adjvtx_id_ == SELF)
         {
-            edge.dst = translator_handler_->GetLocalVid((vertexid_t)edge.dst);
+            edge.adjvtx_id = translator_handler_->GetLocalVid((vertexid_t)edge.adjvtx_id);
         }
-        check_whether_to_resize_edgeblockarray_m(edge.src);
+        check_whether_to_resize_edgeblockarray_m(edge.vtx_id);
         update_edge(edge, is_insert_edge, vertices_handler_);
         return;
     }
 
-    void Graphtinker::insert_edge(Edge &edge, Vertices *external_vertices_handler)
+    void Graphtinker::insert_edge(edge_t &edge, Vertices *external_vertices_handler)
     {
         bool is_insert_edge = INSERTEDGE;
         if (sgh_for_vtx_id_ == SELF)
         {
-            edge.src = (uint)translator_handler_->GetLocalVid((vertexid_t)edge.src);
+            edge.vtx_id = (uint)translator_handler_->GetLocalVid((vertexid_t)edge.vtx_id);
         }
         if (sgh_for_adjvtx_id_ == SELF)
         {
-            edge.dst = (uint)translator_handler_->GetLocalVid((vertexid_t)edge.dst);
+            edge.adjvtx_id = (uint)translator_handler_->GetLocalVid((vertexid_t)edge.adjvtx_id);
         }
-        check_whether_to_resize_edgeblockarray_m(edge.src);
+        check_whether_to_resize_edgeblockarray_m(edge.vtx_id);
         update_edge(edge, is_insert_edge, external_vertices_handler);
         return;
     }
 
-    void Graphtinker::insert_edge(Edge &edge, Translator *translator_handler)
+    void Graphtinker::insert_edge(edge_t &edge, Translator *translator_handler)
     {
-        if (edge.src > vertex_range_)
+        if (edge.vtx_id > vertex_range_)
         {
-            LOG(ERROR) << "Graphtinker::insert_edge : bug, out of range19. src : " << edge.src << ", vertex_range_ : "
+            LOG(ERROR) << "Graphtinker::insert_edge : bug, out of range19. src : " << edge.vtx_id << ", vertex_range_ : "
                        << vertex_range_;
         }
         bool is_insert_edge = INSERTEDGE;
         if (sgh_for_vtx_id_ == OTHER)
         {
-            edge.src = (uint)translator_handler->GetLocalVid((vertexid_t)edge.src);
+            edge.vtx_id = (uint)translator_handler->GetLocalVid((vertexid_t)edge.vtx_id);
         }
         if (sgh_for_adjvtx_id_ == OTHER)
         {
-            edge.dst = (uint)translator_handler->GetLocalVid((vertexid_t)edge.dst);
+            edge.adjvtx_id = (uint)translator_handler->GetLocalVid((vertexid_t)edge.adjvtx_id);
         }
-        check_whether_to_resize_edgeblockarray_m(edge.src);
+        check_whether_to_resize_edgeblockarray_m(edge.vtx_id);
         update_edge(edge, is_insert_edge, vertices_handler_);
         return;
     }
 
-    void Graphtinker::insert_edge(Edge &edge, Vertices *external_vertices_handler, Translator *translator_handler)
+    void Graphtinker::insert_edge(edge_t &edge, Vertices *external_vertices_handler, Translator *translator_handler)
     {
-        if (edge.src > vertex_range_)
+        if (edge.vtx_id > vertex_range_)
         {
-            LOG(ERROR) << "Graphtinker::insert_edge : bug, out of range199. src : " << edge.src << ", vertex_range_ : "
+            LOG(ERROR) << "Graphtinker::insert_edge : bug, out of range199. src : " << edge.vtx_id << ", vertex_range_ : "
                        << vertex_range_;
         }
         bool is_insert_edge = INSERTEDGE;
         if (sgh_for_vtx_id_ == OTHER)
         {
-            edge.src = (uint)translator_handler->GetLocalVid((vertexid_t)edge.src);
+            edge.vtx_id = (uint)translator_handler->GetLocalVid((vertexid_t)edge.vtx_id);
         }
         if (sgh_for_adjvtx_id_ == OTHER)
         {
-            edge.dst = (uint)translator_handler->GetLocalVid((vertexid_t)edge.dst);
+            edge.adjvtx_id = (uint)translator_handler->GetLocalVid((vertexid_t)edge.adjvtx_id);
         }
-        check_whether_to_resize_edgeblockarray_m(edge.src);
+        check_whether_to_resize_edgeblockarray_m(edge.vtx_id);
         update_edge(edge, is_insert_edge, external_vertices_handler);
         return;
     }
@@ -169,7 +170,7 @@ namespace graphtinker
     {
         LOG(INFO) << std::endl;
         LOG(INFO) << "----------Bath insertion edge-----------";
-        vector<Edge> edges;
+        vector<edge_t> edges;
         uint edges_inserted = 0;
         uint total_edges_inserted = 0;
         float insertion_timelapse_ms = 0;
@@ -217,10 +218,12 @@ namespace graphtinker
                     break;
                 }
 
-                Edge edge;
-                edge.src = src;
-                edge.dst = dst;
+                
+                edge_t edge;
+                edge.vtx_id= src;
+                edge.adjvtx_id= dst;
                 edge.type= edge_type_map.at(edge_type_array.at(i % type_num));
+                edge.properties[0] = edge_property_t{"key0","value0"};
                 edge.weight = 1;
                 edges.push_back(edge);
             }
@@ -264,31 +267,31 @@ namespace graphtinker
         return;
     }
 
-    void Graphtinker::delete_edge(Edge& edge)
+    void Graphtinker::delete_edge(edge_t& edge)
     {
         bool is_insert_edge = DELETEEDGE;
         if (sgh_for_vtx_id_ == SELF)
         {
-            edge.src = translator_handler_->GetLocalVid((vertexid_t)edge.src);
+            edge.vtx_id = translator_handler_->GetLocalVid((vertexid_t)edge.vtx_id);
         }
         if (sgh_for_adjvtx_id_ == SELF)
         {
-            edge.dst = translator_handler_->GetLocalVid((vertexid_t)edge.dst);
+            edge.adjvtx_id= translator_handler_->GetLocalVid((vertexid_t)edge.adjvtx_id);
         }
         update_edge(edge, is_insert_edge, vertices_handler_);
         return;
     }
 
-    void Graphtinker::delete_edge(Edge& edge, Vertices *external_vertices_handler)
+    void Graphtinker::delete_edge(edge_t& edge, Vertices *external_vertices_handler)
     {
         bool is_insert_edge = DELETEEDGE;
         if (sgh_for_vtx_id_ == SELF)
         {
-            edge.src = translator_handler_->GetLocalVid((vertexid_t)edge.src);
+            edge.vtx_id = translator_handler_->GetLocalVid((vertexid_t)edge.vtx_id);
         }
         if (sgh_for_adjvtx_id_ == SELF)
         {
-            edge.dst = translator_handler_->GetLocalVid((vertexid_t)edge.dst);
+            edge.adjvtx_id = translator_handler_->GetLocalVid((vertexid_t)edge.adjvtx_id);
         }
         update_edge(edge, is_insert_edge, external_vertices_handler);
         return;
@@ -298,7 +301,7 @@ namespace graphtinker
     {
         LOG(INFO) << std::endl;
         LOG(INFO) << "-----------deletions started--------------";
-        vector<Edge> edges;
+        vector<edge_t> edges;
         uint edges_deleted = 0;
         uint total_edges_deleted = 0;
         float deletion_timelapse_ms = 0;
@@ -343,10 +346,11 @@ namespace graphtinker
                     LOG(ERROR) << "fscan data file error";
                     break;
                 }
-                Edge edge;
-                edge.src = src;
-                edge.dst = dst;
+                edge_t edge;
+                edge.vtx_id= src;
+                edge.adjvtx_id= dst;
                 edge.type= edge_type_map.at(edge_type_array.at(i % type_num));
+                edge.properties[0] = edge_property_t{"key0","value0"};
                 edge.weight = 1;
                 edges.push_back(edge);
             }
@@ -398,17 +402,10 @@ namespace graphtinker
      *  
      */
     void
-    Graphtinker::update_edge(const Edge &e, bool is_insert_edge, Vertices *external_vertices_handler)
+    Graphtinker::update_edge(edge_t &edge, bool is_insert_edge, Vertices *external_vertices_handler)
     {
-        DLOG(INFO) << "<< Update Edge >>";
-        DLOG(INFO) << "edge (" << e.src <<  ", " << e.dst << ")";
-        // create an edge object
-        edge_t edge;
-        edge.vtx_id = e.src;
-        edge.adjvtx_id = e.dst;
-        edge.type = e.type;
-        edge.weight = e.weight;
-        edge.flag = VALID;
+        DLOG(INFO) << "<< Update edge_t >>";
+        DLOG(INFO) << "edge (" << edge.vtx_id<<  ", " << edge.adjvtx_id << ")";
 #ifdef EN_CAL
         edge.heba_hvtx_id = -1;
         edge.heba_workblockid = -1;
@@ -426,10 +423,10 @@ namespace graphtinker
         //margins
         margin_t workblock_margin;
         margin_t start_wblkmargin;
-        margin_t first_wblkmargin;
         margin_t subblock_margin;
 
         // unit flow负责状态机全流程
+        // unit option 负责维护状态机运行过程中的信息
         UnitFlow *unit_flow = new UnitFlow(this);
         UnitOption *unit_option = unit_flow->unit_option;
 
@@ -450,10 +447,9 @@ namespace graphtinker
         vtx_id = edge.vtx_id;
         tripiteration_lcs = 0;
         adjvtx_id_hash = google_hash(edge.adjvtx_id, edge.type, geni);
-        find_workblock_margin(adjvtx_id_hash, &workblock_margin); //find work block margins
+        find_workblock_margin(adjvtx_id_hash, &workblock_margin); 
         find_subblock_margin(adjvtx_id_hash, &subblock_margin);
         start_wblkmargin = workblock_margin;
-        first_wblkmargin = workblock_margin;
         DLOG(INFO) << "adjvtx_id_hash = " << adjvtx_id_hash;
         DLOG(INFO) << "workblock_margin = [" << workblock_margin.top << " , " << workblock_margin.bottom << "]";
 #ifdef EN_DCI
@@ -473,8 +469,8 @@ namespace graphtinker
         unit_option->module_unit_cmd.mode = FIND_MODE;
         unit_option->InitModuleUnitParams(edge);
         unit_option->InitLoadUnit();
-        unit_option->InitInsertUnit(edge, adjvtx_id_hash);
         unit_option->InitFindUnit(edge, adjvtx_id_hash);
+        unit_option->InitInsertUnit(edge, adjvtx_id_hash);
         unit_option->InitWritebackUnit();
 
         // 首先更新vertex property array
@@ -498,38 +494,34 @@ namespace graphtinker
         for (infiniti = 0; infiniti < SOMELARGENO; infiniti++)
         {
             // 1. load workblock
-            if (geni == 1) {
-                unit_flow->load_unit(workblock_margin, vtx_id, edge_block_array_m_, &workblock);
-            } else {
-                unit_flow->load_unit(workblock_margin, vtx_id, edge_block_array_o_, &workblock);
-            }
+            unit_flow->load_unit(workblock_margin, vtx_id, geni, &workblock);
 
             // 2. load compute-unit params
             unit_flow->load_params(workblock_margin, adjvtx_id_hash);
 
             // 3. find_unit or insert_unit
             if (unit_option->module_unit_cmd.mode == FIND_MODE) {
-                unit_flow->find_unit(workblock_margin, adjvtx_id_hash, &workblock, is_insert_edge);
+                unit_flow->find_unit(workblock_margin, adjvtx_id_hash,is_insert_edge,&workblock);
             } else if (unit_option->module_unit_cmd.mode == INSERT_MODE) {
-                unit_flow->insert_unit(workblock_margin, adjvtx_id_hash, &workblock, &edge, geni);
+                unit_flow->insert_unit(workblock_margin, adjvtx_id_hash, geni, &workblock, &edge);
             }
 
-            // 4. 
-            unit_flow->inference_unit( is_insert_edge, &workblock_margin, subblock_margin,
-                start_wblkmargin, vtx_id);
-
-            // 5.
-            unit_flow->writeback_unit(
-                edge,
-                &workblock,
-                edge_block_array_m_,
-                edge_block_array_o_,
-                &lvatracker_,
+            // 4. inference unit
+            unit_flow->inference_unit(
                 vtx_id,
-                first_wblkmargin,
+                is_insert_edge,
                 subblock_margin,
+                start_wblkmargin,
+                &workblock_margin);
+
+            // 5. writeback unit
+            unit_flow->writeback_unit(
+                subblock_margin,
+                vtx_id,
+                is_insert_edge,
                 geni,
-                is_insert_edge
+                &workblock,
+                &lvatracker_
 #ifdef EN_CAL
                 ,
                 cal_edgeblock_array_
@@ -542,12 +534,11 @@ namespace graphtinker
 #endif
             );
 
-            // Optional Feature: delete and crumple in
+            // 6. Optional Feature: delete and crumple in
 #ifdef EN_DCI
             dci_unit(
                 writeback_unit_cmd,
                 find_report,
-                edge,
                 edge_block_array_m_,
                 edge_block_array_o_,
 #ifdef EN_CAL
@@ -560,7 +551,7 @@ namespace graphtinker
                 geni,
                 deleteandcrumpleincmd, svs, freed_edgeblock_list);
 #endif
-            // Optional Feature: CAL
+            // 7. Optional Feature: CAL
 #ifdef EN_CAL
             unit_flow->cal_unit(
                 edge,
@@ -571,16 +562,14 @@ namespace graphtinker
                 cal_lva_,
                 &cal_edgeblock_tracker_);
 #endif
-            // Interval unit
+            // 8. Interval unit
             unit_flow->interval_unit(
+                edge,
                 &workblock_margin,
                 &subblock_margin,
                 &start_wblkmargin,
-                &first_wblkmargin,
                 &vtx_id,
                 &adjvtx_id_hash,
-                edge,
-                is_insert_edge,
                 &tripiteration_lcs,
                 &geni,
                 &quitstatus
@@ -624,7 +613,7 @@ namespace graphtinker
     {
         vector<clusterptr_t> clusterptrs;
         vertexid_t basevid = vid;
-        uint _geni = 1;
+        uint geni = 1;
 
         // load edges
         clusterptrs.push_back(vid);
@@ -642,7 +631,7 @@ namespace graphtinker
                 for (uint t = 0; t < workblocks_per_page_; t++)
                 {
                     workblock_t edgeset;
-                    if (_geni == 1)
+                    if (geni == 1)
                     {
                         edgeset = edge_block_array_m_[(ebaoffset + t)];
                     }
@@ -673,7 +662,7 @@ namespace graphtinker
             }
             else
             {
-                _geni += 1;
+                geni += 1;
             }
         }
         return basevid;

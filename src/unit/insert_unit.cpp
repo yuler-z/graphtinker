@@ -8,9 +8,9 @@ namespace graphtinker
 	void UnitFlow::insert_unit(
 		margin_t workblock_margin,
 		bucket_t adjvtx_id_hash,
+		uint geni,
 		workblock_t *workblock,
-		edge_t *edge,
-		uint geni)
+		edge_t *edge)
 	{
 		bucket_t local_offset;
 
@@ -21,8 +21,8 @@ namespace graphtinker
 		edge_weight_t edgeweight_i;
 		flag_t flag_i;
 #ifdef EN_CAL
-		vertexid_t ll_localbaseaddrptr_i;
-		vertexid_t ll_localaddrptr_i;
+		vertexid_t cal_localbaseaddrptr_i;
+		vertexid_t cal_localaddrptr_i;
 #endif
 
 		bucket_t currbkt;
@@ -59,8 +59,8 @@ namespace graphtinker
 			flag_i = workblock->edges[local_offset].flag;
 
 #ifdef EN_CAL
-			ll_localbaseaddrptr_i = workblock->edges[local_offset].ll_localbaseaddrptr;
-			ll_localaddrptr_i = workblock->edges[local_offset].ll_localaddrptr;
+			cal_localbaseaddrptr_i = workblock->edges[local_offset].cal_localbaseaddrptr;
+			cal_localaddrptr_i = workblock->edges[local_offset].cal_localaddrptr;
 #endif
 
 			if (entry_i == insert_params.adjvtx_id && type_i == insert_params.type)
@@ -80,10 +80,11 @@ namespace graphtinker
 					workblock->edges[local_offset].initial_bucket = insert_params.initial_bucket;
 					workblock->edges[local_offset].type = insert_params.type;
 					workblock->edges[local_offset].weight = insert_params.weight;
+					memcpy(workblock->edges[local_offset].properties, edge->properties, sizeof(edge_property_t) * EDGE_PROPERTY_NUM);
 					workblock->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
-					workblock->edges[local_offset].ll_localbaseaddrptr = module_params.cal_localbaseaddrptr;
-					workblock->edges[local_offset].ll_localaddrptr = module_params.cal_localaddrptr;
+					workblock->edges[local_offset].cal_localbaseaddrptr = module_params.cal_localbaseaddrptr;
+					workblock->edges[local_offset].cal_localaddrptr = module_params.cal_localaddrptr;
 #endif
 
 #ifdef EN_CAL
@@ -123,10 +124,11 @@ namespace graphtinker
 					workblock->edges[local_offset].initial_bucket = insert_params.initial_bucket;
 					workblock->edges[local_offset].type = insert_params.type;
 					workblock->edges[local_offset].weight = insert_params.weight;
+					memcpy(workblock->edges[local_offset].properties, edge->properties, sizeof(edge_property_t) * EDGE_PROPERTY_NUM);
 					workblock->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
-					workblock->edges[local_offset].ll_localbaseaddrptr = module_params.cal_localbaseaddrptr;
-					workblock->edges[local_offset].ll_localaddrptr = module_params.cal_localaddrptr;
+					workblock->edges[local_offset].cal_localbaseaddrptr = module_params.cal_localbaseaddrptr;
+					workblock->edges[local_offset].cal_localaddrptr = module_params.cal_localaddrptr;
 #endif
 
 #ifdef EN_CAL

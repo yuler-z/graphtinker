@@ -7,14 +7,12 @@ namespace graphtinker
 	 * 根据之前的计算，为下个循环做准备，或退出循环。
 	 */ 
 	void UnitFlow::interval_unit(
+		edge_t edge,
 		margin_t *workblock_margin,
 		margin_t *subblock_margin,
 		margin_t *start_wblkmargin,
-		margin_t *first_wblkmargin,
 		vertexid_t *vtx_id,
 		bucket_t *adjvtx_id_hash,
-		edge_t edge,
-		bool is_insert_edge,
 		uint *tripiteration_lcs,
 		uint *geni,
 		uint *quitstatus
@@ -41,51 +39,47 @@ namespace graphtinker
 			*lastgenworkblockaddr = get_edgeblock_offset(*vtx_id) + workblock_margin->top / WORK_BLOCK_HEIGHT;
 #endif
 
-			// update/initialize appropriate module globals
+			// 1. update/initialize appropriate module globals
 			*geni += 1;
 			*vtx_id = module_params.cptr;
 			*tripiteration_lcs = 0;
 			*adjvtx_id_hash = gt_->google_hash(module_params.adjvtx_id,module_params.type, *geni);
 			gt_->find_workblock_margin(*adjvtx_id_hash, workblock_margin);
-			*start_wblkmargin = *workblock_margin;
 			gt_->find_subblock_margin(*adjvtx_id_hash,subblock_margin);
+			*start_wblkmargin = *workblock_margin;
 
-			// initialize appropriate fields of lcs units
-			// ..2 funcs don't touch edge fields, to avoid overriding any swapping which may have occurred
+			// 2. funcs don't touch edge fields, to avoid overriding any swapping which may have occurred
 			unit_option->InitModuleUnitParams2();
 			unit_option->InitLoadUnit();
-			unit_option->InitInsertUnit2();
 			unit_option->InitFindUnit2();
+			unit_option->InitInsertUnit2();
 			unit_option->InitWritebackUnit();
 		}
 		else if (interval_unit_cmd.verdict == CONTINUE_IN_CURRENT_GENERATION)
 		{
 
-			// update/initialize appropriate module globals
 			*tripiteration_lcs += 1;
 		}
 		else if (interval_unit_cmd.verdict == CONTINUE_FROM_FIRST_GENERATION)
 		{
 
-			// update/initialize appropriate module globals
+			//1. update/initialize appropriate module globals
 			*geni = 1;
 			*vtx_id = edge.vtx_id;
 			*tripiteration_lcs = 0;
-			*adjvtx_id_hash = gt_->google_hash(edge.adjvtx_id,edge.type,*geni); //calculate hashes
-			gt_->find_workblock_margin(*adjvtx_id_hash,workblock_margin);		  //find margins
+			*adjvtx_id_hash = gt_->google_hash(edge.adjvtx_id,edge.type,*geni);
+			gt_->find_workblock_margin(*adjvtx_id_hash,workblock_margin);
 			*start_wblkmargin = *workblock_margin;
-			*first_wblkmargin = *workblock_margin;
 			gt_->find_subblock_margin(*adjvtx_id_hash, subblock_margin);
 
-			//set module cmd
+			//2. set module cmd
 			unit_option->module_unit_cmd.mode = INSERT_MODE;
 
-			// initialize appropriate fields of lcs units
-			// everything is initialized here
+			//3. initialize appropriate fields of lcs units. everything is initialized here
 			unit_option->InitModuleUnitParams(edge);
 			unit_option->InitLoadUnit();
-			unit_option->InitInsertUnit(edge, *adjvtx_id_hash);
 			unit_option->InitFindUnit(edge, *adjvtx_id_hash);
+			unit_option->InitInsertUnit(edge, *adjvtx_id_hash);
 			unit_option->InitWritebackUnit();
 #ifdef EN_CAL
 			unit_option->InitCalUnit();

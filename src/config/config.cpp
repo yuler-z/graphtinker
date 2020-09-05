@@ -42,8 +42,7 @@ namespace graphtinker {
         config_map_.insert(std::make_pair("updatev", reader.Get("graphtinker", "updatev", "true")));
         config_map_.insert(std::make_pair("num_vertices", reader.Get("graphtinker", "num_vertices", "524288")));
         config_map_.insert(std::make_pair("num_edges", reader.Get("graphtinker", "num_edges", "8380000")));
-        config_map_.insert(
-                std::make_pair("is_directed", reader.Get("graphtinker", "is_directed", "true")));
+        config_map_.insert(std::make_pair("is_directed", reader.Get("graphtinker", "is_directed", "true")));
         config_map_.insert(std::make_pair("subblock_height", reader.Get("graphtinker", "subblock_height", "8")));
         config_map_.insert(std::make_pair("page_block_height", reader.Get("graphtinker", "page_block_height", "64")));
         config_map_.insert(std::make_pair("eba_m_expansion_addition_height",
@@ -54,8 +53,7 @@ namespace graphtinker {
                                           reader.Get("graphtinker", "cal_eba_expansion_addition_height", "1000")));
         config_map_.insert(std::make_pair("cal_lva_expansion_addition_height",
                                           reader.Get("graphtinker", "cal_lva_expansion_addition_height", "100")));
-        config_map_.insert(
-                std::make_pair("eba_expansion_padding", reader.Get("graphtinker", "eba_expansion_padding", "10000")));
+        config_map_.insert( std::make_pair("eba_expansion_padding", reader.Get("graphtinker", "eba_expansion_padding", "10000")));
 
         return true;
     }

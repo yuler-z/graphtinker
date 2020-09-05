@@ -8,6 +8,7 @@ namespace graphtinker{
 		module_params.rolledover = NO;
 		module_params.clustered = NO;
 		module_params.cptr = -1;
+		// edge
 		module_params.type = edge.type;
 		module_params.adjvtx_id = edge.adjvtx_id;
 		module_params.weight = edge.weight;

@@ -70,14 +70,14 @@ namespace graphtinker {
         ~Graphtinker();
         // member functions
 
-        void insert_edge(Edge& edge); 
-        void insert_edge(Edge& edge, Vertices* vertices_handler_); 
-        void insert_edge(Edge& edge, Translator* translator_handler_); 
-        void insert_edge(Edge& edge, Vertices* external_vertices_handler, Translator* translator_handler_); 
+        void insert_edge(edge_t& edge); 
+        void insert_edge(edge_t& edge, Vertices* vertices_handler_); 
+        void insert_edge(edge_t& edge, Translator* translator_handler_); 
+        void insert_edge(edge_t& edge, Vertices* external_vertices_handler, Translator* translator_handler_); 
         void batch_insert_edge(const char* path, uint batch_size);
 
-        void delete_edge(Edge& edge);
-        void delete_edge(Edge& edge, Vertices* vertices_handler_);
+        void delete_edge(edge_t& edge);
+        void delete_edge(edge_t& edge, Vertices* vertices_handler_);
         void batch_delete_edge(const char* path, uint batch_size);
 
         // print function
@@ -93,7 +93,7 @@ namespace graphtinker {
 private:
         void create_graph();
         void init_cal_lvas();
-        void update_edge(const Edge& edge, bool is_insert_edge, Vertices* vertices_handler_);
+        void update_edge(edge_t& edge, bool is_insert_edge, Vertices* vertices_handler_);
 
         uint get_edge_count(vector<workblock_t> edge_block_array_x, uint height);
         uint get_unique_edge_count(vector<workblock_t> edge_block_array_x, uint height);
@@ -148,7 +148,6 @@ private:
         void dci_unit(
                 writeback_unit_cmd_t writeback_unit_cmd,
                 find_report_t find_report,
-                edge_t edge,
                 vector<workblock_t> &edge_block_array_m_,
                 vector<workblock_t> &edge_block_array_o_,
 #ifdef EN_CAL

@@ -30,7 +30,7 @@ namespace graphtinker
                 void load_unit(
                     margin_t workblock_margin,
                     vertexid_t vtx_id,
-                    vector<workblock_t> &edge_block_array,
+                    uint geni,
                     workblock_t *workblock);
 
                 void load_params(
@@ -40,34 +40,31 @@ namespace graphtinker
                 void find_unit(
                     margin_t workblock_margin,
                     bucket_t adjvtx_id_hash,
-                    workblock_t *workblock,
-                    bool is_insert_edge);
+                    bool is_insert_edge,
+                    workblock_t *workblock);
 
                 void insert_unit(
                     margin_t workblock_margin,
                     bucket_t adjvtx_id_hash,
+                    uint geni,
                     workblock_t *workblock,
-                    edge_t *edge,
-                    uint geni);
+                    edge_t *edge);
 
                 void inference_unit(
+                    vertexid_t vtx_id,
                     bool is_insert_edge,
-                    margin_t *workblock_margin,
                     margin_t subblock_margin,
                     margin_t start_wblkmargin,
-                    vertexid_t vtx_id);
+                    margin_t *workblock_margin);
+
                 // writeback unit
                 void writeback_unit(
-                    edge_t edge,
-                    workblock_t *workblock,
-                    vector<workblock_t> &edge_block_array_m_,
-                    vector<workblock_t> &edge_block_array_o_,
-                    tracker_t *lvatracker_,
-                    vertexid_t hvtx_id,
-                    margin_t first_wblkmargin,
                     margin_t subblock_margin,
+                    vertexid_t hvtx_id,
+                    bool is_insert_edge,
                     uint geni,
-                    bool is_insert_edge
+                    workblock_t *workblock,
+                    tracker_t *lvatracker_
 #ifdef EN_CAL
                     ,
                     vector<cal_edgeblock_t> &cal_edgeblock_array_
@@ -81,14 +78,12 @@ namespace graphtinker
                 );
 
                 void interval_unit(
+                    edge_t edge,
                     margin_t *workblock_margin,
                     margin_t *subblock_margin,
                     margin_t *start_wblkmargin,
-                    margin_t *first_wblkmargin,
                     vertexid_t *vtx_id,
                     bucket_t *adjvtx_id_hash,
-                    edge_t edge,
-                    bool is_insert_edge,
                     uint *tripiteration_lcs,
                     uint *geni,
                     uint *quitstatus
@@ -148,7 +143,7 @@ namespace graphtinker
                     margin_t subblock_margin,
                     vertexid_t vtx_id);
 
-                void find_stopped_notsuccess_insert_delete(
+                void find_stopped_notsuccess_delete(
                     margin_t workblock_margin,
                     margin_t subblock_margin,
                     vertexid_t vtx_id);
@@ -158,7 +153,7 @@ namespace graphtinker
                     margin_t subblock_margin,
                     vertexid_t vtx_id);
 
-                void find_stopped_notsuccessful_dci_delete(
+                void find_stopped_notsuccess_dci_delete(
                     margin_t workblock_margin,
                     margin_t subblock_margin,
                     vertexid_t vtx_id);

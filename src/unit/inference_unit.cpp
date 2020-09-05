@@ -19,11 +19,12 @@ namespace graphtinker
 	 * 还是其他行为
 	 */
 	void UnitFlow::inference_unit(
+		vertexid_t vtx_id,
 		bool is_insert_edge, // insert or delete
-		margin_t *workblock_margin,
 		margin_t subblock_margin,
 		margin_t start_wblkmargin,
-		vertexid_t vtx_id)
+		margin_t *workblock_margin
+		)
 	{
 		search_report_t &search_report = unit_option->search_report;
 		module_unit_cmd_t &module_unit_cmd = unit_option->module_unit_cmd;
@@ -38,12 +39,15 @@ namespace graphtinker
 			search_report.is_search_stop = find_report.is_found || find_report.is_empty || find_report.is_reach_max_prob_length;
 			search_report.is_search_success = find_report.is_found;
 		}
+
+		// Debug
 		DLOG(INFO) << "-----Inference Unit-----";
 		if (search_report.is_search_stop)
 			DLOG(INFO) << "search_report.is_search_stop";
 		if (search_report.is_search_success)
 			DLOG(INFO) << "search_report.is_search_success";
 
+		// 是否是subblock中的最后一个workblock
 		bool is_last_workblock = is_last_workblock_in_subblock(*workblock_margin, start_wblkmargin, subblock_margin);
 
 #ifdef EN_OTHERS
@@ -78,7 +82,7 @@ namespace graphtinker
 #ifndef EN_DCI
 				else if (!is_insert_edge)/*delete_edge*/
 				{
-					find_stopped_notsuccess_insert_delete(
+					find_stopped_notsuccess_delete(
 						*workblock_margin,
 						subblock_margin,
 						vtx_id);
@@ -86,7 +90,7 @@ namespace graphtinker
 #else
 				else if (!is_insert_edge)/*delete edge*/
 				{
-					find_stopped_notsuccessful_dci_delete(
+					find_stopped_notsuccess_dci_delete(
 						module_params,
 						find_params,
 						writeback_unit_cmd,
@@ -204,8 +208,8 @@ namespace graphtinker
 			{
 				LOG(ERROR) << " should never get here! (inference unit)";
 			}
-			return;
 		}
+		return ;
 	}
 
 	//|Mode|_|Searchstopped|_|searchsuccessfull_|InsertReport.exittype|_|is_last_workblock?|
@@ -215,7 +219,6 @@ namespace graphtinker
 		margin_t subblock_margin,
 		vertexid_t vtx_id)
 	{
-		DLOG(INFO) << "set cmd";
 		set_moduleunitcmd(INSERT_MODE);
 		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight); //***
 		set_loadunitcmd_loadnextedgeblock(true);
@@ -225,6 +228,46 @@ namespace graphtinker
 		SET_DCI_UNIT_CMD(DCI_NOCMD);
 		return;
 	}
+	//Find-And-Delete Mode
+	void UnitFlow::find_stopped_notsuccess_delete(
+		margin_t workblock_margin,
+		margin_t subblock_margin,
+		vertexid_t vtx_id)
+	{
+		set_moduleunitcmd(FIND_MODE);
+		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											  //***
+		set_loadunitcmd_loadnextedgeblock(true);																												  //*** NO YES
+		set_writebackunitcmd_writebackcurrentedgeblock(NO, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin); //writeback EB
+		set_intervalunitcmd_quit_to_next_edge();
+		SET_CAL_UNIT_CMD(NOCMD);
+		SET_DCI_UNIT_CMD(DCI_NOCMD);
+#ifdef EN_OTHERS
+		LOG(ERROR) << " find not successfull (inference_unit22)"; //***
+#endif
+		return;
+	}
+
+#ifdef EN_DCI
+	//Find-And-Delete-And-Crumplein Mode
+	void UnitFlow::find_stopped_notsuccess_dci_delete(
+		margin_t workblock_margin,
+		margin_t subblock_margin,
+		vertexid_t vtx_id)
+	{
+		set_moduleunitcmd(FIND_MODE);
+		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											  //***
+		set_loadunitcmd_loadnextedgeblock(true);																												  //*** NO YES
+		set_writebackunitcmd_writebackcurrentedgeblock(NO, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin); //writeback EB
+		set_intervalunitcmd_quit_to_next_edge();
+		SET_CAL_UNIT_CMD(NOCMD);
+		SET_DCI_UNIT_CMD(DCI_JUSTQUITCMD);
+
+#ifdef EN_OTHERS
+		LOG(ERROR) << " find not successfull (inference_unit11)"; //***
+#endif
+		return;
+	}
+#endif
 
 	void UnitFlow::find_stopped_success_insert(
 		margin_t workblock_margin,
@@ -240,15 +283,87 @@ namespace graphtinker
 		SET_DCI_UNIT_CMD(DCI_NOCMD);
 		return;
 	}
+	void UnitFlow::find_stopped_success_delete(
+		margin_t workblock_margin,
+		margin_t subblock_margin,
+		vertexid_t vtx_id)
+	{
+		set_moduleunitcmd(FIND_MODE);
+		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											   //***
+		set_loadunitcmd_loadnextedgeblock(true);																												   //*** NO YES
+		set_writebackunitcmd_writebackcurrentedgeblock(YES, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin); //writeback EB
+		set_intervalunitcmd_quit_to_next_edge();
+		SET_CAL_UNIT_CMD(DELETECMD);
+		SET_DCI_UNIT_CMD(DCI_NOCMD);
 
+#ifdef EN_OTHERS
+		if (find_report.is_deleted)
+		{
+			LOG(INFO) << "entry founf but deleted (inference unit)";
+		}
+		else if (!find_report.is_deleted == NO)
+		{
+			LOG(ERROR) << " entry actually not found at all (inference unit)";
+		}
+		else
+		{
+			LOG(ERROR) << " should not get here (inference_unit55)";
+		}
+#endif
+		return;
+	}
+
+
+
+#ifdef EN_DCI
+	void UnitFlow::find_stopped_success_dci_delete(
+		margin_t workblock_margin,
+		margin_t subblock_margin,
+		vertexid_t vtx_id)
+	{
+		set_moduleunitcmd(FIND_MODE);
+		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);
+		set_loadunitcmd_loadnextedgeblock(true);
+		set_writebackunitcmd_writebackcurrentedgeblock(YES, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin);
+		set_intervalunitcmd_quit_to_next_edge();
+		SET_CAL_UNIT_CMD(DELETEANDCRUMPLEINCMD);
+		if (unit_option->module_params.clustered == YES)
+		{
+			SET_DCI_UNIT_CMD(DCI_CRUMPLEINCMD);
+		}
+		else
+		{
+			SET_DCI_UNIT_CMD(DCI_JUSTQUITCMD);
+		}
+
+#ifdef EN_OTHERS
+		if (find_report.is_deleted)
+		{
+			LOG(INFO) << "entry founf but deleted (inference unit)";
+		}
+		else if (!find_report.is_deleted)
+		{
+			LOG(ERROR) << " entry actually not found at all (inference unit)";
+		}
+		else
+		{
+			LOG(ERROR) << " should not get here (inference_unit66)";
+		}
+#endif
+		return;
+	}
+#endif
+
+
+	// 该workblock中没有,寻找下一个workblock。(未遍历完subblock)
 	void UnitFlow::find_notstopped_notsuccess_notlastworkblock(
 		margin_t *workblock_margin,
 		margin_t subblock_margin,
 		vertexid_t vtx_id)
 	{
 		set_moduleunitcmd(FIND_MODE);
-		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											 //***
-		set_loadunitcmd_loadnextedgeblock(true);																												 //load next EB
+		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);
+		set_loadunitcmd_loadnextedgeblock(true); //load next EB
 		set_writebackunitcmd_writebackcurrentedgeblock(NO, (gt_->get_edgeblock_offset(vtx_id) + workblock_margin->top / WORK_BLOCK_HEIGHT), subblock_margin); //writeback EB
 		set_intervalunitcmd_continue_in_current_generation(workblock_margin, subblock_margin);
 		SET_CAL_UNIT_CMD(NOCMD);
@@ -256,14 +371,15 @@ namespace graphtinker
 		return;
 	}
 
+	// 该workblock中没有,寻找下一个workblock。(遍历完subblock) 
 	void UnitFlow::find_notstopped_notsuccessful_lastworkblock(
 		margin_t workblock_margin,
 		margin_t subblock_margin,
 		vertexid_t vtx_id)
 	{
 		set_moduleunitcmd(FIND_MODE);
-		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											  //***
-		set_loadunitcmd_loadnextedgeblock(true);																												  //load next EB
+		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);
+		set_loadunitcmd_loadnextedgeblock(true);// load next EB
 		set_writebackunitcmd_writebackcurrentedgeblock(NO, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin); //writeback EB
 		if (unit_option->module_params.clustered != YES)
 		{
@@ -371,112 +487,6 @@ namespace graphtinker
 		set_intervalunitcmd_continue_in_lower_generation();
 		SET_CAL_UNIT_CMD(NOCMD);
 		SET_DCI_UNIT_CMD(DCI_NOCMD);
-		return;
-	}
-
-	//Find-And-Delete Mode
-	void UnitFlow::find_stopped_notsuccess_insert_delete(
-		margin_t workblock_margin,
-		margin_t subblock_margin,
-		vertexid_t vtx_id)
-	{
-		set_moduleunitcmd(FIND_MODE);
-		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											  //***
-		set_loadunitcmd_loadnextedgeblock(true);																												  //*** NO YES
-		set_writebackunitcmd_writebackcurrentedgeblock(NO, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin); //writeback EB
-		set_intervalunitcmd_quit_to_next_edge();
-		SET_CAL_UNIT_CMD(NOCMD);
-		SET_DCI_UNIT_CMD(DCI_NOCMD);
-#ifdef EN_OTHERS
-		LOG(ERROR) << " find not successfull (inference_unit22)"; //***
-#endif
-		return;
-	}
-
-	void UnitFlow::find_stopped_success_delete(
-		margin_t workblock_margin,
-		margin_t subblock_margin,
-		vertexid_t vtx_id)
-	{
-		set_moduleunitcmd(FIND_MODE);
-		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											   //***
-		set_loadunitcmd_loadnextedgeblock(true);																												   //*** NO YES
-		set_writebackunitcmd_writebackcurrentedgeblock(YES, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin); //writeback EB
-		set_intervalunitcmd_quit_to_next_edge();
-		SET_CAL_UNIT_CMD(DELETECMD);
-		SET_DCI_UNIT_CMD(DCI_NOCMD);
-
-#ifdef EN_OTHERS
-		if (find_report.is_deleted)
-		{
-			LOG(INFO) << "entry founf but deleted (inference unit)";
-		}
-		else if (!find_report.is_deleted == NO)
-		{
-			LOG(ERROR) << " entry actually not found at all (inference unit)";
-		}
-		else
-		{
-			LOG(ERROR) << " should not get here (inference_unit55)";
-		}
-#endif
-		return;
-	}
-
-	//Find-And-Delete-And-Crumplein Mode
-	void UnitFlow::find_stopped_notsuccessful_dci_delete(
-		margin_t workblock_margin,
-		margin_t subblock_margin,
-		vertexid_t vtx_id)
-	{
-		set_moduleunitcmd(FIND_MODE);
-		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);											  //***
-		set_loadunitcmd_loadnextedgeblock(true);																												  //*** NO YES
-		set_writebackunitcmd_writebackcurrentedgeblock(NO, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin); //writeback EB
-		set_intervalunitcmd_quit_to_next_edge();
-		SET_CAL_UNIT_CMD(NOCMD);
-		SET_DCI_UNIT_CMD(DCI_JUSTQUITCMD);
-
-#ifdef EN_OTHERS
-		LOG(ERROR) << " find not successfull (inference_unit11)"; //***
-#endif
-		return;
-	}
-
-	void UnitFlow::find_stopped_success_dci_delete(
-		margin_t workblock_margin,
-		margin_t subblock_margin,
-		vertexid_t vtx_id)
-	{
-		set_moduleunitcmd(FIND_MODE);
-		set_moduleunitparams_edgefields(unit_option->find_params.adjvtx_id, unit_option->find_params.weight);
-		set_loadunitcmd_loadnextedgeblock(true);
-		set_writebackunitcmd_writebackcurrentedgeblock(YES, (gt_->get_edgeblock_offset(vtx_id) + (workblock_margin.top / WORK_BLOCK_HEIGHT)), subblock_margin);
-		set_intervalunitcmd_quit_to_next_edge();
-		SET_CAL_UNIT_CMD(DELETEANDCRUMPLEINCMD);
-		if (unit_option->module_params.clustered == YES)
-		{
-			SET_DCI_UNIT_CMD(DCI_CRUMPLEINCMD);
-		}
-		else
-		{
-			SET_DCI_UNIT_CMD(DCI_JUSTQUITCMD);
-		}
-
-#ifdef EN_OTHERS
-		if (find_report.is_deleted)
-		{
-			LOG(INFO) << "entry founf but deleted (inference unit)";
-		}
-		else if (!find_report.is_deleted)
-		{
-			LOG(ERROR) << " entry actually not found at all (inference unit)";
-		}
-		else
-		{
-			LOG(ERROR) << " should not get here (inference_unit66)";
-		}
-#endif
 		return;
 	}
 
