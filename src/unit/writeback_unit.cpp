@@ -4,16 +4,12 @@
 namespace graphtinker
 {
 	void UnitFlow::writeback_unit(
-		edge_t edge,
-		work_block_t *work_block,
-		vector<work_block_t> &edge_block_array_m_,
-		vector<work_block_t> &edge_block_array_o_,
-		tracker_t *lvatracker_,
+		margin_t subblock_margin,
 		vertexid_t hvtx_id,
-		margin_t first_wblkmargin,
-		margin_t sub_block_margin,
+		bool is_insert_edge,
 		uint geni,
-		uint edge_update_cmd
+		workblock_t *workblock,
+		tracker_t *lvatracker_
 #ifdef EN_CAL
 		,
 		vector<cal_edgeblock_t> &cal_edgeblock_array_
@@ -36,7 +32,7 @@ namespace graphtinker
 		if (writeback_unit_cmd.markasclustered == YES)
 		{
 			//initialize LVAentity row
-			newpageindexpos = gt_->add_page(lvatracker_, edge_block_array_o_);
+			newpageindexpos = gt_->add_page(lvatracker_, gt_->edge_block_array_o_);
 
 			//update cluster pointer
 			module_params.clustered = YES;
@@ -45,7 +41,7 @@ namespace graphtinker
 			clusterinfo.flag = VALID;
 			clusterinfo.data = newpageindexpos;
 
-			work_block->clusterinfo = clusterinfo;
+			workblock->clusterinfo = clusterinfo; // not necessary. 后面会进行统一赋值
 		}
 
 #ifdef EN_DCI
@@ -55,12 +51,12 @@ namespace graphtinker
 	CASE 3 : if the sublock is NOT a first child, and the subblock lies in generation 1 => then a new supervertex should be created and should be updated.
 	CASE 4 : if the subblock is NOT a first child, and the subblock DOES NOT lie in generation 1 => then a new supervertex should be created and should be updated.
 	NB: this function should be before you write the cluster info to its subblock */
-		if (edge_update_cmd != DELETEEDGE)
+		if (is_insert_edge != DELETEEDGE)
 		{
 			if (writeback_unit_cmd.markasclustered == YES)
 			{
-				uint subblockid = sub_block_margin.top / sub_block_height_;
-				uint subblocksperpage = sub_blocks_per_page_;
+				uint subblockid = subblock_margin.top / subblock_height_;
+				uint subblocksperpage = subblocks_per_page_;
 				if ((subblockid == (subblocksperpage - 1)) && (geni == 1))
 				{
 
@@ -86,28 +82,28 @@ namespace graphtinker
 					///***^ this is under testing ^***//
 					uint svs_index = 0;
 					if ((geni - 1) == 1)
-					{ /// last work_block was in generation 1
-						if (lastgenworkblockaddr >= edge_block_array_m_.size())
+					{ /// last workblock was in generation 1
+						if (lastgenworkblockaddr >= gt_->edge_block_array_m_.size())
 						{
 							LOG(ERROR) << "Graphtinker::writeback_unit : out-of-range34"  ;
 						}
-						if (edge_block_array_m_[lastgenworkblockaddr].clusterinfo.flag != VALID)
+						if (gt_->edge_block_array_m_[lastgenworkblockaddr].clusterinfo.flag != VALID)
 						{
 							LOG(ERROR) << "Graphtinker::writeback_unit : addr out-of-range8"  ;
 						}
-						svs_index = edge_block_array_m_[lastgenworkblockaddr].clusterinfo.sv_ptr;
+						svs_index = gt_->edge_block_array_m_[lastgenworkblockaddr].clusterinfo.sv_ptr;
 					}
 					else
 					{
-						if (lastgenworkblockaddr >= edge_block_array_o_.size())
+						if (lastgenworkblockaddr >= gt_->edge_block_array_o_.size())
 						{
 							LOG(ERROR) << "Graphtinker::writeback_unit : out-of-range35"  ;
 						}
-						if (edge_block_array_o_[lastgenworkblockaddr].clusterinfo.flag != VALID)
+						if (gt_->edge_block_array_o_[lastgenworkblockaddr].clusterinfo.flag != VALID)
 						{
 							LOG(ERROR) << "Graphtinker::writeback_unit : addr out-of-range82"  ;
 						}
-						svs_index = edge_block_array_o_[lastgenworkblockaddr].clusterinfo.sv_ptr;
+						svs_index = gt_->edge_block_array_o_[lastgenworkblockaddr].clusterinfo.sv_ptr;
 					}
 					clusterinfo.sv_ptr = svs_index;
 
@@ -175,33 +171,33 @@ namespace graphtinker
 #ifdef EN_BUGCHECK
 			if (geni == 1)
 			{
-				if (writeback_unit_cmd.addr >= edge_block_array_m_.size())
+				if (writeback_unit_cmd.addr >= gt_->edge_block_array_m_.size())
 				{
 					LOG(ERROR) << " writeback_unit_cmd.addr out-of-range2 (writeback_unit)"  ;
 				}
 			}
 			else
 			{
-				if (writeback_unit_cmd.addr >= edge_block_array_o_.size())
+				if (writeback_unit_cmd.addr >= gt_->edge_block_array_o_.size())
 				{
 					LOG(ERROR) << " writeback_unit_cmd.addr out-of-range3 (writeback_unit)"  ;
 				}
 			}
 #endif
 
-			work_block->edgeinfo.flag = VALID;
+			workblock->edgeinfo.flag = VALID;
 			if (geni == 1)
 			{
-				edge_block_array_m_[writeback_unit_cmd.addr] = *work_block;
+				gt_->edge_block_array_m_[writeback_unit_cmd.addr] = *workblock;
 			}
 			else
 			{
-				edge_block_array_o_[writeback_unit_cmd.addr] = *work_block;
+				gt_->edge_block_array_o_[writeback_unit_cmd.addr] = *workblock;
 			}
 
 // update cal_edgeblock_array_
 #ifdef EN_DCI
-			cal_edgeblock_array_[module_params->ll_localbaseaddrptr_x].ll_edgeblock[module_params->ll_localaddrptr_x].which_gen_is_the_main_copy_located = geni; //***
+			cal_edgeblock_array_[unit_option->module_params.cal_localbaseaddrptr].cal_edgeblock[unit_option->module_params.cal_localaddrptr].which_gen_is_the_main_copy_located = geni; //***
 #endif
 		}
 
@@ -210,18 +206,18 @@ namespace graphtinker
 		{
 			if (geni == 1)
 			{
-				uint subblockbaseaddr = gt_->get_edgeblock_offset(hvtx_id) + (writeback_unit_cmd.subblockid * gt_->work_blocks_per_subblock_);
-				for (uint id = 0; id < gt_->work_blocks_per_subblock_; id++)
+				uint subblockbaseaddr = gt_->get_edgeblock_offset(hvtx_id) + (writeback_unit_cmd.subblockid * gt_->workblocks_per_subblock_);
+				for (uint id = 0; id < gt_->workblocks_per_subblock_; id++)
 				{
-					edge_block_array_m_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
+					gt_->edge_block_array_m_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
 				}
 			}
 			else
 			{
-				uint subblockbaseaddr = gt_->get_edgeblock_offset(hvtx_id) + (writeback_unit_cmd.subblockid * gt_->work_blocks_per_subblock_);
-				for (uint id = 0; id < gt_->work_blocks_per_subblock_; id++)
+				uint subblockbaseaddr = gt_->get_edgeblock_offset(hvtx_id) + (writeback_unit_cmd.subblockid * gt_->workblocks_per_subblock_);
+				for (uint id = 0; id < gt_->workblocks_per_subblock_; id++)
 				{
-					edge_block_array_o_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
+					gt_->edge_block_array_o_[(subblockbaseaddr + id)].clusterinfo = clusterinfo;
 				}
 			}
 		}

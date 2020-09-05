@@ -7,28 +7,27 @@ namespace graphtinker
 	void Graphtinker::dci_unit(
 		writeback_unit_cmd_t writeback_unit_cmd,
 		find_report_t find_report,
-		edge_t edge,
-		vector<work_block_t> &edge_block_array_m_,
-		vector<work_block_t> &edge_block_array_o_,
+		vector<workblock_t> &edge_block_array_m_,
+		vector<workblock_t> &edge_block_array_o_,
 #ifdef EN_CAL
 		vector<cal_edgeblock_t> &cal_edgeblock_array_,
 #endif
 		vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
 		vertexid_t vtx_id,
-		margin_t work_block_margin,
-		margin_t sub_block_margin,
-		uint geni, crumple_in_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs, vector<vertexid_t> &freed_edgeblock_list)
+		margin_t workblock_margin,
+		margin_t subblock_margin,
+		uint geni, dci_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs, vector<vertexid_t> &freed_edgeblock_list)
 	{
-		uint work_blocks_per_subblock_ = work_blocks_per_subblock_;
-		uint work_blocks_per_page_ = work_blocks_per_page_;
+		uint workblocks_per_subblock_ = workblocks_per_subblock_;
+		uint workblocks_per_page_ = workblocks_per_page_;
 
 		/// only when an edge is removed from a *clustered region* do we have to pop-out and pop-back-in
 		if (deleteandcrumpleincmd.verdict == DCI_CRUMPLEINCMD)
 		{
 			int retstatus = -1;
 			edge_tt edgett;
-			vertexid_t ll_localbaseaddrptr = 0;
-			vertexid_t ll_localaddrptr = 0;
+			vertexid_t cal_localbaseaddrptr = 0;
+			vertexid_t cal_localaddrptr = 0;
 			int tailhvtx_id = -1;
 			uint svs_index = 0;
 			uint numclusteredworkblocks = NULLL;
@@ -38,7 +37,7 @@ namespace graphtinker
 				svs,
 				freed_edgeblock_list,
 				&edgett,
-				work_block_margin,
+				workblock_margin,
 				writeback_unit_cmd,
 				&tailhvtx_id,
 				&svs_index,
@@ -78,11 +77,11 @@ namespace graphtinker
 // redirect pointer (ll -> heba) (remember its a 2-way link)
 // remember that ll may need to update which edgeblockarray (m or c) it's now pointing to!
 #ifdef EN_CAL
-				uint work_block_height = WORK_BLOCK_HEIGHT;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_hvtx_id = vtx_id;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_workblockid = work_block_margin.top / work_block_height;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].heba_loffset = find_report.local_offset;
-				cal_edgeblock_array_[edgett.ll_localbaseaddrptr].ll_edgeblock[edgett.ll_localaddrptr].which_gen_is_the_main_copy_located = geni;
+				uint workblock_height = WORK_BLOCK_HEIGHT;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].heba_hvtx_id = vtx_id;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].heba_workblockid = workblock_margin.top / workblock_height;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].heba_loffset = find_report.local_offset;
+				cal_edgeblock_array_[edgett.cal_localbaseaddrptr].cal_edgeblock[edgett.cal_localaddrptr].which_gen_is_the_main_copy_located = geni;
 #endif
 			}
 			else if (retstatus == 6)
@@ -94,7 +93,7 @@ namespace graphtinker
 
 					// edgeblock is empty. free it. edge_block_array_o_ is always used because tailhvtx_id can never be in edge_block_array_m_
 					uint offset = get_edgeblock_offset(tailhvtx_id);
-					for (uint addr = offset; addr < (offset + work_blocks_per_page_); addr++)
+					for (uint addr = offset; addr < (offset + workblocks_per_page_); addr++)
 					{
 						if (addr >= edge_block_array_o_.size())
 						{
@@ -114,17 +113,17 @@ namespace graphtinker
 						LOG(ERROR) << " incorrect (update_edge66)"  ;
 					}
 					edgeblock_parentinfo_t parentinfo = edgeblock_parentinfo[index];
-					uint subblockbaseaddr = get_edgeblock_offset(parentinfo.vtx_id) + (parentinfo.subblockid * work_blocks_per_subblock_);
+					uint subblockbaseaddr = get_edgeblock_offset(parentinfo.vtx_id) + (parentinfo.subblockid * workblocks_per_subblock_);
 					if (parentinfo.gen_of_parent == 1)
 					{
-						for (uint id = 0; id < work_blocks_per_subblock_; id++)
+						for (uint id = 0; id < workblocks_per_subblock_; id++)
 						{
 							edge_block_array_m_[(subblockbaseaddr + id)].clusterinfo.flag = INVALID;
 						}
 					}
 					else
 					{
-						for (uint id = 0; id < work_blocks_per_subblock_; id++)
+						for (uint id = 0; id < workblocks_per_subblock_; id++)
 						{
 							edge_block_array_o_[(subblockbaseaddr + id)].clusterinfo.flag = INVALID;
 						}

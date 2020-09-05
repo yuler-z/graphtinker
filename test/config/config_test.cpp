@@ -4,7 +4,7 @@
 int main(){
 
     graphtinker::Config config("config.ini");
-    config.PrintAll();
+    config.pring_configuration();
 
     return 0;
 }

@@ -6,11 +6,11 @@ namespace graphtinker
 	uint debug_totaledgeinsertions;
 
 	void UnitFlow::insert_unit(
-		margin_t work_block_margin,
+		margin_t workblock_margin,
 		bucket_t adjvtx_id_hash,
-		work_block_t *work_block,
-		edge_t *edge,
-		uint geni)
+		uint geni,
+		workblock_t *workblock,
+		edge_t *edge)
 	{
 		bucket_t local_offset;
 
@@ -21,8 +21,8 @@ namespace graphtinker
 		edge_weight_t edgeweight_i;
 		flag_t flag_i;
 #ifdef EN_CAL
-		vertexid_t ll_localbaseaddrptr_i;
-		vertexid_t ll_localaddrptr_i;
+		vertexid_t cal_localbaseaddrptr_i;
+		vertexid_t cal_localaddrptr_i;
 #endif
 
 		bucket_t currbkt;
@@ -42,25 +42,25 @@ namespace graphtinker
 
 		// get begin bucket
 		insert_params_t &insert_params = unit_option->insert_params;
-		beginbkt = insert_params.is_start_blk? adjvtx_id_hash : work_block_margin.top;
+		beginbkt = insert_params.is_start_blk? adjvtx_id_hash : workblock_margin.top;
 
 		// traverse entries in block
-		for (currbkt = beginbkt; currbkt <= work_block_margin.bottom; currbkt++)
+		for (currbkt = beginbkt; currbkt <= workblock_margin.bottom; currbkt++)
 		{
 
 			// get entry's local offset
-			local_offset = currbkt - work_block_margin.top;
+			local_offset = currbkt - workblock_margin.top;
 
 			// retrieve current entry
-			entry_i = work_block->edges[local_offset].adjvtx_id;
-			initialbucket_i = work_block->edges[local_offset].initial_bucket;
-			type_i = work_block->edges[local_offset].type;
-			edgeweight_i = work_block->edges[local_offset].weight;
-			flag_i = work_block->edges[local_offset].flag;
+			entry_i = workblock->edges[local_offset].adjvtx_id;
+			initialbucket_i = workblock->edges[local_offset].initial_bucket;
+			type_i = workblock->edges[local_offset].type;
+			edgeweight_i = workblock->edges[local_offset].weight;
+			flag_i = workblock->edges[local_offset].flag;
 
 #ifdef EN_CAL
-			ll_localbaseaddrptr_i = work_block->edges[local_offset].ll_localbaseaddrptr;
-			ll_localaddrptr_i = work_block->edges[local_offset].ll_localaddrptr;
+			cal_localbaseaddrptr_i = workblock->edges[local_offset].cal_localbaseaddrptr;
+			cal_localaddrptr_i = workblock->edges[local_offset].cal_localaddrptr;
 #endif
 
 			if (entry_i == insert_params.adjvtx_id && type_i == insert_params.type)
@@ -76,14 +76,15 @@ namespace graphtinker
 				{
 					// empty bucket found, insert and exit <//*** NB: this is repeated below>
 
-					work_block->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
-					work_block->edges[local_offset].initial_bucket = insert_params.initial_bucket;
-					work_block->edges[local_offset].type = insert_params.type;
-					work_block->edges[local_offset].weight = insert_params.weight;
-					work_block->edges[local_offset].flag = VALID;
+					workblock->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
+					workblock->edges[local_offset].initial_bucket = insert_params.initial_bucket;
+					workblock->edges[local_offset].type = insert_params.type;
+					workblock->edges[local_offset].weight = insert_params.weight;
+					memcpy(workblock->edges[local_offset].properties, edge->properties, sizeof(edge_property_t) * EDGE_PROPERTY_NUM);
+					workblock->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
-					work_block->edges[local_offset].ll_localbaseaddrptr = module_params.ll_localbaseaddrptr_x;
-					work_block->edges[local_offset].ll_localaddrptr = module_params.ll_localaddrptr_x;
+					workblock->edges[local_offset].cal_localbaseaddrptr = module_params.cal_localbaseaddrptr;
+					workblock->edges[local_offset].cal_localaddrptr = module_params.cal_localaddrptr;
 #endif
 
 #ifdef EN_CAL
@@ -91,7 +92,7 @@ namespace graphtinker
 					if (insert_params.adjvtx_id == edge->adjvtx_id)
 					{
 						edge->heba_hvtx_id = vtx_id;
-						edge->heba_workblockid = work_block_margin.top / WORK_BLOCK_HEIGHT;
+						edge->heba_workblockid = workblock_margin.top / WORK_BLOCK_HEIGHT;
 						edge->heba_loffset = local_offset;
 						// edge->which_gen_is_the_main_copy_located = geni;
 					}
@@ -119,14 +120,15 @@ namespace graphtinker
 				{
 					// empty bucket found, insert and exit
 
-					work_block->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
-					work_block->edges[local_offset].initial_bucket = insert_params.initial_bucket;
-					work_block->edges[local_offset].type = insert_params.type;
-					work_block->edges[local_offset].weight = insert_params.weight;
-					work_block->edges[local_offset].flag = VALID;
+					workblock->edges[local_offset].adjvtx_id = insert_params.adjvtx_id;
+					workblock->edges[local_offset].initial_bucket = insert_params.initial_bucket;
+					workblock->edges[local_offset].type = insert_params.type;
+					workblock->edges[local_offset].weight = insert_params.weight;
+					memcpy(workblock->edges[local_offset].properties, edge->properties, sizeof(edge_property_t) * EDGE_PROPERTY_NUM);
+					workblock->edges[local_offset].flag = VALID;
 #ifdef EN_CAL
-					work_block->edges[local_offset].ll_localbaseaddrptr = module_params.ll_localbaseaddrptr_x;
-					work_block->edges[local_offset].ll_localaddrptr = module_params.ll_localaddrptr_x;
+					workblock->edges[local_offset].cal_localbaseaddrptr = module_params.cal_localbaseaddrptr;
+					workblock->edges[local_offset].cal_localaddrptr = module_params.cal_localaddrptr;
 #endif
 
 #ifdef EN_CAL
@@ -134,7 +136,7 @@ namespace graphtinker
 					if (insert_params.adjvtx_id == edge->adjvtx_id)
 					{
 						edge->heba_hvtx_id = vtx_id;
-						edge->heba_workblockid = work_block_margin.top / WORK_BLOCK_HEIGHT;
+						edge->heba_workblockid = workblock_margin.top / WORK_BLOCK_HEIGHT;
 						edge->heba_loffset = local_offset;
 						// edge->which_gen_is_the_main_copy_located = geni;
 					}

@@ -26,10 +26,10 @@ namespace graphtinker{
         public:
             Config();
             Config(string file_path);
-            bool Load();
-            bool Load(string file_path);
-            bool ConfigGraph(Graphtinker *gt);
-            bool PrintAll();
+            bool load();
+            bool load(string file_path);
+            bool config(Graphtinker *gt);
+            bool pring_configuration();
 
             string get_file_path();
             void set_file_path(string);

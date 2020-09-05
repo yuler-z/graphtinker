@@ -26,11 +26,11 @@ namespace graphtinker {
         uint num_edges_;
         bool is_directed_;
 
-        uint sub_block_height_;
+        uint subblock_height_;
         uint page_block_height_;
-        uint sub_blocks_per_page_;
-        uint work_blocks_per_page_;
-        uint work_blocks_per_subblock_;
+        uint subblocks_per_page_;
+        uint workblocks_per_page_;
+        uint workblocks_per_subblock_;
 
         uint eba_m_expansion_addition_height_;
         uint eba_o_expansion_addition_height_;
@@ -38,28 +38,24 @@ namespace graphtinker {
         uint cal_lva_expansion_addition_height_;
         uint eba_expansion_padding_;
 
-        Config *_config;
+        Config *config_;
 
         // edge block array
-        vector<work_block_t> edge_block_array_m_;
-        vector<work_block_t> edge_block_array_o_;
+        vector<workblock_t> edge_block_array_m_;
+        vector<workblock_t> edge_block_array_o_;
         tracker_t lvatracker_;
-
-        // ll edge block array
-        vector<cal_edgeblock_t> cal_edgeblock_array_;
-        vector<cal_logical_vertex_entity_t> cal_lva_;
-        cal_edgeblock_tracker_t cal_edgeblock_tracker_;
 
         // Vertex Property Array
         Vertices* vertices_handler_;
 
-        // Scatter Gather Hash
+        // Scatter-Gather Hash
         Translator* translator_handler_;
 
-    public:
-        Graphtinker(); 
-        Graphtinker(string file_path); 
-        ~Graphtinker();
+#ifdef EN_CAL
+        vector<cal_edgeblock_t> cal_edgeblock_array_;
+        vector<cal_logical_vertex_entity_t> cal_lva_;
+        cal_edgeblock_tracker_t cal_edgeblock_tracker_;
+#endif
 
 // metadata (for delete and crumple in)
 #ifdef EN_DCI
@@ -67,52 +63,56 @@ namespace graphtinker {
         vector<vertexid_t> freed_edgeblock_list;
         vector<edgeblock_parentinfo_t> edgeblock_parentinfo;
 #endif
-        // member functions
-        void create_graph();
 
-        void insert_edge(Edge& edge); 
-        void insert_edge(Edge& edge, Vertices* vertices_handler_); 
-        void insert_edge(Edge& edge, Translator* translator_handler_); 
-        void insert_edge(Edge& edge, Vertices* external_vertices_handler, Translator* translator_handler_); 
+    public:
+        Graphtinker(); 
+        Graphtinker(string file_path); 
+        ~Graphtinker();
+        // member functions
+
+        void insert_edge(edge_t& edge); 
+        void insert_edge(edge_t& edge, Vertices* vertices_handler_); 
+        void insert_edge(edge_t& edge, Translator* translator_handler_); 
+        void insert_edge(edge_t& edge, Vertices* external_vertices_handler, Translator* translator_handler_); 
         void batch_insert_edge(const char* path, uint batch_size);
 
-        void delete_edge(Edge& edge);
-        void delete_edge(Edge& edge, Vertices* vertices_handler_);
+        void delete_edge(edge_t& edge);
+        void delete_edge(edge_t& edge, Vertices* vertices_handler_);
         void batch_delete_edge(const char* path, uint batch_size);
 
-        void update_edge(const Edge& edge, uint edge_update_cmd, Vertices* vertices_handler_);
-
-        vertexid_t retrieve_edges(vertexid_t vid, vector<edge_tt> &edges);
-
         // print function
-        uint print_cal_edge_count();
         uint print_svs_size();
         uint print_freed_edgeblock_list_size();
-        void initialize_lvas();
-        uint ll_countedges(vector<cal_edgeblock_t> &cal_edgeblock_array_);
         uint print_edge_count();
         uint print_unique_edge_count();
         void print_edgeblock_array(const vertexid_t begin, const vertexid_t end);
+#ifdef EN_CAL
+        uint print_cal_edge_count();
+#endif
 
 private:
-        uint get_edge_count(vector<work_block_t> edge_block_array_x, uint height);
-        uint get_unique_edge_count(vector<work_block_t> edge_block_array_x, uint height);
-        uint get_edgeblock_array_height(const vector<work_block_t> &edge_block_array); 
+        void create_graph();
+        void init_cal_lvas();
+        void update_edge(edge_t& edge, bool is_insert_edge, Vertices* vertices_handler_);
+
+        uint get_edge_count(vector<workblock_t> edge_block_array_x, uint height);
+        uint get_unique_edge_count(vector<workblock_t> edge_block_array_x, uint height);
+        uint get_edgeblock_array_height(const vector<workblock_t> &edge_block_array); 
+        vertexid_t retrieve_edges(vertexid_t vid, vector<edge_tt> &edges);
         void check_whether_to_resize_edgeblockarray_m(uint vid);
+#ifdef EN_CAL
+        uint cal_edge_count(vector<cal_edgeblock_t> &cal_edgeblock_array_);
+#endif
 
         // find margin
         void find_workblock_margin(bucket_t adjvtx_id_hash,margin_t *blkmargin);
-        void find_subblock_margin(bucket_t adjvtx_id_hash,margin_t *sub_block_margin);
+        void find_subblock_margin(bucket_t adjvtx_id_hash,margin_t *subblock_margin);
         uint get_edgeblock_offset(vertexid_t vid);
-
-        // hash scripts
         bucket_t google_hash(vertexid_t vid, edge_type_t etype, uint geni) const;
-
-        // initialize
-        uint add_page(tracker_t *tracker, vector<work_block_t> &edge_block_array);
+        uint add_page(tracker_t *tracker, vector<workblock_t> &edge_block_array);
 
 #ifdef EN_DCI
-        void init_deleteandcrumplein_verdictcmd(crumple_in_cmd_t *heba_deleteandcrumplein_cmd);
+        void init_dci_unit_cmd();
 
         // super Vertices
         int sv_get_next_edge(
@@ -120,45 +120,44 @@ private:
                 vector<supervertex_t> &svs,
                 vector<vertexid_t> &freed_edgeblock_list,
                 edge_tt *edgett,
-                margin_t work_block_margin,
+                margin_t workblock_margin,
                 writeback_unit_cmd_t writeback_unit_cmd,
                 int *tailhvtx_id,
                 uint *svs_index,
                 uint *numclusteredworkblocks,
                 uint geni,
-                vector<work_block_t> &edge_block_array_m_,
-                vector<work_block_t> &edge_block_array_o_);
+                vector<workblock_t> &edge_block_array_m_,
+                vector<workblock_t> &edge_block_array_o_);
 
         int sv_get_tail_edgeblock(
                 vector<supervertex_t> &svs,
                 uint currworkblockaddr,
                 uint *svs_index,
                 uint geni,
-                vector<work_block_t> &edge_block_array_m_,
-                vector<work_block_t> &edge_block_array_o_);
+                vector<workblock_t> &edge_block_array_m_,
+                vector<workblock_t> &edge_block_array_o_);
 
         int sv_pick_edge(
                 uint vtx_id,
                 uint offset,
                 edge_tt *edgett,
                 uint *numclusteredworkblocks,
-                vector<work_block_t> &edge_block_array);
+                vector<workblock_t> &edge_block_array);
 
         // delete and crumple in unit
         void dci_unit(
                 writeback_unit_cmd_t writeback_unit_cmd,
                 find_report_t find_report,
-                edge_t edge,
-                vector<work_block_t> &edge_block_array_m_,
-                vector<work_block_t> &edge_block_array_o_,
+                vector<workblock_t> &edge_block_array_m_,
+                vector<workblock_t> &edge_block_array_o_,
 #ifdef EN_CAL
                 vector<cal_edgeblock_t> &cal_edgeblock_array_,
 #endif
                 vector<edgeblock_parentinfo_t> &edgeblock_parentinfo,
                 vertexid_t vtx_id,
-                margin_t work_block_margin,
-                margin_t sub_block_margin,
-                uint geni, crumple_in_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs,
+                margin_t workblock_margin,
+                margin_t subblock_margin,
+                uint geni, dci_cmd_t deleteandcrumpleincmd, vector<supervertex_t> &svs,
                 vector<vertexid_t> &freed_edgeblock_list);
 
 #endif

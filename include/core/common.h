@@ -6,10 +6,11 @@
 #include <glog/logging.h>
 using std::vector;
 
-// #define EN_CAL 0    // Coarse Adjacency List
+// #define EN_CAL    // Coarse Adjacency List
 // #define EN_DCI //delete and crumple in 
 
 #define WORK_BLOCK_HEIGHT 4 
+#define EDGE_PROPERTY_NUM 1
 #define BATCH_SIZE 1048576
 
 #define DIRECTEDGRAPH 0
@@ -55,21 +56,8 @@ using std::vector;
 #define LLEDGEBLOCKSIZE 512
 #define LVACOARSENESSWIDTH 2048 //should be a power of 2
 
-// cal commands
-#define NOCMD 0
-#define INSERTCMD 5 
-#define UPDATECMD 6
-#define DELETECMD 7
-#define DELETEANDCRUMPLEINCMD 8
-#define UPDATEEDGEPTRSCMD 9
-
-// dci (deleteandcrumplein commands)
-#define DCI_NOCMD 5
-#define DCI_JUSTQUITCMD 6
-#define DCI_CRUMPLEINCMD 7 
-
-#define INSERTEDGE 5
-#define DELETEEDGE 6
+#define DELETEEDGE 0
+#define INSERTEDGE 1
 
 #define SELF 1
 #define OTHER 2
@@ -84,19 +72,15 @@ typedef double vertexdata_t;
 typedef unsigned int clusterptr_t;
 typedef unsigned int id_t;
 
-
-struct Edge{
-	vertexid_t src;
-	vertexid_t dst;
-	edge_type_t type;
-	edge_weight_t weight;
-};
-
-
-
 /** sv_ptr : pointer to a supervertex
 	NB: many subblocks can (and should) have the same sv_ptr. means they all are 1st borns in a descendancy tree
 */
+typedef struct{
+	char key[10];
+	char value[10];
+}edge_property_t;
+
+
 typedef struct {
 	clusterptr_t data;
 	flag_t flag;
@@ -113,10 +97,11 @@ typedef struct {
 	bucket_t initial_bucket;
 	edge_type_t type;
 	edge_weight_t weight;
+	edge_property_t properties[EDGE_PROPERTY_NUM];
     flag_t flag; // VALID, DELETED
 	#ifdef EN_CAL
-	vertexid_t ll_localbaseaddrptr;
-	vertexid_t ll_localaddrptr;
+	vertexid_t cal_localbaseaddrptr;
+	vertexid_t cal_localaddrptr;
 	#endif
 } edge_tt;
 
@@ -124,14 +109,7 @@ typedef struct {
 	edgeinfo_t edgeinfo;
 	clusterinfo_t clusterinfo;
 	edge_tt edges[WORK_BLOCK_HEIGHT];
-} work_block_t;
-
-typedef struct {
-	uint gen_of_parent;
-	vertexid_t vtx_id; //***^
-	uint subblockid;
-	flag_t flag;
-} edgeblock_parentinfo_t;
+} workblock_t;
 
 // edge in CAL
 typedef struct {
@@ -139,6 +117,7 @@ typedef struct {
 	vertexid_t adjvtx_id;
 	edge_type_t type;
 	edge_weight_t weight;
+	edge_property_t properties[EDGE_PROPERTY_NUM];
 	flag_t flag;
 	#ifdef EN_CAL
 	int heba_hvtx_id;
@@ -148,6 +127,8 @@ typedef struct {
 	#endif
 } edge_t;
 
+
+//------------------unit flow----------------------
 typedef struct {
 	uint mode;
 } module_unit_cmd_t;
@@ -160,37 +141,14 @@ typedef struct {
 	vertexid_t adjvtx_id; // edge info
 	edge_weight_t weight;
 	#ifdef EN_CAL
-	vertexid_t ll_localbaseaddrptr_x;
-	vertexid_t ll_localaddrptr_x;
+	vertexid_t cal_localbaseaddrptr;
+	vertexid_t cal_localaddrptr;
 	#endif	
 } module_params_t;
 
 typedef struct {
 	uint load;
 } load_unit_cmd_t;
-
-typedef struct {
-	uint verdict;
-} cal_unit_cmd_t;
-
-typedef struct {
-	uint verdict;
-} crumple_in_cmd_t;
-
-typedef struct {
-	vertexid_t adjvtx_id; // edge info
-	bucket_t initial_bucket;
-	edge_type_t type;
-	edge_weight_t weight;
-	bool is_start_blk; // additional info	
-} insert_params_t;
-
-typedef struct {
-	uint exittype;
-	bucket_t validbuckets_incr;
-	bucket_t overflowbkt;
-	bucket_t lastbktloadedinto;
-} insert_report_t;
 
 typedef struct {	
 	vertexid_t adjvtx_id; // edge info
@@ -209,6 +167,21 @@ typedef struct {
 } find_report_t;
 
 typedef struct {
+	vertexid_t adjvtx_id; // edge info
+	bucket_t initial_bucket;
+	edge_type_t type;
+	edge_weight_t weight;
+	bool is_start_blk; // additional info	
+} insert_params_t;
+
+typedef struct {
+	uint exittype;
+	bucket_t validbuckets_incr;
+	bucket_t overflowbkt;
+	bucket_t lastbktloadedinto;
+} insert_report_t;
+
+typedef struct {
 	uint writeback;
 	uint addr;
 	uint markasclustered;
@@ -221,15 +194,14 @@ typedef struct {
 } interval_unit_cmd_t;
 
 typedef struct {
-	bucket_t top;
-	bucket_t bottom;
-} margin_t;
-
-typedef struct {
 	bool is_search_stop;
 	bool is_search_success;
 } search_report_t;
 
+typedef struct {
+	bucket_t top;
+	bucket_t bottom;
+} margin_t;
 /// trackers
 typedef struct {
 	uint mark;
@@ -239,6 +211,7 @@ typedef struct {
 	uint marker;
 } markertracker_t;
 
+// scatter-gather hash
 typedef struct {
 	vertexid_t globalvid;
 	vertexid_t localvid;
@@ -246,31 +219,7 @@ typedef struct {
 	flag_t lflag;
 } vertex_translator_t;
 
-/// LL data structures
-typedef struct {
-	uint edgecount;
-	uint nextcptr;
-	uint currcptr;
-	uint prevcptr;
-} cal_edgeblock_metadata_t;
-
-typedef struct {
-	edge_t ll_edgeblock[LLEDGEBLOCKSIZE];
-	cal_edgeblock_metadata_t metadata;
-} cal_edgeblock_t;
-
-typedef struct {
-	uint ptraddr;
-} cal_edgeblock_tracker_t;
-
-typedef struct {
-	uint baseaddr;
-	uint lastlocalbaseaddr;
-	uint lastlocaladdr;
-	uint totaledgecount;
-	uint flag;
-} cal_logical_vertex_entity_t;
-
+// vertex property array
 typedef struct {
 	uint indegree;
 	uint outdegree;
@@ -281,7 +230,7 @@ typedef struct {
 /** 
 - except stated otherwise, when used, the array of this struct is indexed by the *** raw local vertex ids ***  
 - hvtx_id is a hashed vertex id value (calculated from the raw local vertex id) AND (w.r.t the given cluster!) ...
-- ... this is done like this because each cluster exist as its own independent EdgeblockArray ...
+- ... this is done like this because each cluster exist as its own independent edge_tblockArray ...
 - ... so the hvtx_id is just like that used in GT
 - ... therefore, multiple entries in the *vertexlink_t can have the same hvtx_id, but these entry's cluster id (cid) must be all different
 - status (VALID/INVALID) indicates whether or not this struct entry is valid and points to an edge cluster
@@ -306,11 +255,71 @@ typedef struct {
 	uint lvid; 
 } vid_it_t; 
 
+//----------------------Enable Delete and crumple in--------------------
+#ifdef EN_CAL
+// cal commands
+#define NOCMD 0
+#define INSERTCMD 5 
+#define UPDATECMD 6
+#define DELETECMD 7
+#define DELETEANDCRUMPLEINCMD 8
+#define UPDATEEDGEPTRSCMD 9
+
+typedef struct {
+	uint verdict;
+} cal_unit_cmd_t;
+
+typedef struct {
+	uint edgecount;
+	uint nextcptr;
+	uint currcptr;
+	uint prevcptr;
+} cal_edgeblock_metadata_t;
+
+typedef struct {
+	edge_t cal_edgeblock[LLEDGEBLOCKSIZE];
+	cal_edgeblock_metadata_t metadata;
+} cal_edgeblock_t;
+
+typedef struct {
+	uint ptraddr;
+} cal_edgeblock_tracker_t;
+
+typedef struct {
+	uint baseaddr;
+	uint lastlocalbaseaddr;
+	uint lastlocaladdr;
+	uint totaledgecount;
+	uint flag;
+} cal_logical_vertex_entity_t;
+#endif
+
+//----------------------Enable Delete and crumple in------------------
+#ifdef EN_DCI
+
+// dci (deleteandcrumplein commands)
+#define DCI_NOCMD 5
+#define DCI_JUSTQUITCMD 6
+#define DCI_CRUMPLEINCMD 7 
+
+typedef struct {
+	uint gen_of_parent;
+	vertexid_t vtx_id; //***^
+	uint subblockid;
+	flag_t flag;
+} edgeblock_parentinfo_t;
+
 /** used in the crumpling-in deletion functionality
-hvtx_id specifies an index to an edgeblock in the EdgeblockArray */
+hvtx_id specifies an index to an edgeblock in the edge_tblockArray */
 typedef struct {
 	vector<uint> hvtx_ids;
 	uint geni_ofparentsubblock;
 } supervertex_t;
+
+typedef struct {
+	uint verdict;
+} dci_cmd_t;
+#endif
+
 #endif
 

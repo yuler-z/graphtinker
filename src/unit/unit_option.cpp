@@ -8,6 +8,7 @@ namespace graphtinker{
 		module_params.rolledover = NO;
 		module_params.clustered = NO;
 		module_params.cptr = -1;
+		// edge
 		module_params.type = edge.type;
 		module_params.adjvtx_id = edge.adjvtx_id;
 		module_params.weight = edge.weight;
@@ -92,8 +93,8 @@ namespace graphtinker{
 	}
 	void UnitOption::ClearCalAdr()
 	{
-		module_params.ll_localbaseaddrptr_x = 0; // we don't know the value yet  --edge.LLlocalbaseaddrptr;
-		module_params.ll_localaddrptr_x = 0;	 // we don't know the value yet  --edge.LLlocaladdrptr;
+		module_params.cal_localbaseaddrptr = 0; // we don't know the value yet  --edge.LLlocalbaseaddrptr;
+		module_params.cal_localaddrptr = 0;	 // we don't know the value yet  --edge.LLlocaladdrptr;
 		return;
 	}
 #endif
